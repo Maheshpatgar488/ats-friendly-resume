@@ -84,7 +84,13 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
           <style>
             @page { size: A4 portrait; margin: 0; }
             body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            #resume-pdf-content { transform: none !important; box-shadow: none !important; margin: 0; }
+            #resume-pdf-content { 
+              transform: none !important; 
+              box-shadow: none !important; 
+              margin: 0 !important; 
+              min-height: 0 !important; 
+              height: auto !important; 
+            }
           </style>
         </head>
         <body>
