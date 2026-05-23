@@ -55,6 +55,13 @@ const upload = multer({
 });
 
 // ----------------------------------------------------
+// HEALTH CHECK ENDPOINT (Required for Render/Railway)
+// ----------------------------------------------------
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// ----------------------------------------------------
 // DATABASE & MANAGEMENT ENDPOINTS
 // ----------------------------------------------------
 
