@@ -22,7 +22,14 @@ jobs:
         run: |
           git config --global user.email "bot@example.com"
           git config --global user.name "HF Sync Bot"
-          # Create a branch with only the backend folder
-          git subtree split --prefix backend -b hf-backend
-          # Force push to the Hugging Face space
-          git push https://Maheshpatgar488:$HF_TOKEN@huggingface.co/spaces/Maheshpatgar488/resume-backend hf-backend:main --force
+          
+          # Create a clean deployment directory
+          mkdir -p deploy
+          cp -r backend/* deploy/
+          cd deploy
+          
+          # Initialize a fresh git repo and force push
+          git init
+          git add .
+          git commit -m "Deploy to Hugging Face"
+          git push https://Maheshpatgar488:${HF_TOKEN}@huggingface.co/spaces/Maheshpatgar488/resume-backend master:main --force
