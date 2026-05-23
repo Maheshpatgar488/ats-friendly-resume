@@ -332,8 +332,14 @@ app.post("/api/export-pdf", async (req, res) => {
 
     // 3. Launch headless Chrome in Puppeteer
     const launchOptions = {
-      headless: "shell", // recommended in newer puppeteer
-      args: ["--no-sandbox", "--disable-setuid-sandbox"]
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        "--font-render-hinting=none"
+      ]
     };
     if (process.env.PUPPETEER_EXECUTABLE_PATH) {
       launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
@@ -342,22 +348,23 @@ app.post("/api/export-pdf", async (req, res) => {
 
     const page = await browser.newPage();
     
-    // Set viewport to standard A4 ratio
-    await page.setViewport({ width: 794, height: 1123 });
+    // Set viewport to A4 at 96dpi: 210mm = 794px, 297mm = 1123px
+    await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 1 });
     
-    // Load HTML content
-    await page.setContent(htmlContent, { waitUntil: "networkidle0" });
+    // Load HTML — networkidle0 ensures Google Fonts finish loading before capture
+    await page.setContent(htmlContent, { waitUntil: "networkidle0", timeout: 30000 });
 
-    // 4. Generate PDF buffer
+    // 4. Generate PDF buffer — let CSS control sizing, no extra margins
     const pdfBuffer = await page.pdf({
       format: "A4",
       margin: {
-        top: "0px",
-        bottom: "0px",
-        left: "0px",
-        right: "0px",
+        top: "0",
+        bottom: "0",
+        left: "0",
+        right: "0",
       },
-      printBackground: true
+      printBackground: true,
+      preferCSSPageSize: true
     });
 
     await browser.close();

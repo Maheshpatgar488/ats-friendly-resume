@@ -47,6 +47,11 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
       padding: 0;
     }
     
+    @page {
+      size: A4;
+      margin: 0;
+    }
+
     html, body {
       width: 210mm;
       margin: 0;
