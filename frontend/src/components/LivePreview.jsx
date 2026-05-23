@@ -3,8 +3,8 @@ import {
   Download, Settings, FileText, ZoomIn, ZoomOut, RotateCcw, 
   ChevronRight, Sparkles, Sliders, Palette, Type, RefreshCw
 } from "lucide-react";
+import html2pdf from "html2pdf.js";
 import { ResumeRenderer, templatesList } from "./templates/index";
-import { API_URL } from "../config";
 
 export default function LivePreview({ resumeData, customStyles, setCustomStyles, onExportBackup, onLoadSampleData, onClearResume }) {
   const [zoom, setZoom] = useState(85); // Default zoom level to see the whole A4 page nicely
@@ -41,35 +41,24 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
     { name: "Wide (0.75in)", val: { top: "0.75in", bottom: "0.75in", left: "0.75in", right: "0.75in" } }
   ];
 
-  // Trigger A4 high-fidelity Puppeteer PDF rendering on the backend
+  // Trigger client-side A4 PDF generation
   const downloadPDF = async () => {
     setPdfLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/export-pdf`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          resumeData,
-          templateId: customStyles.templateId,
-          customStyles
-        })
-      });
+      const element = document.getElementById("resume-pdf-content");
+      
+      const opt = {
+        margin:       0,
+        filename:     `${resumeData.personalInfo?.fullName?.replace(/\s+/g, '_') || 'Resume'}_ATS_Friendly.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
 
-      if (!response.ok) {
-        throw new Error("Failed to compile PDF on the server.");
-      }
-
-      // Convert response stream to file blob download
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `${resumeData.personalInfo?.fullName?.replace(/\s+/g, '_') || 'Resume'}_ATS_Friendly.pdf`;
-      link.click();
-      window.URL.revokeObjectURL(url);
+      await html2pdf().set(opt).from(element).save();
     } catch (err) {
       console.error(err);
-      alert(err.message || "Failed to download PDF. Is the server running on port 5000?");
+      alert(err.message || "Failed to generate PDF locally.");
     } finally {
       setPdfLoading(false);
     }
@@ -390,19 +379,23 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
         {/* Canvas Area */}
         <div className="flex-1 overflow-auto bg-slate-950/65 flex justify-center items-start p-8 select-all">
           <div 
-            className="resume-preview-container bg-white origin-top"
+            className="resume-preview-container origin-top"
             style={{ 
               transform: `scale(${zoom / 100})`, 
-              width: "210mm", 
-              minHeight: "297mm", // A4 height
               marginBottom: `${Math.max(0, (zoom / 100) * 297 - 297)}mm` // offsets layout jump
             }}
           >
-            {/* Semantic templates mapper compiler */}
-            <ResumeRenderer 
-              resumeData={resumeData} 
-              customStyles={customStyles} 
-            />
+            <div 
+              id="resume-pdf-content" 
+              className="bg-white" 
+              style={{ width: "210mm", minHeight: "297mm", padding: "0" }}
+            >
+              {/* Semantic templates mapper compiler */}
+              <ResumeRenderer 
+                resumeData={resumeData} 
+                customStyles={customStyles} 
+              />
+            </div>
           </div>
         </div>
       </div>
