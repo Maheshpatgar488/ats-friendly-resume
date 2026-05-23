@@ -51,8 +51,8 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
         margin:       0,
         filename:     `${resumeData.personalInfo?.fullName?.replace(/\s+/g, '_') || 'Resume'}_ATS_Friendly.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, windowWidth: 794 },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        html2canvas:  { scale: 2, useCORS: true, windowWidth: 794, scrollY: 0, scrollX: 0 },
+        jsPDF:        { unit: 'px', format: [794, 1123], orientation: 'portrait' }
       };
 
       await html2pdf().set(opt).from(element).save();
