@@ -1,0 +1,21 @@
+# Dependency Directories
+**/node_modules/
+node_modules/
+
+# Local Environment variables (contains private API keys)
+**/.env
+**/.env.local
+.env
+.env.local
+
+# Production Build Directories
+**/dist/
+dist/
+
+# Local Database files (backend file DB)
+**/backend/data/
+backend/data/
+
+# OS specific files
+.DS_Store
+Thumbs.db
