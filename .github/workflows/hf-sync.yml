@@ -1,0 +1,28 @@
+name: Sync Backend to Hugging Face Space
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+jobs:
+  sync-to-hub:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          lfs: true
+      - name: Push backend directory to Hugging Face
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git config --global user.email "bot@example.com"
+          git config --global user.name "HF Sync Bot"
+          # Create a branch with only the backend folder
+          git subtree split --prefix backend -b hf-backend
+          # Force push to the Hugging Face space
+          git push https://Maheshpatgar488:$HF_TOKEN@huggingface.co/spaces/Maheshpatgar488/resume-backend hf-backend:main --force
