@@ -3,7 +3,6 @@ import {
   Download, Settings, FileText, ZoomIn, ZoomOut, RotateCcw, 
   ChevronRight, Sparkles, Sliders, Palette, Type, RefreshCw
 } from "lucide-react";
-import html2pdf from "html2pdf.js";
 import { ResumeRenderer, templatesList } from "./templates/index";
 
 export default function LivePreview({ resumeData, customStyles, setCustomStyles, onExportBackup, onLoadSampleData, onClearResume }) {
@@ -41,27 +40,71 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
     { name: "Wide (0.75in)", val: { top: "0.75in", bottom: "0.75in", left: "0.75in", right: "0.75in" } }
   ];
 
-  // Trigger client-side A4 PDF generation
-  const downloadPDF = async () => {
+  // Native Browser PDF Generation (Bulletproof)
+  const downloadPDF = () => {
     setPdfLoading(true);
-    try {
-      const element = document.getElementById("hidden-pdf-content");
-      
-      const opt = {
-        margin:       0,
-        filename:     `${resumeData.personalInfo?.fullName?.replace(/\s+/g, '_') || 'Resume'}_ATS_Friendly.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, windowWidth: 794, scrollY: 0, scrollX: 0 },
-        jsPDF:        { unit: 'px', format: [794, 1123], orientation: 'portrait' }
-      };
+    
+    // Create an invisible iframe
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
 
-      await html2pdf().set(opt).from(element).save();
-    } catch (err) {
-      console.error(err);
-      alert(err.message || "Failed to generate PDF locally.");
-    } finally {
-      setPdfLoading(false);
+    const doc = iframe.contentWindow.document;
+    const element = document.getElementById("resume-pdf-content");
+    const contentHtml = element.outerHTML;
+
+    // Get all stylesheets from the main document
+    let stylesHtml = '';
+    for (const styleSheet of document.styleSheets) {
+      try {
+        if (styleSheet.href) {
+          stylesHtml += `<link rel="stylesheet" type="text/css" href="${styleSheet.href}">`;
+        } else {
+          stylesHtml += `<style>${Array.from(styleSheet.cssRules).map(r => r.cssText).join('')}</style>`;
+        }
+      } catch (e) {
+        // Ignore CORS issues on fonts
+      }
     }
+
+    const title = `${resumeData.personalInfo?.fullName?.replace(/\s+/g, '_') || 'Resume'}_ATS_Friendly`;
+
+    // Write content into iframe with strict A4 print rules
+    doc.open();
+    doc.write(`
+      <html>
+        <head>
+          <title>${title}</title>
+          ${stylesHtml}
+          <style>
+            @page { size: A4 portrait; margin: 0; }
+            body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            #resume-pdf-content { transform: none !important; box-shadow: none !important; margin: 0; }
+          </style>
+        </head>
+        <body>
+          ${contentHtml}
+        </body>
+      </html>
+    `);
+    doc.close();
+
+    // Wait a moment for styles and fonts to apply, then trigger print
+    setTimeout(() => {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+      
+      // Cleanup
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+        setPdfLoading(false);
+      }, 500);
+    }, 800);
   };
 
   const handleStyleChange = (key, value) => {
@@ -399,21 +442,6 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
           </div>
         </div>
       </div>
-      
-      {/* Hidden unscaled PDF container for perfect html2canvas capture */}
-      <div style={{ position: "fixed", top: 0, left: 0, width: "794px", zIndex: -9999, opacity: 0, pointerEvents: "none" }}>
-        <div 
-          id="hidden-pdf-content" 
-          className="bg-white" 
-          style={{ width: "794px", minHeight: "1123px", padding: "0" }}
-        >
-          <ResumeRenderer 
-            resumeData={resumeData} 
-            customStyles={customStyles} 
-          />
-        </div>
-      </div>
-
     </div>
   );
 }
