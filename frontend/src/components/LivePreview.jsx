@@ -4,6 +4,7 @@ import {
   ChevronRight, Sparkles, Sliders, Palette, Type, RefreshCw
 } from "lucide-react";
 import { ResumeRenderer, templatesList } from "./templates/index";
+import { API_URL } from "../config";
 
 export default function LivePreview({ resumeData, customStyles, setCustomStyles, onExportBackup, onLoadSampleData, onClearResume }) {
   const [zoom, setZoom] = useState(85); // Default zoom level to see the whole A4 page nicely
@@ -44,7 +45,7 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
   const downloadPDF = async () => {
     setPdfLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/api/export-pdf", {
+      const response = await fetch(`${API_URL}/api/export-pdf`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
