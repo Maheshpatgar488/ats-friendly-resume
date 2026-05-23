@@ -51,7 +51,7 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
         margin:       0,
         filename:     `${resumeData.personalInfo?.fullName?.replace(/\s+/g, '_') || 'Resume'}_ATS_Friendly.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
+        html2canvas:  { scale: 2, useCORS: true, windowWidth: 794 },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
@@ -401,11 +401,11 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
       </div>
       
       {/* Hidden unscaled PDF container for perfect html2canvas capture */}
-      <div style={{ position: "fixed", top: 0, left: 0, width: "210mm", zIndex: -9999, opacity: 0, pointerEvents: "none" }}>
+      <div style={{ position: "fixed", top: 0, left: 0, width: "794px", zIndex: -9999, opacity: 0, pointerEvents: "none" }}>
         <div 
           id="hidden-pdf-content" 
           className="bg-white" 
-          style={{ width: "210mm", minHeight: "297mm", padding: "0" }}
+          style={{ width: "794px", minHeight: "1123px", padding: "0" }}
         >
           <ResumeRenderer 
             resumeData={resumeData} 
