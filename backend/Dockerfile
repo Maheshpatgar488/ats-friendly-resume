@@ -22,8 +22,14 @@ RUN npm ci --only=production
 # Copy application source code
 COPY . .
 
-# Expose port
-EXPOSE 5000
+# Expose Hugging Face Space port
+EXPOSE 7860
+
+# Hugging Face Spaces require running as a non-root user (uid 1000)
+RUN useradd -m -u 1000 user && \
+    chown -R user:user /app
+
+USER user
 
 # Start command
 CMD ["npm", "start"]

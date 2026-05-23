@@ -28,7 +28,7 @@ import { compileResumeHTML } from "./utils/pdfGenerator.js";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 7860;
 
 // Enable CORS and JSON parsing middlewares
 app.use(cors());
