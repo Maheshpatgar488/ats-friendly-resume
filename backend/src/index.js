@@ -4,7 +4,8 @@ import dotenv from "dotenv";
 import multer from "multer";
 import mammoth from "mammoth";
 import puppeteer from "puppeteer";
-
+import path from "path";
+import { fileURLToPath } from "url";
 // Robust CommonJS import helper for pdf-parse to prevent ES module quirks
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
@@ -385,6 +386,18 @@ app.post("/api/export-pdf", async (req, res) => {
     console.error("Export PDF Endpoint Error:", error);
     res.status(500).json({ error: "Failed to generate PDF.", details: error.message });
   }
+});
+
+// Serve static files from the React frontend app
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const frontendPath = path.join(__dirname, "../../public");
+
+app.use(express.static(frontendPath));
+
+// Anything that doesn't match the API routes, send back index.html
+app.get("*", (req, res) => {
+  res.sendFile(path.join(frontendPath, "index.html"));
 });
 
 // Start Express Server

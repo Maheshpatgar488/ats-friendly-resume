@@ -1,4 +1,12 @@
-# Use an official Node.js runtime as the base image
+# Stage 1: Build the React Frontend
+FROM node:20-slim AS frontend-build
+WORKDIR /frontend
+COPY frontend/package*.json ./
+RUN npm install
+COPY frontend/ ./
+RUN npm run build
+
+# Stage 2: Final Image with Express Backend
 FROM node:20-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -23,6 +31,9 @@ RUN npm install
 
 # Copy the rest of the backend directory
 COPY backend/ ./
+
+# Copy built frontend dist from Stage 1 into /app/public
+COPY --from=frontend-build /frontend/dist /app/public
 
 # Expose Hugging Face Space port
 EXPOSE 7860
