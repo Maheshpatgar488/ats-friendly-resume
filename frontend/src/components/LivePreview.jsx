@@ -45,7 +45,7 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
   const downloadPDF = async () => {
     setPdfLoading(true);
     try {
-      const element = document.getElementById("resume-pdf-content");
+      const element = document.getElementById("hidden-pdf-content");
       
       const opt = {
         margin:       0,
@@ -400,6 +400,20 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
         </div>
       </div>
       
+      {/* Hidden unscaled PDF container for perfect html2canvas capture */}
+      <div style={{ position: "fixed", top: 0, left: 0, width: "210mm", zIndex: -9999, opacity: 0, pointerEvents: "none" }}>
+        <div 
+          id="hidden-pdf-content" 
+          className="bg-white" 
+          style={{ width: "210mm", minHeight: "297mm", padding: "0" }}
+        >
+          <ResumeRenderer 
+            resumeData={resumeData} 
+            customStyles={customStyles} 
+          />
+        </div>
+      </div>
+
     </div>
   );
 }
