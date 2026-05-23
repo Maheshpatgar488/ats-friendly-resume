@@ -48,7 +48,10 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
     }
     
     html, body {
-      width: 100%;
+      width: 210mm;
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
@@ -58,8 +61,6 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
       font-size: ${fontSize};
       line-height: ${lineHeight};
       color: #1e293b; /* dark charcoal */
-      background: #ffffff;
-      padding: 0;
     }
 
     h1, h2, h3, h4 {
@@ -638,6 +639,8 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
     }
   }
 
+  const isBannerTop = tid === 20;
+
   // Combine entire document
   return `
     <!DOCTYPE html>
@@ -651,7 +654,9 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
       </style>
     </head>
     <body>
-      ${templateHTML}
+      <div style="width: 210mm; min-height: 297mm; padding: ${isBannerTop ? '0' : `${margins.top} ${margins.right} ${margins.bottom} ${margins.left}`}; box-sizing: border-box; background: #ffffff;">
+        ${templateHTML}
+      </div>
     </body>
     </html>
   `;

@@ -352,10 +352,10 @@ app.post("/api/export-pdf", async (req, res) => {
     const pdfBuffer = await page.pdf({
       format: "A4",
       margin: {
-        top: margin.top,
-        bottom: margin.bottom,
-        left: margin.left,
-        right: margin.right,
+        top: "0px",
+        bottom: "0px",
+        left: "0px",
+        right: "0px",
       },
       printBackground: true
     });
