@@ -48,8 +48,7 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
     }
     
     html, body {
-      width: 210mm; /* A4 standard width */
-      height: 100%;
+      width: 100%;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
