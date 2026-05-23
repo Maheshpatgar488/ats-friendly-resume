@@ -391,7 +391,7 @@ app.post("/api/export-pdf", async (req, res) => {
 // Serve static files from the React frontend app
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const frontendPath = path.join(__dirname, "../../public");
+const frontendPath = path.join(__dirname, "../public");
 
 app.use(express.static(frontendPath));
 
