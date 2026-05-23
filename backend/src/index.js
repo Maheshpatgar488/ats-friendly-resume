@@ -358,8 +358,8 @@ app.post("/api/export-pdf", async (req, res) => {
     // Set viewport to A4 at 96dpi: 210mm = 794px, 297mm = 1123px
     await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 1 });
     
-    // Load HTML — networkidle0 ensures Google Fonts finish loading before capture
-    await page.setContent(htmlContent, { waitUntil: "networkidle0", timeout: 30000 });
+    // Load HTML — domcontentloaded fires immediately, Google Fonts load in parallel (non-blocking)
+    await page.setContent(htmlContent, { waitUntil: "domcontentloaded", timeout: 15000 });
 
     // 4. Generate PDF buffer — let CSS control sizing, no extra margins
     const pdfBuffer = await page.pdf({
