@@ -1,6 +1,8 @@
 # Use an official Node.js runtime as the base image
 FROM node:20-slim
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 # Install system dependencies required for Puppeteer / Chromium
 RUN apt-get update && apt-get install -y \
     chromium \
@@ -26,10 +28,10 @@ COPY backend/ ./
 EXPOSE 7860
 
 # Hugging Face Spaces require running as a non-root user (uid 1000)
-RUN useradd -m -u 1000 user && \
-    chown -R user:user /app
+# Node base images already include a 'node' user with uid 1000
+RUN chown -R node:node /app
 
-USER user
+USER node
 
 # Start command
 CMD ["npm", "start"]
