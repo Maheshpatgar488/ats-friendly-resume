@@ -74,6 +74,20 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
 
     const title = `${resumeData.personalInfo?.fullName?.replace(/\s+/g, '_') || 'Resume'}_ATS_Friendly`;
 
+    const tid = parseInt(customStyles.templateId) || 3;
+    let printSidebarCss = '';
+    if (tid === 4 || tid === 9) {
+      printSidebarCss = `
+        #resume-pdf-content::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 35%; background-color: ${customStyles.primaryColor || '#1e3a8a'}; z-index: 0; }
+        .table-cell { position: relative; z-index: 1; background-color: transparent !important; }
+      `;
+    } else if (tid === 10) {
+      printSidebarCss = `
+        #resume-pdf-content::before { content: ""; position: absolute; top: 0; bottom: 0; right: 0; width: 35%; background-color: ${customStyles.primaryColor || '#1e3a8a'}; z-index: 0; }
+        .table-cell { position: relative; z-index: 1; background-color: transparent !important; }
+      `;
+    }
+
     // Write content into iframe with strict A4 print rules
     doc.open();
     doc.write(`
@@ -82,8 +96,8 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
           <title>${title}</title>
           ${stylesHtml}
           <style>
-            @page { size: A4 portrait; margin: 0; }
-            body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            @page { margin: 0; }
+            body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; }
             #resume-pdf-content { 
               transform: none !important; 
               box-shadow: none !important; 
@@ -93,6 +107,10 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
               width: 100% !important;
               max-width: 100% !important;
             }
+            #resume-pdf-content > div {
+              min-height: 0 !important;
+            }
+            ${printSidebarCss}
           </style>
         </head>
         <body>
