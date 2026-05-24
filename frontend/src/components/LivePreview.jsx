@@ -49,9 +49,10 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
     iframe.style.position = 'fixed';
     iframe.style.right = '0';
     iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = '0';
+    iframe.style.width = '210mm';
+    iframe.style.height = '297mm';
+    iframe.style.visibility = 'hidden';
+    iframe.style.zIndex = '-9999';
     document.body.appendChild(iframe);
 
     const doc = iframe.contentWindow.document;
@@ -106,7 +107,27 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
     setTimeout(() => {
       const iframeDoc = iframe.contentWindow.document;
       const content = iframeDoc.getElementById("resume-pdf-content");
-      
+      // Auto-Scale to Fit Single Page Logic
+      if (content) {
+        // Since iframe is 210mm wide, scrollHeight represents the true vertical height
+        const contentHeight = content.scrollHeight;
+        const A4_HEIGHT = 1120; // safe pixel height for A4 at 96dpi
+        
+        if (contentHeight > A4_HEIGHT) {
+          // Calculate exact ratio to shrink the content onto 1 page
+          const scaleFactor = (A4_HEIGHT - 20) / contentHeight; // Leave a tiny 20px padding
+          
+          // Apply scaling (Zoom for Webkit/Blink, Transform for Firefox)
+          content.style.zoom = scaleFactor;
+          content.style.transform = `scale(${scaleFactor})`;
+          content.style.transformOrigin = "top center"; // Keep it centered
+          
+          // Hardcap to prevent overflow blank pages
+          content.style.height = `${A4_HEIGHT}px`;
+          content.style.overflow = "hidden";
+        }
+      }
+
       iframe.contentWindow.focus();
       iframe.contentWindow.print();
       
