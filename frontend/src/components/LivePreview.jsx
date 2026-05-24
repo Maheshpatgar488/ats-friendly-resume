@@ -107,26 +107,6 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
       const iframeDoc = iframe.contentWindow.document;
       const content = iframeDoc.getElementById("resume-pdf-content");
       
-      // Auto-Scale to Fit Single Page Logic
-      if (content) {
-        const contentHeight = content.scrollHeight;
-        const A4_HEIGHT = 1120; // safe pixel height for A4 at 96dpi
-        
-        if (contentHeight > A4_HEIGHT) {
-          // Calculate exact ratio to shrink the content onto 1 page
-          const scaleFactor = A4_HEIGHT / contentHeight;
-          
-          // Apply scaling (Zoom for Webkit/Blink, Transform for Firefox)
-          content.style.zoom = scaleFactor;
-          content.style.transform = `scale(${scaleFactor})`;
-          content.style.transformOrigin = "top left";
-          
-          // Hardcap to prevent 1px overflow blank pages
-          content.style.height = `${A4_HEIGHT}px`;
-          content.style.overflow = "hidden";
-        }
-      }
-
       iframe.contentWindow.focus();
       iframe.contentWindow.print();
       
