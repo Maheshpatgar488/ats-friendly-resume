@@ -407,7 +407,7 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
   const primaryColor = customStyles.primaryColor || "#1e3a8a";
 
   const sidebarContent = (
-    <div className="flex flex-col gap-4 text-white">
+    <div className="flex flex-col text-white" style={{ gap: customStyles.sectionSpacing || "16px" }}>
       {/* Contact Details in Column */}
       <div className="pb-3 border-b border-white/20">
         <h3 className="font-bold text-xs uppercase text-white/70 mb-1">Contact Info</h3>
@@ -457,7 +457,7 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
   );
 
   const mainContent = (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col" style={{ gap: customStyles.sectionSpacing || "16px" }}>
       {/* Name and Professional Label */}
       <div className="border-b-2 pb-2" style={{ borderColor: primaryColor }}>
         <h1 className="text-2xl font-extrabold uppercase tracking-tight text-slate-900 select-all">{personalInfo.fullName || "Your Name"}</h1>
@@ -477,7 +477,7 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
         <div>
           <SectionHeader title="Professional Experience" primaryColor={primaryColor} borderStyle="solid" />
           {experience.map((exp, idx) => (
-            <div key={idx} className="mb-3 break-inside-avoid">
+            <div key={idx} className="break-inside-avoid" style={{ marginBottom: customStyles.entrySpacing || "12px" }}>
               <div className="flex justify-between font-bold text-slate-900 text-xs">
                 <span>{exp.position}</span>
                 <span>{exp.startDate} - {exp.endDate || "Present"}</span>
@@ -485,7 +485,7 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
               <div className="flex justify-between text-slate-600 font-medium italic text-2xs mb-1">
                 <span>{exp.company} {exp.location && `| ${exp.location}`}</span>
               </div>
-              <ul className="list-disc ml-4 text-slate-700 text-2xs space-y-0.5 leading-normal">
+              <ul className="list-disc ml-4 text-slate-700 text-2xs leading-normal" style={{ gap: "2px", display: "flex", flexDirection: "column" }}>
                 {(exp.highlights || []).map((highlight, hIdx) => (
                   <li key={hIdx}>{highlight}</li>
                 ))}
@@ -500,7 +500,7 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
         <div>
           <SectionHeader title="Projects" primaryColor={primaryColor} borderStyle="solid" />
           {projects.map((proj, idx) => (
-            <div key={idx} className="mb-2 break-inside-avoid">
+            <div key={idx} className="break-inside-avoid" style={{ marginBottom: customStyles.entrySpacing || "8px" }}>
               <div className="flex justify-between font-bold text-slate-900 text-xs">
                 <span>{proj.name}</span>
                 {proj.url && (
