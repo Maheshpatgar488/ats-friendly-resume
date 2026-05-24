@@ -90,6 +90,8 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
               margin: 0 !important; 
               min-height: 0 !important; 
               height: auto !important; 
+              width: 100% !important;
+              max-width: 100% !important;
             }
           </style>
         </head>

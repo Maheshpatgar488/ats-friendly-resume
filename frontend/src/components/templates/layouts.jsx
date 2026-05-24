@@ -69,9 +69,9 @@ const ContactBar = ({ personalInfo, layoutType = "row" }) => {
   }
 
   return (
-    <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-slate-600 mt-2 font-medium select-all">
+    <div className="block text-center text-xs text-slate-600 mt-2 font-medium select-all">
       {items.map((item, i) => (
-        <span key={i} className="flex items-center">
+        <span key={i} className="inline-block mx-1.5 my-0.5">
           {i > 0 && <span className="mr-3 text-slate-400 select-none">&bull;</span>}
           {item}
         </span>
@@ -182,9 +182,9 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
         {skills && skills.length > 0 && (
           <div style={{ marginBottom: customStyles.sectionSpacing || "12px" }}>
             <SectionHeader title="Skills & Expertise" primaryColor={primaryColor} borderStyle={borderStyle} />
-            <div className="flex flex-wrap gap-1.5 mt-1 select-all">
+            <div className="block mt-1 select-all">
               {skills.map((skill, idx) => (
-                <span key={idx} className="px-2 py-0.5 bg-slate-100 border border-slate-200 rounded text-slate-700 text-xs font-medium">
+                <span key={idx} className="inline-block mr-1.5 mb-1.5 px-2 py-0.5 bg-slate-100 border border-slate-200 rounded text-slate-700 text-xs font-medium">
                   {skill}
                 </span>
               ))}
@@ -242,9 +242,9 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
         {languages && languages.length > 0 && (
           <div style={{ marginBottom: customStyles.sectionSpacing || "12px" }}>
             <SectionHeader title="Languages" primaryColor={primaryColor} borderStyle={borderStyle} />
-            <div className="flex gap-4 flex-wrap mt-1 select-all">
+            <div className="block mt-1 select-all">
               {languages.map((lang, idx) => (
-                <span key={idx} className="text-xs font-semibold text-slate-700">
+                <span key={idx} className="inline-block mr-4 mb-1 text-xs font-semibold text-slate-700">
                   &bull; {lang}
                 </span>
               ))}
@@ -340,9 +340,9 @@ export const CenteredLayout = ({ resumeData, customStyles, borderStyle = "double
           <div className={`my-2 pb-1 ${borderClasses[borderStyle]}`}>
             <h2 className="text-sm font-bold uppercase tracking-widest text-center" style={{ color: primaryColor }}>Skills</h2>
           </div>
-          <div className="flex flex-wrap justify-center gap-1.5 mt-1">
+          <div className="block mt-1 text-center">
             {skills.map((skill, idx) => (
-              <span key={idx} className="px-2.5 py-0.5 bg-slate-50 border border-slate-200 rounded text-slate-700 text-xs font-semibold">
+              <span key={idx} className="inline-block mx-1 mb-1 px-2 py-0.5 bg-slate-100 border border-slate-200 rounded-full text-slate-700 text-xs font-medium">
                 {skill}
               </span>
             ))}
