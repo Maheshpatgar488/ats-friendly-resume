@@ -19,9 +19,9 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
   const fontFamily = customStyles.fontFamily || "Inter"; // Default Inter
   const fontSize = customStyles.fontSize || "10pt"; // Default 10pt for high-density ATS
   const lineHeight = customStyles.lineHeight || "1.4";
-  const margins = customStyles.margins || { top: "0.5in", bottom: "0.5in", left: "0.5in", right: "0.5in" };
-  const sectionSpacing = customStyles.sectionSpacing || "12px";
-  const entrySpacing = customStyles.entrySpacing || "6px";
+  const margins = customStyles.margins || { top: "0.8in", bottom: "0.8in", left: "0.8in", right: "0.8in" };
+  const sectionSpacing = customStyles.sectionSpacing || "20px";
+  const entrySpacing = customStyles.entrySpacing || "14px";
 
   // Map font families to standard CSS stacks
   const fontStacks = {
