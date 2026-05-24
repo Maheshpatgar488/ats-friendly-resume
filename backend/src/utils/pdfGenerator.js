@@ -242,8 +242,8 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
   const skillsSection = skills.length > 0 ? `
     <div class="section-block">
       <h2 class="section-title" style="color: ${primaryColor};">Skills & Expertise <div class="divider"></div></h2>
-      <div class="skills-grid">
-        ${skills.map(skill => `<span class="skill-badge">${skill}</span>`).join("")}
+      <div class="skills-grid" style="display: block;">
+        ${skills.map(skill => `<span class="skill-badge" style="display: inline-block; margin: 3px 6px 3px 0;">${skill}</span>`).join("")}
       </div>
     </div>
   ` : "";
@@ -306,7 +306,7 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
       .section-title .divider { display: none; }
     `;
     templateHTML = `
-      <div style="padding: 10mm;">
+      <div style="padding: 0;">
         ${nameHTML}
         ${contactBarHTML}
         <div style="margin-top: 15px;">
@@ -328,8 +328,8 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
       .section-title .divider { display: none; }
     `;
     templateHTML = `
-      <div style="padding: 10mm;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid ${primaryColor}; padding-bottom: 10px; margin-bottom: 15px;">
+      <div style="padding: 0;">
+        <div style="display: flex; gap: 20px; align-items: center; border-bottom: 2px solid ${primaryColor}; padding-bottom: 12px; margin-bottom: 15px;">
           <div>
             <h1 style="font-size: 2.2rem; color: #0f172a; font-weight: 800;">${personalInfo.fullName || "Your Name"}</h1>
             <p style="font-size: 1.1rem; color: ${primaryColor}; font-weight: 600; margin-top: 4px;">Professional Profile</p>
@@ -358,7 +358,7 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
       .skill-badge { background-color: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
     `;
     templateHTML = `
-      <div style="padding: 12mm 10mm;">
+      <div style="padding: 0;">
         <div style="text-align: left; margin-bottom: 18px;">
           <h1 style="font-size: 2.4rem; color: #0f172a; font-weight: 800; letter-spacing: -0.8px;">${personalInfo.fullName || "Your Name"}</h1>
           <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; font-size: 0.85rem; color: ${primaryColor}; font-weight: 600;">
@@ -386,7 +386,7 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
       .section-title .divider { display: none; }
     `;
     templateHTML = `
-      <div style="padding: 10mm; overflow: hidden; width: 100%;">
+      <div style="padding: 0; overflow: hidden; width: 100%;">
         <div style="border-bottom: 3px solid ${primaryColor}; padding-bottom: 8px; margin-bottom: 15px; overflow: hidden;">
           <h1 style="font-size: 2.2rem; font-weight: 700; color: #0f172a; float: left;">${personalInfo.fullName || "Your Name"}</h1>
           <div style="float: right; text-align: right; font-size: 0.8rem; color: #475569; margin-top: 10px;">
@@ -443,7 +443,7 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
       .section-title .divider { display: none; }
     `;
     templateHTML = `
-      <div style="padding: 12mm 10mm;">
+      <div style="padding: 0;">
         ${nameHTML}
         ${contactBarHTML}
         <div style="margin-top: 15px;">
@@ -460,7 +460,7 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
     // Standard template for fallback (Templates 6 to 20 are programmatically mapped using variations of the styled sections)
     // To achieve 20+ templates, we dynamically tune colors, layouts, icons, borders, and margins based on the ID!
     
-    let containerStyle = "padding: 10mm;";
+    let containerStyle = "padding: 0;";
     let borderStyle = "";
     
     if (tid === 6) {
@@ -592,7 +592,7 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
               ${contacts.map(c => `<span>${c}</span>`).join(" | ")}
             </div>
           </div>
-          <div style="padding: 0 10mm 10mm 10mm;">
+          <div style="padding: 0;">
             ${summarySection}
             ${experienceSection}
             ${educationSection}
