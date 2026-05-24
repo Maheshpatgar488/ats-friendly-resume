@@ -78,6 +78,12 @@ export default function App() {
         body: formData,
       });
 
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        throw new Error(`Server returned HTML instead of JSON! Status: ${response.status}. Preview: ${text.substring(0, 150)}`);
+      }
+
       const data = await response.json();
       if (response.ok && data.success && data.resumeData) {
         updateResumeData(data.resumeData);
@@ -87,7 +93,7 @@ export default function App() {
       }
     } catch (err) {
       console.error(err);
-      alert("Error contacting the backend file parser. Please ensure your backend is started on port 5000.");
+      alert(`Error during extraction: ${err.message}`);
     } finally {
       setParseLoading(false);
       setFile(null);

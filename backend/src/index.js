@@ -400,6 +400,17 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(frontendPath, "index.html"));
 });
 
+// Global Error Handler to catch multer limits and other unhandled exceptions
+app.use((err, req, res, next) => {
+  console.error("Global Error Handler:", err);
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({ error: "File is too large. Please upload a smaller file." });
+    }
+  }
+  res.status(500).json({ error: "An unexpected server error occurred: " + err.message });
+});
+
 // Start Express Server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 ATS Resume Server is running on http://localhost:${PORT}`);
