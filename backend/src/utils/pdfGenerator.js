@@ -662,7 +662,7 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
       </style>
     </head>
     <body>
-      <div style="width: 210mm; min-height: 297mm; padding: ${isBannerTop ? '0' : `${margins.top} ${margins.right} ${margins.bottom} ${margins.left}`}; box-sizing: border-box; background: #ffffff;">
+      <div style="width: 210mm; min-height: 297mm; padding: 0; box-sizing: border-box; background: #ffffff;">
         ${templateHTML}
       </div>
     </body>

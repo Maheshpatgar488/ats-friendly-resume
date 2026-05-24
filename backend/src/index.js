@@ -335,8 +335,15 @@ app.post("/api/export-pdf", async (req, res) => {
     // 1. Generate standard custom HTML string using dynamic generator
     const htmlContent = compileResumeHTML(resumeData, templateId, customStyles);
 
-    // 2. Set margin values
-    const margin = customStyles?.margins || { top: "0.5in", bottom: "0.5in", left: "0.5in", right: "0.5in" };
+    // 2. Set margin values based on template
+    const tid = parseInt(templateId, 10) || 1;
+    const isBannerTop = tid === 20;
+    
+    // For the banner template, we use 0 margins so the banner hits the edge.
+    // For all other templates, we use native Puppeteer margins so page breaks work flawlessly without slicing text.
+    const pdfMargins = isBannerTop 
+      ? { top: "0", bottom: "0", left: "0", right: "0" }
+      : (customStyles?.margins || { top: "0.8in", bottom: "0.8in", left: "0.8in", right: "0.8in" });
 
     // 3. Launch headless Chrome in Puppeteer
     const launchOptions = {
@@ -362,15 +369,10 @@ app.post("/api/export-pdf", async (req, res) => {
     // Load HTML — domcontentloaded fires immediately, Google Fonts load in parallel (non-blocking)
     await page.setContent(htmlContent, { waitUntil: "domcontentloaded", timeout: 15000 });
 
-    // 4. Generate PDF buffer — let CSS control sizing, no extra margins
+    // 4. Generate PDF buffer
     const pdfBuffer = await page.pdf({
       format: "A4",
-      margin: {
-        top: "0",
-        bottom: "0",
-        left: "0",
-        right: "0",
-      },
+      margin: pdfMargins,
       printBackground: true,
       preferCSSPageSize: true
     });
