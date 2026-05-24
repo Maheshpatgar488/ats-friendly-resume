@@ -78,13 +78,13 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
     let printSidebarCss = '';
     if (tid === 4 || tid === 9) {
       printSidebarCss = `
-        body::before { content: ""; position: fixed; top: 0; bottom: 0; left: 0; width: 35%; background-color: ${customStyles.primaryColor || '#1e3a8a'} !important; z-index: -1; }
-        .table-cell { position: relative; z-index: 1; background-color: transparent !important; }
+        table { background: linear-gradient(to right, ${customStyles.primaryColor || '#1e3a8a'} 35%, white 35%) !important; }
+        .table-cell { background-color: transparent !important; }
       `;
     } else if (tid === 10) {
       printSidebarCss = `
-        body::before { content: ""; position: fixed; top: 0; bottom: 0; right: 0; width: 35%; background-color: ${customStyles.primaryColor || '#1e3a8a'} !important; z-index: -1; }
-        .table-cell { position: relative; z-index: 1; background-color: transparent !important; }
+        table { background: linear-gradient(to left, ${customStyles.primaryColor || '#1e3a8a'} 35%, white 35%) !important; }
+        .table-cell { background-color: transparent !important; }
       `;
     }
 
