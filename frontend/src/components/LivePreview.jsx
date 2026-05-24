@@ -78,12 +78,12 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
     let printSidebarCss = '';
     if (tid === 4 || tid === 9) {
       printSidebarCss = `
-        #resume-pdf-content::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 35%; background-color: ${customStyles.primaryColor || '#1e3a8a'}; z-index: 0; }
+        body::before { content: ""; position: fixed; top: 0; bottom: 0; left: 0; width: 35%; background-color: ${customStyles.primaryColor || '#1e3a8a'} !important; z-index: -1; }
         .table-cell { position: relative; z-index: 1; background-color: transparent !important; }
       `;
     } else if (tid === 10) {
       printSidebarCss = `
-        #resume-pdf-content::before { content: ""; position: absolute; top: 0; bottom: 0; right: 0; width: 35%; background-color: ${customStyles.primaryColor || '#1e3a8a'}; z-index: 0; }
+        body::before { content: ""; position: fixed; top: 0; bottom: 0; right: 0; width: 35%; background-color: ${customStyles.primaryColor || '#1e3a8a'} !important; z-index: -1; }
         .table-cell { position: relative; z-index: 1; background-color: transparent !important; }
       `;
     }
@@ -98,6 +98,7 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
           <style>
             @page { margin: 0; }
             body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; }
+            table { border-collapse: collapse !important; border-spacing: 0 !important; width: 100% !important; }
             #resume-pdf-content { 
               transform: none !important; 
               box-shadow: none !important; 
@@ -106,6 +107,7 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
               height: auto !important; 
               width: 100% !important;
               max-width: 100% !important;
+              border: none !important;
             }
             #resume-pdf-content > div {
               min-height: 0 !important;
