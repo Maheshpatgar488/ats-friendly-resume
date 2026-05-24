@@ -539,25 +539,25 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
   );
 
   return (
-    <div className="w-full text-slate-800 bg-white min-h-[297mm] flex" style={{ fontSize: customStyles.fontSize || "9.5pt" }}>
+    <div className="w-full text-slate-800 bg-white min-h-[297mm] table" style={{ fontSize: customStyles.fontSize || "9.5pt", tableLayout: "fixed" }}>
       {sidebarPosition === "left" ? (
-        <>
-          <div className="w-[35%] p-6 select-all shrink-0" style={{ backgroundColor: primaryColor }}>
+        <div className="table-row">
+          <div className="table-cell w-[35%] p-6 align-top select-all" style={{ backgroundColor: primaryColor }}>
             {sidebarContent}
           </div>
-          <div className="w-[65%] p-6 pt-8 bg-white">
+          <div className="table-cell w-[65%] p-6 pt-8 align-top bg-white">
             {mainContent}
           </div>
-        </>
+        </div>
       ) : (
-        <>
-          <div className="w-[65%] p-6 pt-8 bg-white">
+        <div className="table-row">
+          <div className="table-cell w-[65%] p-6 pt-8 align-top bg-white">
             {mainContent}
           </div>
-          <div className="w-[35%] p-6 select-all shrink-0" style={{ backgroundColor: primaryColor }}>
+          <div className="table-cell w-[35%] p-6 align-top select-all" style={{ backgroundColor: primaryColor }}>
             {sidebarContent}
           </div>
-        </>
+        </div>
       )}
     </div>
   );
