@@ -3,6 +3,7 @@ import {
   Sparkles, CheckCircle2, XCircle, ArrowRight, RefreshCw, 
   HelpCircle, ChevronRight, FileEdit, Award, Target, HelpCircle as HelpIcon 
 } from "lucide-react";
+import { API_URL } from "../config";
 
 export default function AIHub({ resumeData, setResumeData, jobDescription, setJobDescription, jobTitle, setJobTitle }) {
   const [atsLoading, setAtsLoading] = useState(false);
@@ -20,7 +21,7 @@ export default function AIHub({ resumeData, setResumeData, jobDescription, setJo
     setAtsLoading(true);
     setScoreData(null);
     try {
-      const response = await fetch("http://localhost:5000/api/ats-score", {
+      const response = await fetch(`${API_URL}/api/ats-score`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -52,7 +53,7 @@ export default function AIHub({ resumeData, setResumeData, jobDescription, setJo
     setTailoredResume(null);
     setShowComparison(false);
     try {
-      const response = await fetch("http://localhost:5000/api/tailor", {
+      const response = await fetch(`${API_URL}/api/tailor`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
