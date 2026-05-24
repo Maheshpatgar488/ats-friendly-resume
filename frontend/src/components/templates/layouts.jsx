@@ -16,27 +16,30 @@ const fontStacks = {
 // COMMON SUB-COMPONENTS FOR ATS RESUMES
 // ----------------------------------------------------------------------
 
-const ContactBar = ({ personalInfo, layoutType = "row" }) => {
+const ContactBar = ({ personalInfo, layoutType = "row", textClass }) => {
   const items = [];
   
+  const baseText = textClass || "text-slate-600";
+  const linkText = textClass || "text-slate-700";
+
   if (personalInfo.email) {
     items.push(
-      <a key="email" href={`mailto:${personalInfo.email}`} className="hover:underline text-slate-600">
+      <a key="email" href={`mailto:${personalInfo.email}`} className={`hover:underline ${baseText}`}>
         {personalInfo.email}
       </a>
     );
   }
   if (personalInfo.phone) {
-    items.push(<span key="phone" className="text-slate-600">{personalInfo.phone}</span>);
+    items.push(<span key="phone" className={baseText}>{personalInfo.phone}</span>);
   }
   if (personalInfo.location) {
-    items.push(<span key="location" className="text-slate-600">{personalInfo.location}</span>);
+    items.push(<span key="location" className={baseText}>{personalInfo.location}</span>);
   }
   if (personalInfo.website) {
     const displayText = `Portfolio: ${personalInfo.website}`;
     const href = personalInfo.websiteUrl || (personalInfo.website.startsWith("http") ? personalInfo.website : `https://${personalInfo.website}`);
     items.push(
-      <a key="portfolio" href={href} target="_blank" rel="noreferrer" className="hover:underline text-slate-700 font-semibold">
+      <a key="portfolio" href={href} target="_blank" rel="noreferrer" className={`hover:underline font-semibold ${linkText}`}>
         {displayText}
       </a>
     );
@@ -44,7 +47,7 @@ const ContactBar = ({ personalInfo, layoutType = "row" }) => {
   if (personalInfo.linkedin) {
     const href = personalInfo.linkedinUrl || (personalInfo.linkedin.startsWith("http") ? personalInfo.linkedin : `https://${personalInfo.linkedin}`);
     items.push(
-      <a key="linkedin" href={href} target="_blank" rel="noreferrer" className="hover:underline text-slate-700 font-semibold">
+      <a key="linkedin" href={href} target="_blank" rel="noreferrer" className={`hover:underline font-semibold ${linkText}`}>
         {personalInfo.linkedin}
       </a>
     );
@@ -52,7 +55,7 @@ const ContactBar = ({ personalInfo, layoutType = "row" }) => {
   if (personalInfo.github) {
     const href = personalInfo.githubUrl || (personalInfo.github.startsWith("http") ? personalInfo.github : `https://${personalInfo.github}`);
     items.push(
-      <a key="github" href={href} target="_blank" rel="noreferrer" className="hover:underline text-slate-700 font-semibold">
+      <a key="github" href={href} target="_blank" rel="noreferrer" className={`hover:underline font-semibold ${linkText}`}>
         {personalInfo.github}
       </a>
     );
@@ -60,7 +63,7 @@ const ContactBar = ({ personalInfo, layoutType = "row" }) => {
 
   if (layoutType === "col") {
     return (
-      <div className="flex flex-col gap-1 text-xs text-slate-600 mt-2 select-all">
+      <div className={`flex flex-col gap-1 text-xs mt-2 select-all ${baseText}`}>
         {items.map((item, i) => (
           <div key={i} className="break-all">{item}</div>
         ))}
@@ -404,20 +407,20 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
   const primaryColor = customStyles.primaryColor || "#1e3a8a";
 
   const sidebarContent = (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 text-white">
       {/* Contact Details in Column */}
-      <div className="pb-3 border-b border-slate-200">
-        <h3 className="font-bold text-xs uppercase text-slate-500 mb-1">Contact Info</h3>
-        <ContactBar personalInfo={personalInfo} layoutType="col" />
+      <div className="pb-3 border-b border-white/20">
+        <h3 className="font-bold text-xs uppercase text-white/70 mb-1">Contact Info</h3>
+        <ContactBar personalInfo={personalInfo} layoutType="col" textClass="text-white" />
       </div>
 
       {/* Skills */}
       {skills && skills.length > 0 && (
         <div>
-          <h3 className="font-bold text-xs uppercase tracking-wide mb-2" style={{ color: primaryColor }}>Skills</h3>
-          <div className="flex flex-col gap-1 select-all">
+          <h3 className="font-bold text-xs uppercase tracking-wide mb-2 text-white">Skills</h3>
+          <div className="block mt-1 select-all text-white">
             {skills.map((skill, idx) => (
-              <span key={idx} className="px-2 py-1 bg-slate-50 border border-slate-200 rounded text-slate-700 text-2xs font-semibold break-all">
+              <span key={idx} className="inline-block mr-1.5 mb-1.5 px-2 py-0.5 bg-white/20 border border-white/30 rounded text-white text-xs font-medium break-all">
                 {skill}
               </span>
             ))}
@@ -428,12 +431,12 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
       {/* Education */}
       {education && education.length > 0 && (
         <div>
-          <h3 className="font-bold text-xs uppercase tracking-wide mb-2" style={{ color: primaryColor }}>Education</h3>
+          <h3 className="font-bold text-xs uppercase tracking-wide mb-2 text-white">Education</h3>
           {education.map((edu, idx) => (
-            <div key={idx} className="mb-2 text-2xs text-slate-700 break-inside-avoid">
-              <div className="font-bold text-slate-900">{edu.degree}</div>
-              <div className="italic text-slate-600">{edu.institution}</div>
-              <div className="text-slate-400">{edu.startDate} - {edu.endDate}</div>
+            <div key={idx} className="mb-2 text-2xs text-white/90 break-inside-avoid">
+              <div className="font-bold text-white text-xs">{edu.degree}</div>
+              <div className="italic text-white/80">{edu.institution}</div>
+              <div className="text-white/70">{edu.startDate} - {edu.endDate}</div>
             </div>
           ))}
         </div>
@@ -442,8 +445,8 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
       {/* Languages */}
       {languages && languages.length > 0 && (
         <div>
-          <h3 className="font-bold text-xs uppercase tracking-wide mb-1" style={{ color: primaryColor }}>Languages</h3>
-          <div className="flex flex-col gap-0.5 text-2xs text-slate-700">
+          <h3 className="font-bold text-xs uppercase tracking-wide mb-1 text-white">Languages</h3>
+          <div className="flex flex-col gap-0.5 text-xs text-white/90 font-medium">
             {languages.map((lang, idx) => (
               <span key={idx}>&bull; {lang}</span>
             ))}
@@ -536,25 +539,25 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
   );
 
   return (
-    <div className="w-full text-slate-800 bg-white" style={{ fontSize: customStyles.fontSize || "9.5pt" }}>
+    <div className="w-full text-slate-800 bg-white min-h-[297mm] flex" style={{ fontSize: customStyles.fontSize || "9.5pt" }}>
       {sidebarPosition === "left" ? (
-        <div className="flex w-full">
-          <div className="w-[30%] border-r border-slate-200 pr-4 select-all">
+        <>
+          <div className="w-[35%] p-6 select-all shrink-0" style={{ backgroundColor: primaryColor }}>
             {sidebarContent}
           </div>
-          <div className="w-[70%] pl-4">
+          <div className="w-[65%] p-6 pt-8 bg-white">
             {mainContent}
           </div>
-        </div>
+        </>
       ) : (
-        <div className="flex w-full">
-          <div className="w-[70%] pr-4">
+        <>
+          <div className="w-[65%] p-6 pt-8 bg-white">
             {mainContent}
           </div>
-          <div className="w-[30%] border-l border-slate-200 pl-4 select-all">
+          <div className="w-[35%] p-6 select-all shrink-0" style={{ backgroundColor: primaryColor }}>
             {sidebarContent}
           </div>
-        </div>
+        </>
       )}
     </div>
   );
