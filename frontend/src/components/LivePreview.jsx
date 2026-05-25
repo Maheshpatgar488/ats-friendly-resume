@@ -4,6 +4,7 @@ import {
   ChevronRight, Sparkles, Sliders, Palette, Type, RefreshCw
 } from "lucide-react";
 import { ResumeRenderer, templatesList } from "./templates/index";
+import { API_URL } from "../config";
 
 export default function LivePreview({ resumeData, customStyles, setCustomStyles, onExportBackup, onLoadSampleData, onClearResume }) {
   const [zoom, setZoom] = useState(85); // Default zoom level to see the whole A4 page nicely
@@ -41,111 +42,39 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
   ];
 
   // Native Browser PDF Generation (Bulletproof)
-  const downloadPDF = () => {
+  const downloadPDF = async () => {
     setPdfLoading(true);
-    
-    // Create an off-screen iframe sized to A4 width so content renders correctly
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'fixed';
-    iframe.style.left = '-9999px';
-    iframe.style.top = '0';
-    iframe.style.width = '794px'; // A4 at 96dpi
-    iframe.style.height = '1123px';
-    iframe.style.border = '0';
-    iframe.style.visibility = 'hidden';
-    document.body.appendChild(iframe);
+    try {
+      const response = await fetch(`${API_URL}/api/export-pdf`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          resumeData,
+          templateId: customStyles.templateId || "3",
+          customStyles,
+        }),
+      });
 
-    const doc = iframe.contentWindow.document;
-    const element = document.getElementById("resume-pdf-content");
-    const contentHtml = element.outerHTML;
-
-    // Get all stylesheets from the main document
-    let stylesHtml = '';
-    for (const styleSheet of document.styleSheets) {
-      try {
-        if (styleSheet.href) {
-          stylesHtml += `<link rel="stylesheet" type="text/css" href="${styleSheet.href}">`;
-        } else {
-          stylesHtml += `<style>${Array.from(styleSheet.cssRules).map(r => r.cssText).join('')}</style>`;
-        }
-      } catch (e) {
-        // Ignore CORS issues on fonts
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || "PDF generation failed");
       }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${resumeData.personalInfo?.fullName?.replace(/\s+/g, "_") || "Resume"}_ATS_Friendly.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("PDF download error:", error);
+      alert("PDF generation failed: " + error.message);
+    } finally {
+      setPdfLoading(false);
     }
-
-    const title = `${resumeData.personalInfo?.fullName?.replace(/\s+/g, '_') || 'Resume'}_ATS_Friendly`;
-
-    const tid = parseInt(customStyles.templateId) || 3;
-    let printSidebarCss = '';
-    if (tid === 4 || tid === 9) {
-      printSidebarCss = `
-        table { background: linear-gradient(to right, ${customStyles.primaryColor || '#1e3a8a'} 35%, white 35%) !important; }
-        .table-cell { background-color: transparent !important; }
-      `;
-    } else if (tid === 10) {
-      printSidebarCss = `
-        table { background: linear-gradient(to left, ${customStyles.primaryColor || '#1e3a8a'} 35%, white 35%) !important; }
-        .table-cell { background-color: transparent !important; }
-      `;
-    }
-
-    // Resolve margin values for @page rule
-    const m = customStyles.margins || { top: "0.5in", bottom: "0.5in", left: "0.5in", right: "0.5in" };
-    const pageMargins = `${m.top} ${m.right} ${m.bottom} ${m.left}`;
-
-    // Write content into iframe with strict A4 print rules
-    doc.open();
-    doc.write(`
-      <html>
-        <head>
-          <title>${title}</title>
-          ${stylesHtml}
-          <style>
-            @page { size: A4 portrait; margin: ${pageMargins}; }
-            *, *::before, *::after { box-sizing: border-box; }
-            html, body { 
-              margin: 0; 
-              padding: 0; 
-              width: 100%;
-              -webkit-print-color-adjust: exact; 
-              print-color-adjust: exact; 
-              background: white;
-              overflow-x: hidden;
-            }
-            table { border-collapse: collapse !important; border-spacing: 0 !important; width: 100% !important; }
-            #resume-pdf-content { 
-              transform: none !important; 
-              box-shadow: none !important; 
-              margin: 0 !important; 
-              padding: 0 !important;
-              min-height: 0 !important; 
-              height: auto !important; 
-              width: 100% !important;
-              max-width: 100% !important;
-              border: none !important;
-              overflow: hidden !important;
-            }
-            ${printSidebarCss}
-          </style>
-        </head>
-        <body>
-          ${contentHtml}
-        </body>
-      </html>
-    `);
-    doc.close();
-
-    // Wait for styles and fonts to load, then print
-    setTimeout(() => {
-      iframe.contentWindow.focus();
-      iframe.contentWindow.print();
-      
-      // Cleanup
-      setTimeout(() => {
-        document.body.removeChild(iframe);
-        setPdfLoading(false);
-      }, 1000);
-    }, 1500);
   };
 
   const handleStyleChange = (key, value) => {
