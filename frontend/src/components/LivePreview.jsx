@@ -44,14 +44,15 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
   const downloadPDF = () => {
     setPdfLoading(true);
     
-    // Create an invisible iframe
+    // Create an off-screen iframe sized to A4 width so content renders correctly
     const iframe = document.createElement('iframe');
     iframe.style.position = 'fixed';
-    iframe.style.right = '0';
-    iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
+    iframe.style.left = '-9999px';
+    iframe.style.top = '0';
+    iframe.style.width = '794px'; // A4 at 96dpi
+    iframe.style.height = '1123px';
     iframe.style.border = '0';
+    iframe.style.visibility = 'hidden';
     document.body.appendChild(iframe);
 
     const doc = iframe.contentWindow.document;
@@ -100,8 +101,17 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
           <title>${title}</title>
           ${stylesHtml}
           <style>
-            @page { size: A4; margin: ${pageMargins}; }
-            body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; }
+            @page { size: A4 portrait; margin: ${pageMargins}; }
+            *, *::before, *::after { box-sizing: border-box; }
+            html, body { 
+              margin: 0; 
+              padding: 0; 
+              width: 100%;
+              -webkit-print-color-adjust: exact; 
+              print-color-adjust: exact; 
+              background: white;
+              overflow-x: hidden;
+            }
             table { border-collapse: collapse !important; border-spacing: 0 !important; width: 100% !important; }
             #resume-pdf-content { 
               transform: none !important; 
@@ -113,13 +123,7 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
               width: 100% !important;
               max-width: 100% !important;
               border: none !important;
-            }
-            #resume-pdf-content > div {
-              min-height: 0 !important;
-              padding-top: 0 !important;
-              padding-bottom: 0 !important;
-              padding-left: 0 !important;
-              padding-right: 0 !important;
+              overflow: hidden !important;
             }
             ${printSidebarCss}
           </style>
@@ -131,11 +135,8 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
     `);
     doc.close();
 
-    // Wait a moment for styles and fonts to apply, then trigger print
+    // Wait for styles and fonts to load, then print
     setTimeout(() => {
-      const iframeDoc = iframe.contentWindow.document;
-      const content = iframeDoc.getElementById("resume-pdf-content");
-      
       iframe.contentWindow.focus();
       iframe.contentWindow.print();
       
@@ -143,8 +144,8 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
       setTimeout(() => {
         document.body.removeChild(iframe);
         setPdfLoading(false);
-      }, 500);
-    }, 800);
+      }, 1000);
+    }, 1500);
   };
 
   const handleStyleChange = (key, value) => {
