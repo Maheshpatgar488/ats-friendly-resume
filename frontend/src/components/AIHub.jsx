@@ -197,9 +197,21 @@ export default function AIHub({ resumeData, setResumeData, jobDescription, setJo
                   </div>
                 </div>
                 <div className="text-center sm:text-left flex-1">
-                  <h4 className="text-sm font-bold text-slate-200 uppercase tracking-widest">ATS Match Index</h4>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="text-sm font-bold text-slate-200 uppercase tracking-widest">ATS Match Index</h4>
+                    {scoreData.fallback && (
+                      <span className="px-1.5 py-0.5 bg-amber-950/40 border border-amber-800/60 text-amber-400 text-[9px] font-bold uppercase tracking-wider rounded">
+                        Local Mode
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-slate-400 leading-relaxed mt-1">
                     Your resume has a semantic match coefficient of {scoreData.score}% against the requirements. Aim for 80%+ to comfortably clear automated screening.
+                    {scoreData.fallback && (
+                      <span className="block mt-1 text-amber-400/80 text-[10px]">
+                        Running in offline mode. Connect a Gemini API key for enhanced AI analysis.
+                      </span>
+                    )}
                   </p>
                 </div>
               </div>
@@ -261,9 +273,21 @@ export default function AIHub({ resumeData, setResumeData, jobDescription, setJo
               
               <div className="bg-indigo-950/30 border border-indigo-900/60 rounded-xl p-4 text-center">
                 <Sparkles className="w-5 h-5 text-indigo-400 mx-auto mb-1.5 animate-pulse" />
-                <h4 className="text-xs font-bold text-indigo-300 uppercase tracking-wider">AI Tailoring Complete!</h4>
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <h4 className="text-xs font-bold text-indigo-300 uppercase tracking-wider">AI Tailoring Complete!</h4>
+                  {tailoredResume?.engine === "local" && (
+                    <span className="px-1.5 py-0.5 bg-amber-950/40 border border-amber-800/60 text-amber-400 text-[9px] font-bold uppercase tracking-wider rounded">
+                      Local Mode
+                    </span>
+                  )}
+                </div>
                 <p className="text-[11px] text-slate-400 mt-1 max-w-md mx-auto leading-normal">
-                  Review the optimized side-by-side bullet comparisons below. Click **"Apply Tailoring"** at the top right to save these changes to your active resume builder!
+                  Review the optimized side-by-side bullet comparisons below. Click **&quot;Apply Tailoring&quot;** at the top right to save these changes to your active resume builder!
+                  {tailoredResume?.engine === "local" && (
+                    <span className="block mt-1 text-amber-400/80">
+                      Local mode: Skills were auto-populated from keywords. Connect a Gemini API key for full AI rewrites.
+                    </span>
+                  )}
                 </p>
               </div>
 

@@ -18,6 +18,7 @@ import {
   RESUME_JSON_SCHEMA, 
   ATS_SCORE_SCHEMA 
 } from "./utils/gemini.js";
+import { computeLocalATSScore, tailorResumeLocally } from "./utils/localAts.js";
 import { 
   getAllResumes, 
   getResumeById, 
@@ -251,6 +252,7 @@ app.post("/api/ats-score", async (req, res) => {
   }
 
   try {
+    // 1. Try Gemini AI first for high-quality semantic matching
     const prompt = `
       You are an advanced Applicant Tracking System (ATS) matching algorithm.
       Perform a rigorous, semantic keyword match comparison between the provided Resume JSON data and the pasted Target Job Description.
@@ -271,11 +273,19 @@ app.post("/api/ats-score", async (req, res) => {
     `;
 
     const scoreData = await generateStructuredJSON(prompt, ATS_SCORE_SCHEMA);
-    res.json({ success: true, ...scoreData });
+    res.json({ success: true, ...scoreData, engine: "gemini" });
 
   } catch (error) {
-    console.error("ATS Score Endpoint Error:", error);
-    res.status(500).json({ error: "Failed to compute ATS score.", details: error.message });
+    console.warn("Gemini ATS scoring failed, falling back to local engine:", error.message || error);
+
+    // 2. Fallback: Pure-JS local ATS engine (zero API cost, works offline)
+    try {
+      const localScore = computeLocalATSScore(resumeData, jobDescription);
+      res.json({ ...localScore, fallback: true });
+    } catch (localError) {
+      console.error("Local ATS fallback also failed:", localError);
+      res.status(500).json({ error: "Failed to compute ATS score.", details: localError.message });
+    }
   }
 });
 
@@ -291,6 +301,7 @@ app.post("/api/tailor", async (req, res) => {
   }
 
   try {
+    // 1. Try Gemini AI first for high-quality tailoring
     const prompt = `
       You are an expert career consultant and elite resume architect specializing in maximizing ATS pass-rates.
       Your task is to review the provided Resume JSON data and **tailor it aggressively and comprehensively** to achieve an ATS match score **above 85% to 95%** against the provided Target Job Description.
@@ -312,11 +323,19 @@ app.post("/api/tailor", async (req, res) => {
     `;
 
     const tailoredData = await generateStructuredJSON(prompt, RESUME_JSON_SCHEMA);
-    res.json({ success: true, tailoredResumeData: tailoredData });
+    res.json({ success: true, tailoredResumeData: tailoredData, engine: "gemini" });
 
   } catch (error) {
-    console.error("Tailor Endpoint Error:", error);
-    res.status(500).json({ error: "Failed to tailor resume.", details: error.message });
+    console.warn("Gemini tailoring failed, falling back to local engine:", error.message || error);
+
+    // 2. Fallback: Pure-JS local tailoring engine (zero API cost)
+    try {
+      const localTailored = tailorResumeLocally(resumeData, jobDescription);
+      res.json({ ...localTailored, fallback: true });
+    } catch (localError) {
+      console.error("Local tailoring fallback also failed:", localError);
+      res.status(500).json({ error: "Failed to tailor resume.", details: localError.message });
+    }
   }
 });
 
