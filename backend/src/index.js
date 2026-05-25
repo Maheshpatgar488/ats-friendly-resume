@@ -323,6 +323,7 @@ app.post("/api/tailor", async (req, res) => {
 /**
  * Endpoint: /api/export-pdf
  * Takes the resume data, builds custom HTML, runs Puppeteer, and returns a high-fidelity PDF stream.
+ * Auto-scales font size and spacing to fit content on exactly 1 page.
  */
 app.post("/api/export-pdf", async (req, res) => {
   const { resumeData, templateId, customStyles } = req.body;
@@ -332,20 +333,14 @@ app.post("/api/export-pdf", async (req, res) => {
   }
 
   try {
-    // 1. Generate standard custom HTML string using dynamic generator
-    const htmlContent = compileResumeHTML(resumeData, templateId, customStyles);
-
-    // 2. Set margin values based on template
     const tid = parseInt(templateId, 10) || 1;
     const isBannerTop = tid === 20;
-    
-    // For the banner template, we use 0 margins so the banner hits the edge.
-    // For all other templates, we use native Puppeteer margins so page breaks work flawlessly without slicing text.
-    const pdfMargins = isBannerTop 
-      ? { top: "0", bottom: "0", left: "0", right: "0" }
-      : (customStyles?.margins || { top: "0.8in", bottom: "0.8in", left: "0.8in", right: "0.8in" });
 
-    // 3. Launch headless Chrome in Puppeteer
+    const pdfMargins = isBannerTop
+      ? { top: "0", bottom: "0", left: "0", right: "0" }
+      : (customStyles?.margins || { top: "0.5in", bottom: "0.5in", left: "0.55in", right: "0.55in" });
+
+    // Launch headless Chrome
     const launchOptions = {
       headless: true,
       args: [
@@ -360,25 +355,64 @@ app.post("/api/export-pdf", async (req, res) => {
       launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
     }
     const browser = await puppeteer.launch(launchOptions);
-
     const page = await browser.newPage();
-    
-    // Set viewport to A4 at 96dpi: 210mm = 794px, 297mm = 1123px
     await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 1 });
-    
-    // Load HTML — domcontentloaded fires immediately, Google Fonts load in parallel (non-blocking)
-    await page.setContent(htmlContent, { waitUntil: "domcontentloaded", timeout: 15000 });
 
-    // 4. Generate PDF buffer
-    const pdfBuffer = await page.pdf({
-      format: "A4",
-      margin: pdfMargins,
-      printBackground: true
-    });
+    // Auto-scaling: try progressively smaller font/spacing until it fits 1 page
+    const scalingSteps = [
+      { fontSize: "10pt",  lineHeight: "1.45", sectionSpacing: "10px", entrySpacing: "8px"  },
+      { fontSize: "9.5pt", lineHeight: "1.4",  sectionSpacing: "8px",  entrySpacing: "6px"  },
+      { fontSize: "9pt",   lineHeight: "1.35", sectionSpacing: "6px",  entrySpacing: "5px"  },
+      { fontSize: "8.5pt", lineHeight: "1.3",  sectionSpacing: "5px",  entrySpacing: "4px"  },
+      { fontSize: "8pt",   lineHeight: "1.25", sectionSpacing: "4px",  entrySpacing: "3px"  },
+    ];
+
+    let pdfBuffer = null;
+
+    for (const scale of scalingSteps) {
+      const scaledStyles = {
+        ...customStyles,
+        fontSize: scale.fontSize,
+        lineHeight: scale.lineHeight,
+        sectionSpacing: scale.sectionSpacing,
+        entrySpacing: scale.entrySpacing,
+      };
+
+      const htmlContent = compileResumeHTML(resumeData, templateId, scaledStyles);
+      await page.setContent(htmlContent, { waitUntil: "domcontentloaded", timeout: 15000 });
+
+      // Check how many pages it would produce
+      const pageCount = await page.evaluate(() => {
+        const A4_HEIGHT_PX = 1123; // 297mm at 96dpi
+        return Math.ceil(document.body.scrollHeight / A4_HEIGHT_PX);
+      });
+
+      if (pageCount <= 1) {
+        // Fits on 1 page — generate the final PDF
+        pdfBuffer = await page.pdf({
+          format: "A4",
+          margin: pdfMargins,
+          printBackground: true
+        });
+        break;
+      }
+    }
+
+    // If still doesn't fit after all steps, generate with smallest scale anyway
+    if (!pdfBuffer) {
+      const smallestScale = scalingSteps[scalingSteps.length - 1];
+      const scaledStyles = { ...customStyles, ...smallestScale };
+      const htmlContent = compileResumeHTML(resumeData, templateId, scaledStyles);
+      await page.setContent(htmlContent, { waitUntil: "domcontentloaded", timeout: 15000 });
+      pdfBuffer = await page.pdf({
+        format: "A4",
+        margin: pdfMargins,
+        printBackground: true
+      });
+    }
 
     await browser.close();
 
-    // 5. Stream back PDF content type
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="resume.pdf"`);
     res.send(pdfBuffer);
