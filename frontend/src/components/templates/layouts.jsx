@@ -534,23 +534,28 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
     </div>
   );
 
+  const sidebarPad = customStyles.margins?.left || "0.5in";
+  const mainPad = customStyles.margins?.right || "0.5in";
+  const topPad = customStyles.margins?.top || "0.5in";
+  const botPad = customStyles.margins?.bottom || "0.5in";
+
   return (
-    <div className="w-full text-slate-800 bg-white min-h-[297mm] table" style={{ fontSize: customStyles.fontSize || "9.5pt", tableLayout: "fixed" }}>
+    <div className="w-full text-slate-800 bg-white table" style={{ fontSize: customStyles.fontSize || "9.5pt", tableLayout: "fixed" }}>
       {sidebarPosition === "left" ? (
         <div className="table-row">
-          <div className="table-cell w-[35%] p-6 align-top select-all" style={{ backgroundColor: primaryColor }}>
+          <div className="table-cell w-[35%] align-top select-all" style={{ backgroundColor: primaryColor, padding: `${topPad} 16px ${botPad} ${sidebarPad}` }}>
             {sidebarContent}
           </div>
-          <div className="table-cell w-[65%] p-6 pt-8 align-top bg-white">
+          <div className="table-cell w-[65%] align-top bg-white" style={{ padding: `${topPad} ${mainPad} ${botPad} 20px` }}>
             {mainContent}
           </div>
         </div>
       ) : (
         <div className="table-row">
-          <div className="table-cell w-[65%] p-6 pt-8 align-top bg-white">
+          <div className="table-cell w-[65%] align-top bg-white" style={{ padding: `${topPad} 20px ${botPad} ${mainPad}` }}>
             {mainContent}
           </div>
-          <div className="table-cell w-[35%] p-6 align-top select-all" style={{ backgroundColor: primaryColor }}>
+          <div className="table-cell w-[35%] align-top select-all" style={{ backgroundColor: primaryColor, padding: `${topPad} ${sidebarPad} ${botPad} 16px` }}>
             {sidebarContent}
           </div>
         </div>

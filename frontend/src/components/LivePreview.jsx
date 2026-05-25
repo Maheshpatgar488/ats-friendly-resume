@@ -88,6 +88,10 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
       `;
     }
 
+    // Resolve margin values for @page rule
+    const m = customStyles.margins || { top: "0.5in", bottom: "0.5in", left: "0.5in", right: "0.5in" };
+    const pageMargins = `${m.top} ${m.right} ${m.bottom} ${m.left}`;
+
     // Write content into iframe with strict A4 print rules
     doc.open();
     doc.write(`
@@ -96,13 +100,14 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
           <title>${title}</title>
           ${stylesHtml}
           <style>
-            @page { margin: 0; }
+            @page { size: A4; margin: ${pageMargins}; }
             body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; }
             table { border-collapse: collapse !important; border-spacing: 0 !important; width: 100% !important; }
             #resume-pdf-content { 
               transform: none !important; 
               box-shadow: none !important; 
               margin: 0 !important; 
+              padding: 0 !important;
               min-height: 0 !important; 
               height: auto !important; 
               width: 100% !important;
@@ -111,6 +116,10 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
             }
             #resume-pdf-content > div {
               min-height: 0 !important;
+              padding-top: 0 !important;
+              padding-bottom: 0 !important;
+              padding-left: 0 !important;
+              padding-right: 0 !important;
             }
             ${printSidebarCss}
           </style>
@@ -336,9 +345,10 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Vertical Spacing (Single-Page Fit)</label>
               <div className="flex flex-col gap-1.5">
                 {[
-                  { name: "Compact Spacing (Single-Page)", sec: "10px", ent: "6px" },
-                  { name: "Standard Spacing", sec: "16px", ent: "10px" },
-                  { name: "Loose Spacing", sec: "24px", ent: "14px" }
+                  { name: "Fit to 1 Page (Ultra Compact)", sec: "6px", ent: "4px", fs: "9pt", lh: "1.2" },
+                  { name: "Compact Spacing", sec: "10px", ent: "6px", fs: "9.5pt", lh: "1.3" },
+                  { name: "Standard Spacing", sec: "16px", ent: "10px", fs: "10pt", lh: "1.4" },
+                  { name: "Loose Spacing", sec: "24px", ent: "14px", fs: "11pt", lh: "1.5" }
                 ].map((sp, i) => {
                   const active = customStyles.sectionSpacing === sp.sec;
                   return (
@@ -347,6 +357,8 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
                       onClick={() => {
                         handleStyleChange("sectionSpacing", sp.sec);
                         handleStyleChange("entrySpacing", sp.ent);
+                        handleStyleChange("fontSize", sp.fs);
+                        handleStyleChange("lineHeight", sp.lh);
                       }}
                       className={`w-full py-2 px-3 text-left rounded border text-xs font-semibold tracking-wide transition-all ${
                         active
@@ -456,13 +468,14 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
             className="resume-preview-container origin-top"
             style={{ 
               transform: `scale(${zoom / 100})`, 
-              marginBottom: `${Math.max(0, (zoom / 100) * 297 - 297)}mm` // offsets layout jump
+              transformOrigin: "top center",
+              marginBottom: `${Math.max(0, (zoom / 100 - 1) * 297)}mm`
             }}
           >
             <div 
               id="resume-pdf-content" 
-              className="bg-white" 
-              style={{ width: "210mm", minHeight: "297mm", padding: "0" }}
+              className="bg-white shadow-2xl"
+              style={{ width: "210mm", minHeight: "297mm", padding: "0", boxSizing: "border-box" }}
             >
               {/* Semantic templates mapper compiler */}
               <ResumeRenderer 

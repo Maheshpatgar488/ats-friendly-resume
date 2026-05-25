@@ -141,7 +141,7 @@ export function ResumeRenderer({ resumeData, customStyles }) {
   return (
     <div 
       className={`w-full bg-white text-slate-800 ${fontClass} leading-normal`}
-      style={isBannerTop ? {} : marginStyles}
+      style={isBannerTop ? { paddingTop: 0, paddingBottom: marginStyles.paddingBottom, paddingLeft: marginStyles.paddingLeft, paddingRight: marginStyles.paddingRight } : marginStyles}
     >
       {content}
     </div>
