@@ -207,49 +207,111 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
         {/* SUBTAB 3: MARGINS, SIZES, AND LINE HEIGHT */}
         {activeSubTab === "margins" && (
           <div className="space-y-5 animate-fadeIn">
-            {/* Font Size Preset */}
+
+            {/* Font Size Stepper */}
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Base Font Size (ATS Standard)</label>
-              <div className="flex flex-col gap-1.5">
-                {fontSizes.map(sz => (
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Font Size</label>
+              <div className="flex items-center gap-2 bg-slate-900/40 rounded-lg border border-slate-700/50 p-1">
+                <button
+                  onClick={() => {
+                    const cur = parseFloat(customStyles.fontSize) || 10;
+                    const next = Math.max(7, cur - 0.5);
+                    handleStyleChange("fontSize", `${next}pt`);
+                  }}
+                  className="w-8 h-8 flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-slate-200 rounded font-bold text-lg transition-colors"
+                >−</button>
+                <span className="flex-1 text-center text-sm font-bold text-indigo-300 font-mono">{customStyles.fontSize || "10pt"}</span>
+                <button
+                  onClick={() => {
+                    const cur = parseFloat(customStyles.fontSize) || 10;
+                    const next = Math.min(14, cur + 0.5);
+                    handleStyleChange("fontSize", `${next}pt`);
+                  }}
+                  className="w-8 h-8 flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-slate-200 rounded font-bold text-lg transition-colors"
+                >+</button>
+              </div>
+              {/* Quick presets */}
+              <div className="grid grid-cols-4 gap-1 mt-2">
+                {["8pt","9pt","10pt","11pt","12pt","13pt"].map(sz => (
                   <button
-                    key={sz.val}
-                    onClick={() => handleStyleChange("fontSize", sz.val)}
-                    className={`w-full py-2 px-3 text-left rounded border text-xs font-semibold tracking-wide transition-all ${
-                      customStyles.fontSize === sz.val
-                        ? "bg-slate-700 border-indigo-500 text-indigo-300"
-                        : "bg-slate-900/30 border-slate-700/50 text-slate-300 hover:border-slate-600"
+                    key={sz}
+                    onClick={() => handleStyleChange("fontSize", sz)}
+                    className={`py-1 rounded border text-[10px] font-bold transition-all ${
+                      customStyles.fontSize === sz
+                        ? "bg-indigo-700 border-indigo-500 text-white"
+                        : "bg-slate-900/30 border-slate-700/50 text-slate-400 hover:border-slate-500 hover:text-slate-200"
                     }`}
-                  >
-                    {sz.label}
-                  </button>
+                  >{sz}</button>
                 ))}
               </div>
             </div>
 
-            {/* Line Height Selector */}
+            {/* Line Height Stepper */}
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Line Spacing Ratio</label>
-              <div className="grid grid-cols-4 gap-1.5">
-                {["1.2", "1.4", "1.5", "1.6"].map(lh => (
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Line Spacing</label>
+              <div className="flex items-center gap-2 bg-slate-900/40 rounded-lg border border-slate-700/50 p-1">
+                <button
+                  onClick={() => {
+                    const cur = parseFloat(customStyles.lineHeight) || 1.4;
+                    const next = Math.max(1.0, Math.round((cur - 0.05) * 100) / 100);
+                    handleStyleChange("lineHeight", `${next}`);
+                  }}
+                  className="w-8 h-8 flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-slate-200 rounded font-bold text-lg transition-colors"
+                >−</button>
+                <span className="flex-1 text-center text-sm font-bold text-indigo-300 font-mono">{customStyles.lineHeight || "1.4"}</span>
+                <button
+                  onClick={() => {
+                    const cur = parseFloat(customStyles.lineHeight) || 1.4;
+                    const next = Math.min(2.0, Math.round((cur + 0.05) * 100) / 100);
+                    handleStyleChange("lineHeight", `${next}`);
+                  }}
+                  className="w-8 h-8 flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-slate-200 rounded font-bold text-lg transition-colors"
+                >+</button>
+              </div>
+              <div className="grid grid-cols-4 gap-1 mt-2">
+                {["1.2","1.3","1.4","1.5"].map(lh => (
                   <button
                     key={lh}
                     onClick={() => handleStyleChange("lineHeight", lh)}
-                    className={`py-1.5 rounded border text-xs font-semibold tracking-wide transition-all ${
+                    className={`py-1 rounded border text-[10px] font-bold transition-all ${
                       customStyles.lineHeight === lh
-                        ? "bg-slate-700 border-indigo-500 text-indigo-300"
-                        : "bg-slate-900/30 border-slate-700/50 text-slate-300 hover:border-slate-600"
+                        ? "bg-indigo-700 border-indigo-500 text-white"
+                        : "bg-slate-900/30 border-slate-700/50 text-slate-400 hover:border-slate-500 hover:text-slate-200"
                     }`}
-                  >
-                    {lh}
-                  </button>
+                  >{lh}</button>
                 ))}
+              </div>
+            </div>
+
+            {/* Section Spacing Stepper */}
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Section Spacing</label>
+              <div className="flex items-center gap-2 bg-slate-900/40 rounded-lg border border-slate-700/50 p-1">
+                <button
+                  onClick={() => {
+                    const cur = parseInt(customStyles.sectionSpacing) || 10;
+                    const next = Math.max(2, cur - 2);
+                    handleStyleChange("sectionSpacing", `${next}px`);
+                    handleStyleChange("entrySpacing", `${Math.max(2, next - 2)}px`);
+                  }}
+                  className="w-8 h-8 flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-slate-200 rounded font-bold text-lg transition-colors"
+                >−</button>
+                <span className="flex-1 text-center text-sm font-bold text-indigo-300 font-mono">{customStyles.sectionSpacing || "10px"}</span>
+                <button
+                  onClick={() => {
+                    const cur = parseInt(customStyles.sectionSpacing) || 10;
+                    const next = Math.min(32, cur + 2);
+                    handleStyleChange("sectionSpacing", `${next}px`);
+                    handleStyleChange("entrySpacing", `${Math.max(2, next - 2)}px`);
+                  }}
+                  className="w-8 h-8 flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-slate-200 rounded font-bold text-lg transition-colors"
+                >+</button>
               </div>
             </div>
 
             {/* Margin Presets */}
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Page Margins Presets</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Page Margins</label>
               <div className="flex flex-col gap-1.5">
                 {marginPresets.map((mp, i) => {
                   const active = JSON.stringify(customStyles.margins) === JSON.stringify(mp.val);
@@ -270,17 +332,17 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
               </div>
             </div>
 
-            {/* Vertical Spacing Presets */}
+            {/* Quick Fit Presets */}
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Vertical Spacing (Single-Page Fit)</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Quick Fit Presets</label>
               <div className="flex flex-col gap-1.5">
                 {[
-                  { name: "Fit to 1 Page (Ultra Compact)", sec: "6px", ent: "4px", fs: "9pt", lh: "1.2" },
-                  { name: "Compact Spacing", sec: "10px", ent: "6px", fs: "9.5pt", lh: "1.3" },
-                  { name: "Standard Spacing", sec: "16px", ent: "10px", fs: "10pt", lh: "1.4" },
-                  { name: "Loose Spacing", sec: "24px", ent: "14px", fs: "11pt", lh: "1.5" }
+                  { name: "Fit to 1 Page", sec: "6px", ent: "4px", fs: "9pt", lh: "1.2" },
+                  { name: "Compact", sec: "10px", ent: "6px", fs: "9.5pt", lh: "1.3" },
+                  { name: "Standard", sec: "14px", ent: "8px", fs: "10pt", lh: "1.4" },
+                  { name: "Spacious", sec: "20px", ent: "12px", fs: "11pt", lh: "1.5" }
                 ].map((sp, i) => {
-                  const active = customStyles.sectionSpacing === sp.sec;
+                  const active = customStyles.sectionSpacing === sp.sec && customStyles.fontSize === sp.fs;
                   return (
                     <button
                       key={i}
@@ -296,7 +358,7 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
                           : "bg-slate-900/30 border-slate-700/50 text-slate-300 hover:border-slate-600"
                       }`}
                     >
-                      {sp.name}
+                      {sp.name} <span className="text-slate-500 font-normal">({sp.fs}, {sp.lh} lh)</span>
                     </button>
                   );
                 })}
