@@ -318,7 +318,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
   const labelStyle = "block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider";
 
   return (
-    <div className="flex flex-col bg-slate-800/60 backdrop-blur-md rounded-xl border border-slate-700/80 overflow-hidden shadow-2xl h-full">
+    <div className="flex flex-col bg-slate-800/60 backdrop-blur-md rounded-xl border border-slate-700/80 overflow-hidden shadow-2xl h-full min-h-0">
       {/* Dynamic Tab Navigation Headers */}
       <div className="flex border-b border-slate-700/80 overflow-x-auto bg-slate-900/40">
         {tabs.map(tab => {
@@ -341,7 +341,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
       </div>
 
       {/* Tabs Content Panel */}
-      <div className="flex-1 p-6 overflow-y-auto max-h-[calc(100vh-250px)]">
+      <div className="flex-1 p-6 overflow-y-auto h-full min-h-0">
         
         {/* 1. PERSONAL INFORMATION */}
         {activeTab === "personal" && (

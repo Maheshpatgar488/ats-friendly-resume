@@ -96,7 +96,7 @@ export default function AIHub({ resumeData, setResumeData, jobDescription, setJo
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full animate-fadeIn select-none">
       
       {/* 1. INPUT PANEL (Job Details & paste JD) */}
-      <div className="lg:col-span-5 flex flex-col bg-slate-800/60 backdrop-blur-md border border-slate-700/80 rounded-xl p-5 shadow-xl select-none xl:h-[calc(100vh-250px)] overflow-y-auto">
+      <div className="lg:col-span-5 flex flex-col bg-slate-800/60 backdrop-blur-md border border-slate-700/80 rounded-xl p-5 shadow-xl select-none h-auto min-h-[300px] lg:h-[calc(100vh-180px)] xl:h-[calc(100vh-250px)] overflow-y-auto">
         <div className="flex items-center gap-2 border-b border-slate-700/60 pb-3 mb-4">
           <Target className="w-5 h-5 text-indigo-400" />
           <h2 className="text-sm font-bold text-slate-100 uppercase tracking-widest">Job Specifications</h2>
@@ -156,7 +156,7 @@ export default function AIHub({ resumeData, setResumeData, jobDescription, setJo
       </div>
 
       {/* 2. RESULTS & DYNAMIC COMPARATIVE PANEL */}
-      <div className="lg:col-span-7 flex flex-col bg-slate-800/30 border border-slate-700/60 rounded-xl overflow-hidden shadow-2xl h-full xl:max-h-[calc(100vh-250px)]">
+      <div className="lg:col-span-7 flex flex-col bg-slate-800/30 border border-slate-700/60 rounded-xl overflow-hidden shadow-2xl h-auto min-h-[300px] lg:h-[calc(100vh-180px)] xl:max-h-[calc(100vh-250px)]">
         
         {/* Header indicator */}
         <div className="bg-slate-900/50 px-5 py-3 border-b border-slate-700/80 flex items-center justify-between">

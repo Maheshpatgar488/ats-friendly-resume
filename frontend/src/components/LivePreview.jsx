@@ -393,13 +393,14 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
       {/* 2. REAL-TIME PREVIEW WORKSPACE */}
       <div className="flex-1 flex flex-col bg-slate-800/30 rounded-xl border border-slate-700/60 overflow-hidden shadow-2xl h-full xl:max-h-[calc(100vh-250px)]">
         {/* Preview Actions bar */}
-        <div className="flex justify-between items-center bg-slate-900/50 px-5 py-3 border-b border-slate-700/80">
-          <div className="flex items-center gap-2 select-none">
+        <div className="flex flex-wrap justify-between items-center bg-slate-900/50 px-3 sm:px-5 py-2.5 sm:py-3 border-b border-slate-700/80 gap-2">
+          <div className="flex items-center gap-2 select-none flex-shrink-0">
             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
-            <span className="text-2xs text-emerald-400 font-bold uppercase tracking-widest">Real-time previewer</span>
+            <span className="text-2xs text-emerald-400 font-bold uppercase tracking-widest hidden sm:inline">Real-time previewer</span>
+            <span className="text-2xs text-emerald-400 font-bold uppercase tracking-widest sm:hidden">Preview</span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Zoom Controls */}
             <div className="flex items-center bg-slate-800/80 rounded-md border border-slate-700 p-0.5 select-none">
               <button 
@@ -409,7 +410,7 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
               >
                 <ZoomOut className="w-3.5 h-3.5" />
               </button>
-              <span className="text-[10px] font-mono font-bold text-slate-300 px-2 min-w-[40px] text-center">{zoom}%</span>
+              <span className="text-[10px] font-mono font-bold text-slate-300 px-1 sm:px-2 min-w-[35px] sm:min-w-[40px] text-center">{zoom}%</span>
               <button 
                 onClick={() => setZoom(prev => Math.min(prev + 10, 150))} 
                 title="Zoom In"
@@ -430,7 +431,7 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
             <button
               onClick={downloadPDF}
               disabled={pdfLoading}
-              className={`flex items-center gap-1.5 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white rounded-md shadow-lg transition-all ${
+              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-bold uppercase tracking-wider text-white rounded-md shadow-lg transition-all ${
                 pdfLoading 
                   ? "bg-slate-700 cursor-not-allowed" 
                   : "bg-indigo-600 hover:bg-indigo-500 hover:shadow-indigo-500/20 active:scale-98"
@@ -439,12 +440,13 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
               {pdfLoading ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  Generating...
+                  <span className="hidden sm:inline">Generating...</span>
                 </>
               ) : (
                 <>
                   <Download className="w-4 h-4" />
-                  Download PDF
+                  <span className="hidden sm:inline">Download PDF</span>
+                  <span className="sm:hidden">PDF</span>
                 </>
               )}
             </button>
@@ -452,9 +454,9 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
         </div>
 
         {/* Canvas Area */}
-        <div className="flex-1 overflow-auto bg-slate-950/65 flex justify-center items-start p-8 select-all">
+        <div className="flex-1 overflow-auto bg-slate-950/65 flex justify-center items-start p-2 sm:p-4 md:p-8 select-all">
           <div 
-            className="resume-preview-container origin-top relative"
+            className="resume-preview-container origin-top relative max-w-full"
             style={{ 
               transform: `scale(${zoom / 100})`, 
               transformOrigin: "top center",
@@ -471,7 +473,7 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
             </div>
             <div 
               id="resume-pdf-content" 
-              className="bg-white shadow-2xl"
+              className="bg-white shadow-2xl max-w-full"
               style={{ width: "210mm", minHeight: "297mm", padding: "0", boxSizing: "border-box" }}
               ref={(el) => {
                 if (el) {

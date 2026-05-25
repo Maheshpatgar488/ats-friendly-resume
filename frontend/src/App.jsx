@@ -104,10 +104,10 @@ export default function App() {
     <div className="min-h-screen bg-[#070b13] text-slate-100 flex flex-col font-sans select-none antialiased">
       
       {/* 1. PREMIUM HEADER NAVIGATION */}
-      <header className="bg-slate-900/60 backdrop-blur-md border-b border-slate-800/80 px-6 py-4 flex items-center justify-between shadow-lg sticky top-0 z-50 select-none">
+      <header className="bg-slate-900/60 backdrop-blur-md border-b border-slate-800/80 px-3 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-2 shadow-lg sticky top-0 z-50 select-none">
         
         {/* Brand logo */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 flex-shrink-0">
           <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-md shadow-indigo-500/20 relative overflow-hidden">
             <div className="absolute inset-0 bg-white/10 opacity-30 hover:opacity-10 transition-opacity"></div>
             <Sparkle className="w-5 h-5 text-white" />
@@ -122,7 +122,7 @@ export default function App() {
 
         {/* Real-time Workspace Navigation Tabs */}
         {!isResumeBlank && (
-          <nav className="flex bg-slate-950/65 rounded-lg border border-slate-800 p-0.5 select-none">
+          <nav className="flex bg-slate-950/65 rounded-lg border border-slate-800 p-0.5 select-none flex-wrap justify-center">
             <button
               onClick={() => setActivePanel("builder")}
               className={`px-4 py-2 text-2xs font-bold uppercase tracking-wider rounded-md transition-all flex items-center gap-1.5 ${
@@ -160,7 +160,7 @@ export default function App() {
         )}
 
         {/* Global Save Indicator Badge & Direct File Import */}
-        <div className="flex items-center gap-3 select-none">
+        <div className="flex items-center gap-2 sm:gap-3 select-none flex-shrink-0">
           {!isResumeBlank && (
             <label className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700/80 text-indigo-400 text-3xs font-extrabold uppercase tracking-widest rounded-md cursor-pointer transition-colors shadow">
               <input 
@@ -200,7 +200,7 @@ export default function App() {
       </header>
 
       {/* 2. MAIN APPLICATION WORKSPACE AREA */}
-      <main className="flex-1 p-6 max-w-7xl mx-auto w-full select-none overflow-hidden flex flex-col h-[calc(100vh-100px)]">
+      <main className="flex-1 p-3 sm:p-4 lg:p-6 max-w-7xl mx-auto w-full select-none overflow-hidden flex flex-col h-auto min-h-[calc(100dvh-80px)] lg:h-[calc(100vh-100px)]">
         
         {/* ONBOARDING LOADING PORTAL (If resumeData is empty) */}
         {isResumeBlank ? (
@@ -290,7 +290,7 @@ export default function App() {
         ) : (
           
           /* ACTIVE RESUME BUILDER WORKSPACE HOUSINGS */
-          <div className="flex-1 overflow-hidden h-full">
+          <div className="flex-1 overflow-hidden h-full min-h-0">
             
             {activePanel === "builder" && (
               <FormBuilder 
@@ -311,7 +311,7 @@ export default function App() {
               />
             )}
 
-            {activePanel === "ihub" || activePanel === "aihub" && (
+            {(activePanel === "ihub" || activePanel === "aihub") && (
               <AIHub 
                 resumeData={resumeData}
                 setResumeData={setResumeData}
