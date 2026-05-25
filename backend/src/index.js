@@ -421,18 +421,19 @@ app.post("/api/export-pdf", async (req, res) => {
       }
     }
 
-    // If still doesn't fit after all steps, use the smallest scale and let it overflow
-    // (Better to have readable text that overflows than squeezed unreadable text)
+    // If still doesn't fit after all steps, use the smallest scale and allow 2 pages
+    // (No content is ever cut off — resumes can span 1-2 pages for completeness)
     if (!pdfBuffer) {
       const smallestScale = scalingSteps[scalingSteps.length - 1];
       const scaledStyles = { ...customStyles, ...smallestScale };
       const htmlContent = compileResumeHTML(resumeData, templateId, scaledStyles);
       await page.setContent(htmlContent, { waitUntil: "domcontentloaded", timeout: 15000 });
-      
+
       pdfBuffer = await page.pdf({
         format: "A4",
         margin: pdfMargins,
-        printBackground: true
+        printBackground: true,
+        // Allow multi-page for extreme cases where content still doesn't fit
       });
     }
 
