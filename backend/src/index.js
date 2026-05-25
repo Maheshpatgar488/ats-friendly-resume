@@ -359,15 +359,19 @@ app.post("/api/export-pdf", async (req, res) => {
     await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 1 });
 
     // Auto-scaling: try progressively smaller font/spacing until it fits 1 page
+    // More aggressive scaling steps to ensure content fits properly
     const scalingSteps = [
-      { fontSize: "10pt",  lineHeight: "1.45", sectionSpacing: "10px", entrySpacing: "8px"  },
-      { fontSize: "9.5pt", lineHeight: "1.4",  sectionSpacing: "8px",  entrySpacing: "6px"  },
-      { fontSize: "9pt",   lineHeight: "1.35", sectionSpacing: "6px",  entrySpacing: "5px"  },
-      { fontSize: "8.5pt", lineHeight: "1.3",  sectionSpacing: "5px",  entrySpacing: "4px"  },
-      { fontSize: "8pt",   lineHeight: "1.25", sectionSpacing: "4px",  entrySpacing: "3px"  },
+      { fontSize: "10pt",  lineHeight: "1.4",  sectionSpacing: "10px", entrySpacing: "8px"  },
+      { fontSize: "9.5pt", lineHeight: "1.35", sectionSpacing: "8px",  entrySpacing: "6px"  },
+      { fontSize: "9pt",   lineHeight: "1.3",  sectionSpacing: "6px",  entrySpacing: "5px"  },
+      { fontSize: "8.5pt", lineHeight: "1.25", sectionSpacing: "5px",  entrySpacing: "4px"  },
+      { fontSize: "8pt",   lineHeight: "1.2",  sectionSpacing: "4px",  entrySpacing: "3px"  },
+      { fontSize: "7.5pt", lineHeight: "1.15", sectionSpacing: "3px",  entrySpacing: "2px"  },
+      { fontSize: "7pt",   lineHeight: "1.1",  sectionSpacing: "2px",  entrySpacing: "2px"  },
     ];
 
     let pdfBuffer = null;
+    let fittingScale = null;
 
     for (const scale of scalingSteps) {
       const scaledStyles = {
@@ -382,13 +386,13 @@ app.post("/api/export-pdf", async (req, res) => {
       await page.setContent(htmlContent, { waitUntil: "domcontentloaded", timeout: 15000 });
 
       // Check how many pages it would produce
-      const pageCount = await page.evaluate(() => {
-        const A4_HEIGHT_PX = 1123; // 297mm at 96dpi
-        return Math.ceil(document.body.scrollHeight / A4_HEIGHT_PX);
-      });
+      const contentHeight = await page.evaluate(() => document.body.scrollHeight);
+      const A4_HEIGHT_PX = 1123; // 297mm at 96dpi
+      const pageCount = Math.ceil(contentHeight / A4_HEIGHT_PX);
 
       if (pageCount <= 1) {
         // Fits on 1 page — generate the final PDF
+        fittingScale = scale;
         pdfBuffer = await page.pdf({
           format: "A4",
           margin: pdfMargins,
@@ -398,12 +402,14 @@ app.post("/api/export-pdf", async (req, res) => {
       }
     }
 
-    // If still doesn't fit after all steps, generate with smallest scale anyway
+    // If still doesn't fit after all steps, use the smallest scale and let it overflow
+    // (Better to have readable text that overflows than squeezed unreadable text)
     if (!pdfBuffer) {
       const smallestScale = scalingSteps[scalingSteps.length - 1];
       const scaledStyles = { ...customStyles, ...smallestScale };
       const htmlContent = compileResumeHTML(resumeData, templateId, scaledStyles);
       await page.setContent(htmlContent, { waitUntil: "domcontentloaded", timeout: 15000 });
+      
       pdfBuffer = await page.pdf({
         format: "A4",
         margin: pdfMargins,

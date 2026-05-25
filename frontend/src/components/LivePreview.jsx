@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { 
   Download, Settings, FileText, ZoomIn, ZoomOut, RotateCcw, 
-  ChevronRight, Sparkles, Sliders, Palette, Type, RefreshCw
+  Sliders, Palette, RefreshCw
 } from "lucide-react";
 import { ResumeRenderer, templatesList } from "./templates/index";
 import { API_URL } from "../config";
@@ -12,10 +12,11 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
   const [activeSubTab, setActiveSubTab] = useState("templates");
   const [previewHeight, setPreviewHeight] = useState(0);
 
-  // A4 page height in pixels at 96dpi = 297mm = ~1122px
-  const A4_PX = 1122;
-  const estimatedPages = previewHeight > 0 ? Math.ceil(previewHeight / A4_PX) : null;
-  const fitsOnePage = estimatedPages !== null && estimatedPages <= 1;
+  // A4 page height in pixels at 96dpi = 297mm = ~1123px
+  // Calculate pages based on actual content height (not minHeight)
+  const A4_PX = 1123;
+  const estimatedPages = previewHeight > 0 ? Math.ceil(previewHeight / A4_PX) : 1;
+  const fitsOnePage = estimatedPages <= 1;
 
   // Curated color palette
   const colors = [
@@ -31,14 +32,6 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
 
   // Fonts list
   const fonts = ["Inter", "Roboto", "Outfit", "Times New Roman", "Georgia", "Garamond", "Calibri", "Arial"];
-
-  // Size list
-  const fontSizes = [
-    { label: "Small (9pt)", val: "9pt" },
-    { label: "Standard (10pt)", val: "10pt" },
-    { label: "Medium (11pt)", val: "11pt" },
-    { label: "Large (12pt)", val: "12pt" }
-  ];
 
   // Margins list
   const marginPresets = [
@@ -88,11 +81,6 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
       ...prev,
       [key]: value
     }));
-  };
-
-  // Trigger browser-native print dialog (client-side pathway)
-  const printClientSide = () => {
-    window.print();
   };
 
   const subTabClass = (id) => `flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider rounded-md transition-all ${
@@ -477,13 +465,9 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
             <div className={`absolute top-2 right-2 z-10 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider select-none pointer-events-none ${
               fitsOnePage 
                 ? "bg-emerald-600/90 text-white" 
-                : estimatedPages !== null 
-                  ? "bg-red-600/90 text-white" 
-                  : "bg-slate-700/80 text-slate-300"
+                : "bg-red-600/90 text-white"
             }`} style={{ position: "absolute" }}>
-              {estimatedPages !== null 
-                ? fitsOnePage ? "✓ 1 Page" : `⚠ ~${estimatedPages} Pages`
-                : "..."}
+              {fitsOnePage ? "✓ 1 Page" : `⚠ ~${estimatedPages} Pages — reduce font/spacing`}
             </div>
             <div 
               id="resume-pdf-content" 
@@ -491,8 +475,24 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
               style={{ width: "210mm", minHeight: "297mm", padding: "0", boxSizing: "border-box" }}
               ref={(el) => {
                 if (el) {
-                  const observer = new ResizeObserver(() => setPreviewHeight(el.scrollHeight));
+                  // Measure the actual content height, not the container with minHeight
+                  const measureHeight = () => {
+                    const inner = el.firstElementChild;
+                    if (inner) {
+                      // Get the actual rendered height of the content
+                      const rect = inner.getBoundingClientRect();
+                      setPreviewHeight(rect.height);
+                    }
+                  };
+                  
+                  const observer = new ResizeObserver(measureHeight);
                   observer.observe(el);
+                  if (el.firstElementChild) {
+                    observer.observe(el.firstElementChild);
+                  }
+                  
+                  // Initial measurement
+                  measureHeight();
                 }
               }}
             >
