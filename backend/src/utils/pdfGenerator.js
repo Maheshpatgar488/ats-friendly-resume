@@ -17,11 +17,11 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
   // Custom styling fallbacks
   const primaryColor = customStyles.primaryColor || "#1e3a8a"; // Default deep Navy
   const fontFamily = customStyles.fontFamily || "Inter"; // Default Inter
-  const fontSize = customStyles.fontSize || "10pt"; // Default 10pt for high-density ATS
+  const fontSize = customStyles.fontSize || "9.5pt"; // Default 9.5pt for high-density ATS
   const lineHeight = customStyles.lineHeight || "1.4";
   const margins = customStyles.margins || { top: "0.5in", bottom: "0.5in", left: "0.55in", right: "0.55in" };
   const sectionSpacing = customStyles.sectionSpacing || "10px";
-  const entrySpacing = customStyles.entrySpacing || "8px";
+  const entrySpacing = customStyles.entrySpacing || "6px";
 
   // Map font families to standard CSS stacks
   const fontStacks = {
@@ -69,11 +69,11 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
 
     /* Standard ATS Headings Structure */
     .section-title {
-      font-size: 1.05rem;
+      font-size: 1rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       font-weight: 700;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       display: flex;
       align-items: center;
     }
@@ -99,7 +99,7 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
       display: flex;
       justify-content: space-between;
       font-weight: 700;
-      font-size: 0.92rem;
+      font-size: 0.9rem;
       color: #0f172a;
     }
 
@@ -108,7 +108,7 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
       justify-content: space-between;
       font-style: italic;
       color: #475569;
-      font-size: 0.87rem;
+      font-size: 0.85rem;
       margin-bottom: 2px;
     }
 
@@ -125,16 +125,16 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
     .skills-grid {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 4px;
+      gap: 4px;
+      margin-top: 3px;
     }
 
     .skill-badge {
       background-color: #f1f5f9;
       color: #334155;
-      padding: 3px 8px;
+      padding: 2px 8px;
       border-radius: 4px;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       border: 1px solid #e2e8f0;
       font-weight: 500;
     }
@@ -163,7 +163,7 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
   let templateCSS = "";
   let templateHTML = "";
 
-  const nameHTML = `<h1 style="font-size: 1.9rem; font-weight: 800; letter-spacing: -0.5px; color: ${primaryColor}; text-align: center; text-transform: uppercase;">${personalInfo.fullName || "Your Name"}</h1>`;
+  const nameHTML = `<h1 style="font-size: 1.7rem; font-weight: 800; letter-spacing: -0.5px; color: ${primaryColor}; text-align: center; text-transform: uppercase;">${personalInfo.fullName || "Your Name"}</h1>`;
   
   const contacts = [];
   if (personalInfo.email) {
@@ -189,7 +189,7 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
   }
 
   const contactBarHTML = `
-    <div class="contact-bar" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 4px; font-size: 0.8rem; color: #475569;">
+    <div class="contact-bar" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 3px; font-size: 0.78rem; color: #475569;">
       ${contacts.map(c => `<span class="contact-item">${c}</span>`).join(" &bull; ")}
     </div>
   `;
@@ -197,7 +197,7 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
   const summarySection = summary ? `
     <div class="section-block">
       <h2 class="section-title" style="color: ${primaryColor};">Professional Summary <div class="divider"></div></h2>
-      <p style="color: #334155; margin-top: 4px; text-align: justify;">${summary}</p>
+      <p style="color: #334155; margin-top: 3px; text-align: justify;">${summary}</p>
     </div>
   ` : "";
 
@@ -243,7 +243,7 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
     <div class="section-block">
       <h2 class="section-title" style="color: ${primaryColor};">Skills & Expertise <div class="divider"></div></h2>
       <div class="skills-grid" style="display: block;">
-        ${skills.map(skill => `<span class="skill-badge" style="display: inline-block; margin: 3px 6px 3px 0;">${skill}</span>`).join("")}
+        ${skills.map(skill => `<span class="skill-badge" style="display: inline-block; margin: 2px 4px 2px 0;">${skill}</span>`).join("")}
       </div>
     </div>
   ` : "";
@@ -252,14 +252,14 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
     <div class="section-block">
       <h2 class="section-title" style="color: ${primaryColor};">Projects <div class="divider"></div></h2>
       ${projects.map(proj => `
-        <div class="entry" style="margin-bottom: 6px;">
+        <div class="entry" style="margin-bottom: 5px;">
           <div class="entry-header">
             <span>${proj.name}</span>
-            <span>${proj.url ? `<a href="${proj.url.startsWith("http") ? proj.url : `https://${proj.url}`}" target="_blank" style="font-size: 0.8rem; font-weight: 600; color: ${primaryColor}; text-decoration: underline;">${proj.url}</a>` : ""}</span>
+            <span>${proj.url ? `<a href="${proj.url.startsWith("http") ? proj.url : `https://${proj.url}`}" target="_blank" style="font-size: 0.78rem; font-weight: 600; color: ${primaryColor}; text-decoration: underline;">${proj.url}</a>` : ""}</span>
           </div>
-          <p style="color: #334155; font-size: 0.9rem; margin-top: 2px;">${proj.description || ""}</p>
+          <p style="color: #334155; font-size: 0.88rem; margin-top: 2px;">${proj.description || ""}</p>
           ${proj.technologies && proj.technologies.length > 0 ? `
-            <div style="font-size: 0.8rem; margin-top: 2px; color: #475569;">
+            <div style="font-size: 0.78rem; margin-top: 2px; color: #475569;">
               <strong>Technologies:</strong> ${proj.technologies.join(", ")}
             </div>
           ` : ""}
@@ -271,11 +271,11 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
   const certificationsSection = certifications.length > 0 ? `
     <div class="section-block">
       <h2 class="section-title" style="color: ${primaryColor};">Certifications <div class="divider"></div></h2>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
         ${certifications.map(cert => `
-          <div style="font-size: 0.9rem; border-left: 2px solid ${primaryColor}; padding-left: 6px; margin-bottom: 4px;">
+          <div style="font-size: 0.88rem; border-left: 2px solid ${primaryColor}; padding-left: 6px; margin-bottom: 3px;">
             <strong style="color: #0f172a;">${cert.name}</strong>
-            <div style="font-size: 0.8rem; color: #475569;">${cert.issuer || ""} ${cert.date ? `(${cert.date})` : ""}</div>
+            <div style="font-size: 0.78rem; color: #475569;">${cert.issuer || ""} ${cert.date ? `(${cert.date})` : ""}</div>
           </div>
         `).join("")}
       </div>
@@ -283,11 +283,11 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
   ` : "";
 
   const languagesSection = languages.length > 0 ? `
-    <div class="section-block">
+    <div class="section-block" style="margin-bottom: 0;">
       <h2 class="section-title" style="color: ${primaryColor};">Languages <div class="divider"></div></h2>
-      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
         ${languages.map(lang => `
-          <span style="font-size: 0.9rem; font-weight: 500; color: #334155;">&bull; ${lang}</span>
+          <span style="font-size: 0.88rem; font-weight: 500; color: #334155;">&bull; ${lang}</span>
         `).join("")}
       </div>
     </div>
