@@ -43,7 +43,7 @@ const emptyResume = {
     }
   ],
   skills: [
-    "React.js", "Node.js", "Express", "Tailwind CSS", "JavaScript", "SQL", "Git", "REST APIs", "System Design"
+    "React.js", "Node.js", "Tailwind CSS", "JavaScript", "SQL", "Git", "REST APIs"
   ],
   projects: [
     {

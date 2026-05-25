@@ -135,7 +135,7 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
         {summary && (
           <div style={{ marginBottom: customStyles.sectionSpacing || "12px" }}>
             <SectionHeader title="Professional Summary" primaryColor={primaryColor} borderStyle={borderStyle} />
-            <p className="text-slate-700 leading-relaxed text-justify whitespace-pre-wrap">{summary}</p>
+            <p className="text-slate-700 leading-relaxed text-xs whitespace-pre-wrap text-justify">{summary}</p>
           </div>
         )}
 
@@ -152,7 +152,7 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
                 <div className="flex justify-between text-slate-600 font-medium italic text-xs mb-1">
                   <span className="select-all">{exp.company} {exp.location && `| ${exp.location}`}</span>
                 </div>
-                <ul className="list-disc ml-5 text-slate-700 space-y-0.5 leading-normal">
+                <ul className="list-disc ml-5 text-slate-700 space-y-0.5 leading-normal text-justify">
                   {(exp.highlights || []).map((highlight, hIdx) => (
                     <li key={hIdx} className="select-all">{highlight}</li>
                   ))}
@@ -215,7 +215,7 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
                     </a>
                   )}
                 </div>
-                <p className="text-slate-700 mt-0.5 leading-relaxed text-xs">{proj.description}</p>
+                <p className="text-slate-700 mt-0.5 leading-relaxed text-xs text-justify">{proj.description}</p>
                 {proj.technologies && proj.technologies.length > 0 && (
                   <div className="text-xs mt-1 text-slate-500 font-medium">
                     Technologies: {proj.technologies.join(", ")}
@@ -485,7 +485,7 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
               <div className="flex justify-between text-slate-600 font-medium italic text-2xs mb-1">
                 <span>{exp.company} {exp.location && `| ${exp.location}`}</span>
               </div>
-              <ul className="list-disc ml-4 text-slate-700 text-2xs leading-normal" style={{ gap: "2px", display: "flex", flexDirection: "column" }}>
+              <ul className="list-disc ml-4 text-slate-700 text-2xs leading-normal text-justify" style={{ gap: "2px", display: "flex", flexDirection: "column" }}>
                 {(exp.highlights || []).map((highlight, hIdx) => (
                   <li key={hIdx}>{highlight}</li>
                 ))}
@@ -515,7 +515,7 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
                   </a>
                 )}
               </div>
-              <p className="text-slate-700 mt-0.5 leading-relaxed text-2xs">{proj.description}</p>
+              <p className="text-slate-700 mt-0.5 leading-relaxed text-2xs text-justify">{proj.description}</p>
             </div>
           ))}
         </div>
