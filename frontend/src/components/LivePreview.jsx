@@ -336,9 +336,9 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Vertical Spacing (Single-Page Fit)</label>
               <div className="flex flex-col gap-1.5">
                 {[
-                  { name: "Compact Spacing (Single-Page)", sec: "6px", ent: "3px" },
-                  { name: "Standard Spacing", sec: "12px", ent: "6px" },
-                  { name: "Loose Spacing", sec: "18px", ent: "9px" }
+                  { name: "Compact Spacing (Single-Page)", sec: "10px", ent: "6px" },
+                  { name: "Standard Spacing", sec: "16px", ent: "10px" },
+                  { name: "Loose Spacing", sec: "24px", ent: "14px" }
                 ].map((sp, i) => {
                   const active = customStyles.sectionSpacing === sp.sec;
                   return (
