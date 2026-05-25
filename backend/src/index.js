@@ -157,12 +157,12 @@ app.post("/api/extract-text", upload.single("file"), async (req, res) => {
       Analyze the raw unstructured text extracted from a resume and extract the details into the exact JSON schema provided.
       
       Important Formatting Rules:
-      1. Carefully identify the contact details (fullName, email, phone, location, links like linkedin/github/website).
-      2. Split the work experiences into separate items in the "experience" array. For each experience, extract the company name, position title, dates (startDate, endDate - or "Present"), location, and a list of key bullet highlights.
-      3. Split education details.
-      4. Split skills into a clean array of individual skill terms.
-      5. Identify projects, languages, and certifications if present.
-      6. Maintain high factual accuracy. Do NOT fabricate or make up details not present in the raw text. If a section or specific detail is missing, omit it or leave it as an empty string.
+       1. Carefully identify the contact details (fullName, email, phone, location, links like linkedin/github/website).
+       2. Split the work experiences into separate items in the "experience" array. For each experience, extract the company name, position title, dates (startDate, endDate - or "Present"), location, a bullet-point "description" array (overall role context, team size, scope), and a list of key "highlights" bullet points (accomplishments, metrics).
+       3. Split education details.
+       4. Split skills into a clean array of individual skill terms.
+       5. Identify projects, languages, and certifications if present. For each project, include a bullet-point "description" array and a "highlights" array.
+       6. Maintain high factual accuracy. Do NOT fabricate or make up details not present in the raw text. If a section or specific detail is missing, omit it or leave it as an empty string.
 
       Raw Resume Text:
       """

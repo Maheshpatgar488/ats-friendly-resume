@@ -98,6 +98,10 @@ export const RESUME_JSON_SCHEMA = {
           location: { type: "string" },
           startDate: { type: "string" },
           endDate: { type: "string" },
+          description: {
+            type: "array",
+            items: { type: "string" }
+          },
           highlights: {
             type: "array",
             items: { type: "string" }
@@ -132,7 +136,10 @@ export const RESUME_JSON_SCHEMA = {
         type: "object",
         properties: {
           name: { type: "string" },
-          description: { type: "string" },
+          description: {
+            type: "array",
+            items: { type: "string" }
+          },
           technologies: {
             type: "array",
             items: { type: "string" }
