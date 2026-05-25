@@ -19,3 +19,9 @@ backend/data/
 # OS specific files
 .DS_Store
 Thumbs.db
+
+# Editor settings
+.vscode/
+
+# Runtime / log files
+runs.json
