@@ -410,20 +410,16 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
     <div className="flex flex-col text-white" style={{ gap: customStyles.sectionSpacing || "16px" }}>
       {/* Contact Details in Column */}
       <div className="pb-3 border-b border-white/20">
-        <h3 className="font-bold text-xs uppercase text-white/70 mb-1">Contact Info</h3>
-        <ContactBar personalInfo={personalInfo} layoutType="col" textClass="text-white" />
+        <h3 className="font-bold text-[1.1em] uppercase text-white/70 mb-1">Contact Info</h3>
+        <ContactBar personalInfo={personalInfo} layoutType="col" textClass="text-white text-[0.9em]" />
       </div>
 
       {/* Skills */}
       {skills && skills.length > 0 && (
         <div>
-          <h3 className="font-bold text-xs uppercase tracking-wide mb-2 text-white">Skills</h3>
-          <div className="block mt-1 select-all text-white">
-            {skills.map((skill, idx) => (
-              <span key={idx} className="inline-block mr-1.5 mb-1.5 px-2 py-0.5 bg-white/20 border border-white/30 rounded text-white text-xs font-medium break-all">
-                {skill}
-              </span>
-            ))}
+          <h3 className="font-bold text-[1.1em] uppercase tracking-wide mb-1 text-white">Skills</h3>
+          <div className="text-[0.9em] leading-relaxed text-white/90">
+            {skills.join(", ")}
           </div>
         </div>
       )}
@@ -431,10 +427,10 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
       {/* Education */}
       {education && education.length > 0 && (
         <div>
-          <h3 className="font-bold text-xs uppercase tracking-wide mb-2 text-white">Education</h3>
+          <h3 className="font-bold text-[1.1em] uppercase tracking-wide mb-2 text-white">Education</h3>
           {education.map((edu, idx) => (
-            <div key={idx} className="mb-2 text-2xs text-white/90 break-inside-avoid">
-              <div className="font-bold text-white text-xs">{edu.degree}</div>
+            <div key={idx} className="mb-2 text-[0.9em] text-white/90 break-inside-avoid">
+              <div className="font-bold text-white text-[1em]">{edu.degree}</div>
               <div className="italic text-white/80">{edu.institution}</div>
               <div className="text-white/70">{edu.startDate} - {edu.endDate}</div>
             </div>
@@ -445,8 +441,8 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
       {/* Languages */}
       {languages && languages.length > 0 && (
         <div>
-          <h3 className="font-bold text-xs uppercase tracking-wide mb-1 text-white">Languages</h3>
-          <div className="flex flex-col gap-0.5 text-xs text-white/90 font-medium">
+          <h3 className="font-bold text-[1.1em] uppercase tracking-wide mb-1 text-white">Languages</h3>
+          <div className="flex flex-col gap-0.5 text-[0.9em] text-white/90 font-medium">
             {languages.map((lang, idx) => (
               <span key={idx}>&bull; {lang}</span>
             ))}
@@ -460,15 +456,15 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
     <div className="flex flex-col" style={{ gap: customStyles.sectionSpacing || "16px" }}>
       {/* Name and Professional Label */}
       <div className="border-b-2 pb-2" style={{ borderColor: primaryColor }}>
-        <h1 className="text-2xl font-extrabold uppercase tracking-tight text-slate-900 select-all">{personalInfo.fullName || "Your Name"}</h1>
-        <p className="text-xs font-semibold italic text-slate-500 mt-0.5" style={{ color: primaryColor }}>Curriculum Vitae / Professional Profile</p>
+        <h1 className="text-[2em] font-extrabold uppercase tracking-tight text-slate-900 select-all">{personalInfo.fullName || "Your Name"}</h1>
+        <p className="text-[0.9em] font-semibold italic text-slate-500 mt-0.5" style={{ color: primaryColor }}>Curriculum Vitae / Professional Profile</p>
       </div>
 
       {/* Summary */}
       {summary && (
         <div>
           <SectionHeader title="Professional Summary" primaryColor={primaryColor} borderStyle="solid" />
-          <p className="text-slate-700 leading-relaxed text-justify text-xs whitespace-pre-wrap">{summary}</p>
+          <p className="text-slate-700 leading-relaxed text-justify text-[0.95em] whitespace-pre-wrap">{summary}</p>
         </div>
       )}
 
@@ -478,14 +474,14 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
           <SectionHeader title="Professional Experience" primaryColor={primaryColor} borderStyle="solid" />
           {experience.map((exp, idx) => (
             <div key={idx} className="break-inside-avoid" style={{ marginBottom: customStyles.entrySpacing || "12px" }}>
-              <div className="flex justify-between font-bold text-slate-900 text-xs">
+              <div className="flex justify-between font-bold text-slate-900 text-[1em]">
                 <span>{exp.position}</span>
                 <span>{exp.startDate} - {exp.endDate || "Present"}</span>
               </div>
-              <div className="flex justify-between text-slate-600 font-medium italic text-2xs mb-2">
+              <div className="flex justify-between text-slate-600 font-medium italic text-[0.9em] mb-2">
                 <span>{exp.company} {exp.location && `| ${exp.location}`}</span>
               </div>
-              <ul className="list-disc ml-4 text-slate-700 text-2xs leading-normal text-justify" style={{ gap: "2px", display: "flex", flexDirection: "column" }}>
+              <ul className="list-disc ml-4 text-slate-700 text-[0.9em] leading-normal text-justify" style={{ gap: "2px", display: "flex", flexDirection: "column" }}>
                 {(exp.highlights || []).map((highlight, hIdx) => (
                   <li key={hIdx}>{highlight}</li>
                 ))}
@@ -501,21 +497,21 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
           <SectionHeader title="Projects" primaryColor={primaryColor} borderStyle="solid" />
           {projects.map((proj, idx) => (
             <div key={idx} className="break-inside-avoid" style={{ marginBottom: customStyles.entrySpacing || "8px" }}>
-              <div className="flex justify-between font-bold text-slate-900 text-xs">
+              <div className="flex justify-between font-bold text-slate-900 text-[1em]">
                 <span>{proj.name}</span>
                 {proj.url && (
                   <a 
                     href={proj.url.startsWith("http") ? proj.url : `https://${proj.url}`} 
                     target="_blank" 
                     rel="noreferrer" 
-                    className="text-2xs font-semibold hover:underline" 
+                    className="text-[0.85em] font-semibold hover:underline" 
                     style={{ color: primaryColor }}
                   >
                     {proj.url}
                   </a>
                 )}
               </div>
-              <p className="text-slate-700 mt-1.5 leading-relaxed text-2xs text-justify">{proj.description}</p>
+              <p className="text-slate-700 mt-1.5 leading-relaxed text-[0.9em] text-justify">{proj.description}</p>
             </div>
           ))}
         </div>
@@ -525,7 +521,7 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
       {certifications && certifications.length > 0 && (
         <div>
           <SectionHeader title="Certifications & Accreditations" primaryColor={primaryColor} borderStyle="solid" />
-          <div className="grid grid-cols-2 gap-2 text-2xs">
+          <div className="grid grid-cols-2 gap-2 text-[0.9em]">
             {certifications.map((cert, idx) => (
               <div key={idx} className="border-l-2 pl-2 border-slate-300">
                 <div className="font-semibold text-slate-900">{cert.name}</div>
