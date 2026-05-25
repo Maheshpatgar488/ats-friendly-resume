@@ -1,53 +1,33 @@
 import React from "react";
 
-// Standard font mappings
-const fontStacks = {
-  "Inter": "font-family-inter",
-  "Roboto": "font-family-roboto",
-  "Outfit": "font-family-outfit",
-  "Times New Roman": "font-family-times",
-  "Georgia": "font-family-georgia",
-  "Garamond": "font-family-garamond",
-  "Calibri": "font-family-calibri",
-  "Arial": "font-family-arial"
-};
-
 // ----------------------------------------------------------------------
-// COMMON SUB-COMPONENTS FOR ATS RESUMES
+// COMMON SUB-COMPONENTS — all inline styles for PDF compatibility
 // ----------------------------------------------------------------------
 
-const ContactBar = ({ personalInfo, layoutType = "row", textClass }) => {
+const ContactBar = ({ personalInfo, layoutType = "row", color = "#475569" }) => {
   const items = [];
-  
-  const baseText = textClass || "text-slate-600";
-  const linkText = textClass || "text-slate-700";
 
   if (personalInfo.email) {
     items.push(
-      <a key="email" href={`mailto:${personalInfo.email}`} className={`hover:underline ${baseText}`}>
+      <a key="email" href={`mailto:${personalInfo.email}`} style={{ color, textDecoration: "none" }}>
         {personalInfo.email}
       </a>
     );
   }
-  if (personalInfo.phone) {
-    items.push(<span key="phone" className={baseText}>{personalInfo.phone}</span>);
-  }
-  if (personalInfo.location) {
-    items.push(<span key="location" className={baseText}>{personalInfo.location}</span>);
-  }
+  if (personalInfo.phone) items.push(<span key="phone">{personalInfo.phone}</span>);
+  if (personalInfo.location) items.push(<span key="location">{personalInfo.location}</span>);
   if (personalInfo.website) {
-    const displayText = `Portfolio: ${personalInfo.website}`;
     const href = personalInfo.websiteUrl || (personalInfo.website.startsWith("http") ? personalInfo.website : `https://${personalInfo.website}`);
     items.push(
-      <a key="portfolio" href={href} target="_blank" rel="noreferrer" className={`hover:underline font-semibold ${linkText}`}>
-        {displayText}
+      <a key="portfolio" href={href} target="_blank" rel="noreferrer" style={{ color, fontWeight: 600, textDecoration: "underline" }}>
+        Portfolio: {personalInfo.website}
       </a>
     );
   }
   if (personalInfo.linkedin) {
     const href = personalInfo.linkedinUrl || (personalInfo.linkedin.startsWith("http") ? personalInfo.linkedin : `https://${personalInfo.linkedin}`);
     items.push(
-      <a key="linkedin" href={href} target="_blank" rel="noreferrer" className={`hover:underline font-semibold ${linkText}`}>
+      <a key="linkedin" href={href} target="_blank" rel="noreferrer" style={{ color, fontWeight: 600, textDecoration: "underline" }}>
         {personalInfo.linkedin}
       </a>
     );
@@ -55,7 +35,7 @@ const ContactBar = ({ personalInfo, layoutType = "row", textClass }) => {
   if (personalInfo.github) {
     const href = personalInfo.githubUrl || (personalInfo.github.startsWith("http") ? personalInfo.github : `https://${personalInfo.github}`);
     items.push(
-      <a key="github" href={href} target="_blank" rel="noreferrer" className={`hover:underline font-semibold ${linkText}`}>
+      <a key="github" href={href} target="_blank" rel="noreferrer" style={{ color, fontWeight: 600, textDecoration: "underline" }}>
         {personalInfo.github}
       </a>
     );
@@ -63,19 +43,17 @@ const ContactBar = ({ personalInfo, layoutType = "row", textClass }) => {
 
   if (layoutType === "col") {
     return (
-      <div className={`flex flex-col gap-1 text-xs mt-2 select-all ${baseText}`}>
-        {items.map((item, i) => (
-          <div key={i} className="break-all">{item}</div>
-        ))}
+      <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginTop: "6px", fontSize: "0.8em", color }}>
+        {items.map((item, i) => <div key={i}>{item}</div>)}
       </div>
     );
   }
 
   return (
-    <div className="block text-center text-xs text-slate-600 mt-2 font-medium select-all">
+    <div style={{ textAlign: "center", fontSize: "0.82em", color, marginTop: "5px", lineHeight: "1.6" }}>
       {items.map((item, i) => (
-        <span key={i} className="inline-block mx-1.5 my-0.5">
-          {i > 0 && <span className="mr-3 text-slate-400 select-none">&bull;</span>}
+        <span key={i} style={{ display: "inline-block", margin: "0 6px" }}>
+          {i > 0 && <span style={{ marginRight: "6px", color: "#94a3b8" }}>&bull;</span>}
           {item}
         </span>
       ))}
@@ -84,19 +62,30 @@ const ContactBar = ({ personalInfo, layoutType = "row", textClass }) => {
 };
 
 const SectionHeader = ({ title, primaryColor, borderStyle = "solid" }) => {
-  const borderClasses = {
-    solid: "border-b border-slate-300",
-    dashed: "border-b border-dashed border-slate-400",
-    double: "border-b-4 border-double border-slate-900",
-    none: "",
+  const borderMap = {
+    solid: `1px solid #cbd5e1`,
+    dashed: `1px dashed #94a3b8`,
+    double: `3px double #0f172a`,
+    none: "none",
   };
 
   return (
-    <div className={`mt-4 mb-2 pb-1 ${borderClasses[borderStyle] || "border-b border-slate-300"}`} style={{ pageBreakAfter: "avoid", breakAfter: "avoid", breakInside: "avoid" }}>
-      <h2 
-        className="text-sm font-bold uppercase tracking-wider select-all" 
-        style={{ color: primaryColor }}
-      >
+    <div style={{
+      marginTop: "12px",
+      marginBottom: "6px",
+      paddingBottom: "3px",
+      borderBottom: borderMap[borderStyle] || borderMap.solid,
+      pageBreakAfter: "avoid",
+      breakAfter: "avoid",
+    }}>
+      <h2 style={{
+        fontSize: "0.85em",
+        fontWeight: 700,
+        textTransform: "uppercase",
+        letterSpacing: "0.05em",
+        color: primaryColor,
+        margin: 0,
+      }}>
         {title}
       </h2>
     </div>
@@ -104,57 +93,65 @@ const SectionHeader = ({ title, primaryColor, borderStyle = "solid" }) => {
 };
 
 // ----------------------------------------------------------------------
-// STRUCTURAL LAYOUTS
+// 1. SINGLE COLUMN LAYOUT
 // ----------------------------------------------------------------------
-
-// 1. Single Column Layout (Standard ATS Layout)
 export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "solid", headerBanner = false }) => {
-  const { personalInfo = {}, summary = "", experience = [], education = [], skills = [], projects = [], certifications = [], languages = [] } = resumeData;
+  const {
+    personalInfo = {}, summary = "", experience = [], education = [],
+    skills = [], projects = [], certifications = [], languages = []
+  } = resumeData;
+
   const primaryColor = customStyles.primaryColor || "#1e3a8a";
+  const secSpacing = customStyles.sectionSpacing || "12px";
+  const entSpacing = customStyles.entrySpacing || "8px";
 
   return (
-    <div className="w-full text-slate-800 bg-white" style={{ fontSize: customStyles.fontSize || "10pt" }}>
+    <div style={{ width: "100%", color: "#1e293b", background: "#fff", fontSize: customStyles.fontSize || "10pt", lineHeight: customStyles.lineHeight || "1.4" }}>
+
       {/* Header */}
       {headerBanner ? (
-        <div className="text-center p-6 text-white" style={{ backgroundColor: primaryColor }}>
-          <h1 className="text-2xl font-extrabold uppercase tracking-tight break-words select-all">{personalInfo.fullName || "Your Name"}</h1>
-          <ContactBar personalInfo={personalInfo} />
-        </div>
-      ) : (
-        <div className="text-center pb-3">
-          <h1 className="text-2xl font-extrabold uppercase tracking-tight select-all" style={{ color: primaryColor }}>
+        <div style={{ textAlign: "center", padding: "20px", backgroundColor: primaryColor, color: "#fff" }}>
+          <h1 style={{ fontSize: "1.6em", fontWeight: 800, textTransform: "uppercase", margin: 0, color: "#fff" }}>
             {personalInfo.fullName || "Your Name"}
           </h1>
-          <ContactBar personalInfo={personalInfo} />
+          <ContactBar personalInfo={personalInfo} color="#e2e8f0" />
+        </div>
+      ) : (
+        <div style={{ textAlign: "center", paddingBottom: "10px" }}>
+          <h1 style={{ fontSize: "1.6em", fontWeight: 800, textTransform: "uppercase", margin: 0, color: primaryColor }}>
+            {personalInfo.fullName || "Your Name"}
+          </h1>
+          <ContactBar personalInfo={personalInfo} color="#475569" />
         </div>
       )}
 
-      {/* Main Content (padded) */}
-      <div className={`${headerBanner ? "p-6" : "pt-2"}`}>
+      {/* Body */}
+      <div style={{ paddingTop: headerBanner ? "0" : "4px" }}>
+
         {/* Summary */}
         {summary && (
-          <div style={{ marginBottom: customStyles.sectionSpacing || "12px" }}>
+          <div style={{ marginBottom: secSpacing }}>
             <SectionHeader title="Professional Summary" primaryColor={primaryColor} borderStyle={borderStyle} />
-            <p className="text-slate-700 leading-relaxed text-xs whitespace-pre-wrap text-justify">{summary}</p>
+            <p style={{ color: "#334155", margin: "4px 0 0 0", textAlign: "justify", fontSize: "0.92em" }}>{summary}</p>
           </div>
         )}
 
         {/* Experience */}
-        {experience && experience.length > 0 && (
-          <div style={{ marginBottom: customStyles.sectionSpacing || "12px" }}>
+        {experience.length > 0 && (
+          <div style={{ marginBottom: secSpacing }}>
             <SectionHeader title="Professional Experience" primaryColor={primaryColor} borderStyle={borderStyle} />
             {experience.map((exp, idx) => (
-              <div key={idx} className="break-inside-avoid" style={{ marginBottom: customStyles.entrySpacing || "6px" }}>
-                <div className="flex justify-between font-bold text-slate-900 text-sm">
-                  <span className="select-all">{exp.position}</span>
-                  <span>{exp.startDate} - {exp.endDate || "Present"}</span>
+              <div key={idx} style={{ marginBottom: entSpacing, pageBreakInside: "avoid" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", fontWeight: 700, fontSize: "0.95em", color: "#0f172a" }}>
+                  <span>{exp.position}</span>
+                  <span style={{ fontWeight: 500, fontSize: "0.9em", color: "#475569", whiteSpace: "nowrap", marginLeft: "8px" }}>{exp.startDate} - {exp.endDate || "Present"}</span>
                 </div>
-                <div className="flex justify-between text-slate-600 font-medium italic text-xs mb-2">
-                  <span className="select-all">{exp.company} {exp.location && `| ${exp.location}`}</span>
+                <div style={{ fontStyle: "italic", color: "#475569", fontSize: "0.88em", marginBottom: "4px" }}>
+                  {exp.company}{exp.location ? ` | ${exp.location}` : ""}
                 </div>
-                <ul className="list-disc ml-5 text-slate-700 space-y-0.5 leading-normal text-justify">
-                  {(exp.highlights || []).map((highlight, hIdx) => (
-                    <li key={hIdx} className="select-all">{highlight}</li>
+                <ul style={{ margin: "0 0 0 18px", padding: 0, color: "#334155", fontSize: "0.9em" }}>
+                  {(exp.highlights || []).map((h, i) => (
+                    <li key={i} style={{ marginBottom: "2px", textAlign: "justify" }}>{h}</li>
                   ))}
                 </ul>
               </div>
@@ -163,17 +160,17 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
         )}
 
         {/* Education */}
-        {education && education.length > 0 && (
-          <div style={{ marginBottom: customStyles.sectionSpacing || "12px" }}>
+        {education.length > 0 && (
+          <div style={{ marginBottom: secSpacing }}>
             <SectionHeader title="Education" primaryColor={primaryColor} borderStyle={borderStyle} />
             {education.map((edu, idx) => (
-              <div key={idx} className="break-inside-avoid" style={{ marginBottom: customStyles.entrySpacing || "4px" }}>
-                <div className="flex justify-between font-bold text-slate-900 text-sm">
-                  <span className="select-all">{edu.institution}</span>
-                  <span>{edu.startDate} - {edu.endDate}</span>
+              <div key={idx} style={{ marginBottom: "4px", pageBreakInside: "avoid" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", fontWeight: 700, fontSize: "0.95em", color: "#0f172a" }}>
+                  <span>{edu.institution}</span>
+                  <span style={{ fontWeight: 500, fontSize: "0.88em", color: "#475569", whiteSpace: "nowrap", marginLeft: "8px" }}>{edu.startDate} - {edu.endDate}</span>
                 </div>
-                <div className="flex justify-between text-slate-600 font-medium text-xs">
-                  <span className="select-all">{edu.degree}{edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ""} {edu.location && `| ${edu.location}`}</span>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.88em", color: "#475569" }}>
+                  <span>{edu.degree}{edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ""}{edu.location ? ` | ${edu.location}` : ""}</span>
                   {edu.gpa && <span>GPA: {edu.gpa}</span>}
                 </div>
               </div>
@@ -182,12 +179,22 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
         )}
 
         {/* Skills */}
-        {skills && skills.length > 0 && (
-          <div style={{ marginBottom: customStyles.sectionSpacing || "12px" }}>
+        {skills.length > 0 && (
+          <div style={{ marginBottom: secSpacing }}>
             <SectionHeader title="Skills & Expertise" primaryColor={primaryColor} borderStyle={borderStyle} />
-            <div className="block mt-1 select-all">
+            <div style={{ marginTop: "5px" }}>
               {skills.map((skill, idx) => (
-                <span key={idx} className="inline-block mr-1.5 mb-1.5 px-2 py-0.5 bg-slate-100 border border-slate-200 rounded text-slate-700 text-xs font-medium">
+                <span key={idx} style={{
+                  display: "inline-block",
+                  margin: "2px 4px 2px 0",
+                  padding: "2px 8px",
+                  background: "#f1f5f9",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "4px",
+                  fontSize: "0.85em",
+                  color: "#334155",
+                  fontWeight: 500,
+                }}>
                   {skill}
                 </span>
               ))}
@@ -196,29 +203,24 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
         )}
 
         {/* Projects */}
-        {projects && projects.length > 0 && (
-          <div style={{ marginBottom: customStyles.sectionSpacing || "12px" }}>
+        {projects.length > 0 && (
+          <div style={{ marginBottom: secSpacing }}>
             <SectionHeader title="Projects" primaryColor={primaryColor} borderStyle={borderStyle} />
             {projects.map((proj, idx) => (
-              <div key={idx} className="break-inside-avoid" style={{ marginBottom: customStyles.entrySpacing || "6px" }}>
-                <div className="flex justify-between font-bold text-slate-900 text-sm">
-                  <span className="select-all">{proj.name}</span>
+              <div key={idx} style={{ marginBottom: entSpacing, pageBreakInside: "avoid" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", fontWeight: 700, fontSize: "0.95em", color: "#0f172a" }}>
+                  <span>{proj.name}</span>
                   {proj.url && (
-                    <a 
-                      href={proj.url.startsWith("http") ? proj.url : `https://${proj.url}`} 
-                      target="_blank" 
-                      rel="noreferrer" 
-                      className="text-xs font-semibold hover:underline select-all" 
-                      style={{ color: primaryColor }}
-                    >
+                    <a href={proj.url.startsWith("http") ? proj.url : `https://${proj.url}`} target="_blank" rel="noreferrer"
+                      style={{ fontSize: "0.82em", fontWeight: 600, color: primaryColor, textDecoration: "underline", marginLeft: "8px", whiteSpace: "nowrap" }}>
                       {proj.url}
                     </a>
                   )}
                 </div>
-                <p className="text-slate-700 mt-1.5 leading-relaxed text-xs text-justify">{proj.description}</p>
-                {proj.technologies && proj.technologies.length > 0 && (
-                  <div className="text-xs mt-1 text-slate-500 font-medium">
-                    Technologies: {proj.technologies.join(", ")}
+                <p style={{ color: "#334155", margin: "3px 0 2px 0", fontSize: "0.9em", textAlign: "justify" }}>{proj.description}</p>
+                {proj.technologies?.length > 0 && (
+                  <div style={{ fontSize: "0.82em", color: "#64748b" }}>
+                    <strong>Technologies:</strong> {proj.technologies.join(", ")}
                   </div>
                 )}
               </div>
@@ -227,14 +229,14 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
         )}
 
         {/* Certifications */}
-        {certifications && certifications.length > 0 && (
-          <div style={{ marginBottom: customStyles.sectionSpacing || "12px" }}>
+        {certifications.length > 0 && (
+          <div style={{ marginBottom: secSpacing }}>
             <SectionHeader title="Certifications" primaryColor={primaryColor} borderStyle={borderStyle} />
-            <div className="grid grid-cols-2 gap-2 mt-1 select-all">
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", marginTop: "4px" }}>
               {certifications.map((cert, idx) => (
-                <div key={idx} className="border-l-2 pl-2 text-xs border-slate-300">
-                  <div className="font-semibold text-slate-900">{cert.name}</div>
-                  <div className="text-slate-500 text-2xs">{cert.issuer} {cert.date ? `(${cert.date})` : ""}</div>
+                <div key={idx} style={{ borderLeft: `2px solid ${primaryColor}`, paddingLeft: "6px", fontSize: "0.88em" }}>
+                  <div style={{ fontWeight: 600, color: "#0f172a" }}>{cert.name}</div>
+                  <div style={{ color: "#64748b", fontSize: "0.85em" }}>{cert.issuer} {cert.date ? `(${cert.date})` : ""}</div>
                 </div>
               ))}
             </div>
@@ -242,12 +244,12 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
         )}
 
         {/* Languages */}
-        {languages && languages.length > 0 && (
-          <div style={{ marginBottom: customStyles.sectionSpacing || "12px" }}>
+        {languages.length > 0 && (
+          <div style={{ marginBottom: secSpacing }}>
             <SectionHeader title="Languages" primaryColor={primaryColor} borderStyle={borderStyle} />
-            <div className="block mt-1 select-all">
+            <div style={{ marginTop: "4px" }}>
               {languages.map((lang, idx) => (
-                <span key={idx} className="inline-block mr-4 mb-1 text-xs font-semibold text-slate-700">
+                <span key={idx} style={{ display: "inline-block", marginRight: "16px", fontSize: "0.9em", fontWeight: 500, color: "#334155" }}>
                   &bull; {lang}
                 </span>
               ))}
@@ -259,77 +261,75 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
   );
 };
 
-// 2. Centered Elegant Layout (Standard centered headers, elegant lines)
+// ----------------------------------------------------------------------
+// 2. CENTERED LAYOUT
+// ----------------------------------------------------------------------
 export const CenteredLayout = ({ resumeData, customStyles, borderStyle = "double" }) => {
-  const { personalInfo = {}, summary = "", experience = [], education = [], skills = [], projects = [], certifications = [], languages = [] } = resumeData;
-  const primaryColor = customStyles.primaryColor || "#0f172a";
+  const {
+    personalInfo = {}, summary = "", experience = [], education = [],
+    skills = [], projects = [], certifications = [], languages = []
+  } = resumeData;
 
-  const borderClasses = {
-    solid: "border-b border-slate-400",
-    dashed: "border-b border-dashed border-slate-400",
-    double: "border-b-4 border-double border-slate-900",
-    none: "",
+  const primaryColor = customStyles.primaryColor || "#0f172a";
+  const secSpacing = customStyles.sectionSpacing || "12px";
+  const entSpacing = customStyles.entrySpacing || "8px";
+
+  const borderMap = {
+    solid: `1px solid #94a3b8`,
+    dashed: `1px dashed #94a3b8`,
+    double: `3px double #0f172a`,
+    none: "none",
   };
 
+  const SectionTitle = ({ title }) => (
+    <div style={{ borderBottom: borderMap[borderStyle] || borderMap.solid, marginBottom: "8px", paddingBottom: "3px", marginTop: "12px" }}>
+      <h2 style={{ textAlign: "center", fontSize: "0.85em", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: primaryColor, margin: 0 }}>{title}</h2>
+    </div>
+  );
+
   return (
-    <div className="w-full text-slate-800 bg-white" style={{ fontSize: customStyles.fontSize || "10pt" }}>
-      {/* Centred Header */}
-      <div className="text-center border-b pb-3 border-slate-200">
-        <h1 className="text-3xl font-bold uppercase tracking-wide select-all" style={{ color: primaryColor }}>
-          {personalInfo.fullName || "Your Name"}
-        </h1>
-        <ContactBar personalInfo={personalInfo} />
+    <div style={{ width: "100%", color: "#1e293b", background: "#fff", fontSize: customStyles.fontSize || "10pt", lineHeight: customStyles.lineHeight || "1.4" }}>
+      <div style={{ textAlign: "center", borderBottom: "1px solid #e2e8f0", paddingBottom: "10px" }}>
+        <h1 style={{ fontSize: "1.6em", fontWeight: 700, textTransform: "uppercase", margin: 0, color: primaryColor }}>{personalInfo.fullName || "Your Name"}</h1>
+        <ContactBar personalInfo={personalInfo} color="#475569" />
       </div>
 
-      {/* Summary */}
       {summary && (
-        <div className="my-3 text-center">
-          <div className={`my-2 pb-1 ${borderClasses[borderStyle]}`}>
-            <h2 className="text-sm font-bold uppercase tracking-widest text-center" style={{ color: primaryColor }}>Professional Summary</h2>
-          </div>
-          <p className="text-slate-700 leading-relaxed text-center italic">{summary}</p>
+        <div style={{ marginBottom: secSpacing }}>
+          <SectionTitle title="Professional Summary" />
+          <p style={{ textAlign: "center", fontStyle: "italic", color: "#475569", margin: "4px 0 0 0", fontSize: "0.92em" }}>{summary}</p>
         </div>
       )}
 
-      {/* Experience */}
-      {experience && experience.length > 0 && (
-        <div className="mb-3">
-          <div className={`my-2 pb-1 ${borderClasses[borderStyle]}`}>
-            <h2 className="text-sm font-bold uppercase tracking-widest text-center" style={{ color: primaryColor }}>Professional Experience</h2>
-          </div>
+      {experience.length > 0 && (
+        <div style={{ marginBottom: secSpacing }}>
+          <SectionTitle title="Professional Experience" />
           {experience.map((exp, idx) => (
-            <div key={idx} className="mb-3 break-inside-avoid">
-              <div className="flex justify-between font-bold text-slate-900 text-sm">
+            <div key={idx} style={{ marginBottom: entSpacing, pageBreakInside: "avoid" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: "0.95em", color: "#0f172a" }}>
                 <span>{exp.position}</span>
-                <span>{exp.startDate} - {exp.endDate || "Present"}</span>
+                <span style={{ fontWeight: 500, color: "#475569", whiteSpace: "nowrap", marginLeft: "8px" }}>{exp.startDate} - {exp.endDate || "Present"}</span>
               </div>
-              <div className="flex justify-between text-slate-600 font-medium italic text-xs mb-1">
-                <span>{exp.company} {exp.location && `| ${exp.location}`}</span>
-              </div>
-              <ul className="list-disc ml-5 text-slate-700 text-left space-y-0.5 leading-normal">
-                {(exp.highlights || []).map((highlight, hIdx) => (
-                  <li key={hIdx}>{highlight}</li>
-                ))}
+              <div style={{ fontStyle: "italic", color: "#475569", fontSize: "0.88em", marginBottom: "4px" }}>{exp.company}{exp.location ? ` | ${exp.location}` : ""}</div>
+              <ul style={{ margin: "0 0 0 18px", padding: 0, color: "#334155", fontSize: "0.9em" }}>
+                {(exp.highlights || []).map((h, i) => <li key={i} style={{ marginBottom: "2px" }}>{h}</li>)}
               </ul>
             </div>
           ))}
         </div>
       )}
 
-      {/* Education */}
-      {education && education.length > 0 && (
-        <div className="mb-3">
-          <div className={`my-2 pb-1 ${borderClasses[borderStyle]}`}>
-            <h2 className="text-sm font-bold uppercase tracking-widest text-center" style={{ color: primaryColor }}>Education</h2>
-          </div>
+      {education.length > 0 && (
+        <div style={{ marginBottom: secSpacing }}>
+          <SectionTitle title="Education" />
           {education.map((edu, idx) => (
-            <div key={idx} className="mb-2 break-inside-avoid">
-              <div className="flex justify-between font-bold text-slate-900 text-sm">
+            <div key={idx} style={{ marginBottom: "4px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: "0.95em", color: "#0f172a" }}>
                 <span>{edu.institution}</span>
-                <span>{edu.startDate} - {edu.endDate}</span>
+                <span style={{ fontWeight: 500, color: "#475569", whiteSpace: "nowrap", marginLeft: "8px" }}>{edu.startDate} - {edu.endDate}</span>
               </div>
-              <div className="flex justify-between text-slate-600 font-medium text-xs">
-                <span>{edu.degree}{edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ""} {edu.location && `| ${edu.location}`}</span>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.88em", color: "#475569" }}>
+                <span>{edu.degree}{edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ""}</span>
                 {edu.gpa && <span>GPA: {edu.gpa}</span>}
               </div>
             </div>
@@ -337,15 +337,12 @@ export const CenteredLayout = ({ resumeData, customStyles, borderStyle = "double
         </div>
       )}
 
-      {/* Skills */}
-      {skills && skills.length > 0 && (
-        <div className="mb-3">
-          <div className={`my-2 pb-1 ${borderClasses[borderStyle]}`}>
-            <h2 className="text-sm font-bold uppercase tracking-widest text-center" style={{ color: primaryColor }}>Skills</h2>
-          </div>
-          <div className="block mt-1 text-center">
+      {skills.length > 0 && (
+        <div style={{ marginBottom: secSpacing }}>
+          <SectionTitle title="Skills" />
+          <div style={{ textAlign: "center", marginTop: "5px" }}>
             {skills.map((skill, idx) => (
-              <span key={idx} className="inline-block mx-1 mb-1 px-2 py-0.5 bg-slate-100 border border-slate-200 rounded-full text-slate-700 text-xs font-medium">
+              <span key={idx} style={{ display: "inline-block", margin: "2px 4px", padding: "2px 8px", background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: "9999px", fontSize: "0.85em", color: "#334155" }}>
                 {skill}
               </span>
             ))}
@@ -353,45 +350,29 @@ export const CenteredLayout = ({ resumeData, customStyles, borderStyle = "double
         </div>
       )}
 
-      {/* Projects */}
-      {projects && projects.length > 0 && (
-        <div className="mb-3">
-          <div className={`my-2 pb-1 ${borderClasses[borderStyle]}`}>
-            <h2 className="text-sm font-bold uppercase tracking-widest text-center" style={{ color: primaryColor }}>Key Projects</h2>
-          </div>
+      {projects.length > 0 && (
+        <div style={{ marginBottom: secSpacing }}>
+          <SectionTitle title="Key Projects" />
           {projects.map((proj, idx) => (
-            <div key={idx} className="mb-2 break-inside-avoid">
-              <div className="flex justify-between font-bold text-slate-900 text-sm">
+            <div key={idx} style={{ marginBottom: entSpacing }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: "0.95em", color: "#0f172a" }}>
                 <span>{proj.name}</span>
-                {proj.url && (
-                  <a 
-                    href={proj.url.startsWith("http") ? proj.url : `https://${proj.url}`} 
-                    target="_blank" 
-                    rel="noreferrer" 
-                    className="text-xs font-semibold hover:underline" 
-                    style={{ color: primaryColor }}
-                  >
-                    {proj.url}
-                  </a>
-                )}
+                {proj.url && <a href={proj.url.startsWith("http") ? proj.url : `https://${proj.url}`} target="_blank" rel="noreferrer" style={{ fontSize: "0.82em", color: primaryColor, textDecoration: "underline" }}>{proj.url}</a>}
               </div>
-              <p className="text-slate-700 mt-0.5 leading-relaxed text-xs text-center">{proj.description}</p>
+              <p style={{ color: "#475569", margin: "3px 0 0 0", fontSize: "0.9em", textAlign: "center" }}>{proj.description}</p>
             </div>
           ))}
         </div>
       )}
 
-      {/* Certifications */}
-      {certifications && certifications.length > 0 && (
-        <div className="mb-3">
-          <div className={`my-2 pb-1 ${borderClasses[borderStyle]}`}>
-            <h2 className="text-sm font-bold uppercase tracking-widest text-center" style={{ color: primaryColor }}>Certifications</h2>
-          </div>
-          <div className="grid grid-cols-2 gap-2 mt-1 text-center justify-center">
+      {certifications.length > 0 && (
+        <div style={{ marginBottom: secSpacing }}>
+          <SectionTitle title="Certifications" />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", marginTop: "4px" }}>
             {certifications.map((cert, idx) => (
-              <div key={idx} className="text-xs">
-                <div className="font-semibold text-slate-900">{cert.name}</div>
-                <div className="text-slate-500 text-2xs">{cert.issuer} {cert.date ? `(${cert.date})` : ""}</div>
+              <div key={idx} style={{ fontSize: "0.88em", textAlign: "center" }}>
+                <div style={{ fontWeight: 600, color: "#0f172a" }}>{cert.name}</div>
+                <div style={{ color: "#64748b" }}>{cert.issuer} {cert.date ? `(${cert.date})` : ""}</div>
               </div>
             ))}
           </div>
@@ -401,51 +382,65 @@ export const CenteredLayout = ({ resumeData, customStyles, borderStyle = "double
   );
 };
 
-// 3. Split Column Layout (Left or Right Sidebar layouts)
+// ----------------------------------------------------------------------
+// 3. SPLIT SIDEBAR LAYOUT
+// ----------------------------------------------------------------------
 export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition = "left" }) => {
-  const { personalInfo = {}, summary = "", experience = [], education = [], skills = [], projects = [], certifications = [], languages = [] } = resumeData;
+  const {
+    personalInfo = {}, summary = "", experience = [], education = [],
+    skills = [], projects = [], certifications = [], languages = []
+  } = resumeData;
+
   const primaryColor = customStyles.primaryColor || "#1e3a8a";
+  const secSpacing = customStyles.sectionSpacing || "14px";
+  const entSpacing = customStyles.entrySpacing || "10px";
+
+  const topPad = customStyles.margins?.top || "0.5in";
+  const botPad = customStyles.margins?.bottom || "0.5in";
+  const sidePad = customStyles.margins?.left || "0.5in";
+
+  const SideTitle = ({ title }) => (
+    <h3 style={{ fontSize: "0.82em", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(255,255,255,0.75)", margin: `0 0 6px 0` }}>{title}</h3>
+  );
+
+  const MainTitle = ({ title }) => (
+    <div style={{ borderBottom: "1px solid #cbd5e1", marginBottom: "6px", paddingBottom: "3px", marginTop: "10px" }}>
+      <h2 style={{ fontSize: "0.85em", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: primaryColor, margin: 0 }}>{title}</h2>
+    </div>
+  );
 
   const sidebarContent = (
-    <div className="flex flex-col text-white" style={{ gap: customStyles.sectionSpacing || "16px" }}>
-      {/* Contact Details in Column */}
-      <div className="pb-3 border-b border-white/20">
-        <h3 className="font-bold text-[1.1em] uppercase text-white/70 mb-1">Contact Info</h3>
-        <ContactBar personalInfo={personalInfo} layoutType="col" textClass="text-white text-[0.9em]" />
+    <div style={{ display: "flex", flexDirection: "column", gap: secSpacing }}>
+      <div style={{ paddingBottom: "10px", borderBottom: "1px solid rgba(255,255,255,0.2)" }}>
+        <SideTitle title="Contact" />
+        <ContactBar personalInfo={personalInfo} layoutType="col" color="rgba(255,255,255,0.85)" />
       </div>
-
-      {/* Skills */}
-      {skills && skills.length > 0 && (
+      {skills.length > 0 && (
         <div>
-          <h3 className="font-bold text-[1.1em] uppercase tracking-wide mb-1 text-white">Skills</h3>
-          <div className="text-[0.9em] leading-relaxed text-white/90">
-            {skills.join(", ")}
+          <SideTitle title="Skills" />
+          <div style={{ fontSize: "0.85em", color: "rgba(255,255,255,0.9)", lineHeight: "1.7" }}>
+            {skills.join(" • ")}
           </div>
         </div>
       )}
-
-      {/* Education */}
-      {education && education.length > 0 && (
+      {education.length > 0 && (
         <div>
-          <h3 className="font-bold text-[1.1em] uppercase tracking-wide mb-2 text-white">Education</h3>
+          <SideTitle title="Education" />
           {education.map((edu, idx) => (
-            <div key={idx} className="mb-2 text-[0.9em] text-white/90 break-inside-avoid">
-              <div className="font-bold text-white text-[1em]">{edu.degree}</div>
-              <div className="italic text-white/80">{edu.institution}</div>
-              <div className="text-white/70">{edu.startDate} - {edu.endDate}</div>
+            <div key={idx} style={{ marginBottom: "8px", fontSize: "0.85em", color: "rgba(255,255,255,0.9)" }}>
+              <div style={{ fontWeight: 700, color: "#fff" }}>{edu.degree}</div>
+              <div style={{ fontStyle: "italic", color: "rgba(255,255,255,0.75)" }}>{edu.institution}</div>
+              <div style={{ color: "rgba(255,255,255,0.65)", fontSize: "0.9em" }}>{edu.startDate} - {edu.endDate}</div>
+              {edu.gpa && <div style={{ color: "rgba(255,255,255,0.65)", fontSize: "0.9em" }}>GPA: {edu.gpa}</div>}
             </div>
           ))}
         </div>
       )}
-
-      {/* Languages */}
-      {languages && languages.length > 0 && (
+      {languages.length > 0 && (
         <div>
-          <h3 className="font-bold text-[1.1em] uppercase tracking-wide mb-1 text-white">Languages</h3>
-          <div className="flex flex-col gap-0.5 text-[0.9em] text-white/90 font-medium">
-            {languages.map((lang, idx) => (
-              <span key={idx}>&bull; {lang}</span>
-            ))}
+          <SideTitle title="Languages" />
+          <div style={{ display: "flex", flexDirection: "column", gap: "3px", fontSize: "0.85em", color: "rgba(255,255,255,0.9)" }}>
+            {languages.map((lang, idx) => <span key={idx}>&bull; {lang}</span>)}
           </div>
         </div>
       )}
@@ -453,79 +448,56 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
   );
 
   const mainContent = (
-    <div className="flex flex-col" style={{ gap: customStyles.sectionSpacing || "16px" }}>
-      {/* Name and Professional Label */}
-      <div className="border-b-2 pb-2" style={{ borderColor: primaryColor }}>
-        <h1 className="text-[2em] font-extrabold uppercase tracking-tight text-slate-900 select-all">{personalInfo.fullName || "Your Name"}</h1>
-        <p className="text-[0.9em] font-semibold italic text-slate-500 mt-0.5" style={{ color: primaryColor }}>Curriculum Vitae / Professional Profile</p>
+    <div>
+      <div style={{ borderBottom: `2px solid ${primaryColor}`, paddingBottom: "6px", marginBottom: "8px" }}>
+        <h1 style={{ fontSize: "1.5em", fontWeight: 800, textTransform: "uppercase", color: "#0f172a", margin: 0 }}>{personalInfo.fullName || "Your Name"}</h1>
+        <p style={{ fontSize: "0.85em", fontStyle: "italic", color: primaryColor, margin: "2px 0 0 0" }}>Professional Profile</p>
       </div>
-
-      {/* Summary */}
       {summary && (
-        <div>
-          <SectionHeader title="Professional Summary" primaryColor={primaryColor} borderStyle="solid" />
-          <p className="text-slate-700 leading-relaxed text-justify text-[0.95em] whitespace-pre-wrap">{summary}</p>
+        <div style={{ marginBottom: secSpacing }}>
+          <MainTitle title="Professional Summary" />
+          <p style={{ color: "#334155", margin: "4px 0 0 0", fontSize: "0.9em", textAlign: "justify" }}>{summary}</p>
         </div>
       )}
-
-      {/* Experience */}
-      {experience && experience.length > 0 && (
-        <div>
-          <SectionHeader title="Professional Experience" primaryColor={primaryColor} borderStyle="solid" />
+      {experience.length > 0 && (
+        <div style={{ marginBottom: secSpacing }}>
+          <MainTitle title="Professional Experience" />
           {experience.map((exp, idx) => (
-            <div key={idx} className="break-inside-avoid" style={{ marginBottom: customStyles.entrySpacing || "12px" }}>
-              <div className="flex justify-between font-bold text-slate-900 text-[1em]">
+            <div key={idx} style={{ marginBottom: entSpacing, pageBreakInside: "avoid" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: "0.95em", color: "#0f172a" }}>
                 <span>{exp.position}</span>
-                <span>{exp.startDate} - {exp.endDate || "Present"}</span>
+                <span style={{ fontWeight: 500, color: "#475569", whiteSpace: "nowrap", marginLeft: "8px", fontSize: "0.9em" }}>{exp.startDate} - {exp.endDate || "Present"}</span>
               </div>
-              <div className="flex justify-between text-slate-600 font-medium italic text-[0.9em] mb-2">
-                <span>{exp.company} {exp.location && `| ${exp.location}`}</span>
-              </div>
-              <ul className="list-disc ml-4 text-slate-700 text-[0.9em] leading-normal text-justify" style={{ gap: "2px", display: "flex", flexDirection: "column" }}>
-                {(exp.highlights || []).map((highlight, hIdx) => (
-                  <li key={hIdx}>{highlight}</li>
-                ))}
+              <div style={{ fontStyle: "italic", color: "#475569", fontSize: "0.88em", marginBottom: "4px" }}>{exp.company}{exp.location ? ` | ${exp.location}` : ""}</div>
+              <ul style={{ margin: "0 0 0 16px", padding: 0, color: "#334155", fontSize: "0.88em" }}>
+                {(exp.highlights || []).map((h, i) => <li key={i} style={{ marginBottom: "2px", textAlign: "justify" }}>{h}</li>)}
               </ul>
             </div>
           ))}
         </div>
       )}
-
-      {/* Projects */}
-      {projects && projects.length > 0 && (
-        <div>
-          <SectionHeader title="Projects" primaryColor={primaryColor} borderStyle="solid" />
+      {projects.length > 0 && (
+        <div style={{ marginBottom: secSpacing }}>
+          <MainTitle title="Projects" />
           {projects.map((proj, idx) => (
-            <div key={idx} className="break-inside-avoid" style={{ marginBottom: customStyles.entrySpacing || "8px" }}>
-              <div className="flex justify-between font-bold text-slate-900 text-[1em]">
+            <div key={idx} style={{ marginBottom: entSpacing, pageBreakInside: "avoid" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: "0.95em", color: "#0f172a" }}>
                 <span>{proj.name}</span>
-                {proj.url && (
-                  <a 
-                    href={proj.url.startsWith("http") ? proj.url : `https://${proj.url}`} 
-                    target="_blank" 
-                    rel="noreferrer" 
-                    className="text-[0.85em] font-semibold hover:underline" 
-                    style={{ color: primaryColor }}
-                  >
-                    {proj.url}
-                  </a>
-                )}
+                {proj.url && <a href={proj.url.startsWith("http") ? proj.url : `https://${proj.url}`} target="_blank" rel="noreferrer" style={{ fontSize: "0.82em", color: primaryColor, textDecoration: "underline" }}>{proj.url}</a>}
               </div>
-              <p className="text-slate-700 mt-1.5 leading-relaxed text-[0.9em] text-justify">{proj.description}</p>
+              <p style={{ color: "#334155", margin: "3px 0 2px 0", fontSize: "0.88em", textAlign: "justify" }}>{proj.description}</p>
             </div>
           ))}
         </div>
       )}
-
-      {/* Certifications */}
-      {certifications && certifications.length > 0 && (
-        <div>
-          <SectionHeader title="Certifications & Accreditations" primaryColor={primaryColor} borderStyle="solid" />
-          <div className="grid grid-cols-2 gap-2 text-[0.9em]">
+      {certifications.length > 0 && (
+        <div style={{ marginBottom: secSpacing }}>
+          <MainTitle title="Certifications" />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", marginTop: "4px" }}>
             {certifications.map((cert, idx) => (
-              <div key={idx} className="border-l-2 pl-2 border-slate-300">
-                <div className="font-semibold text-slate-900">{cert.name}</div>
-                <div className="text-slate-500">{cert.issuer} {cert.date ? `(${cert.date})` : ""}</div>
+              <div key={idx} style={{ borderLeft: `2px solid #cbd5e1`, paddingLeft: "6px", fontSize: "0.88em" }}>
+                <div style={{ fontWeight: 600, color: "#0f172a" }}>{cert.name}</div>
+                <div style={{ color: "#64748b" }}>{cert.issuer} {cert.date ? `(${cert.date})` : ""}</div>
               </div>
             ))}
           </div>
@@ -534,28 +506,23 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
     </div>
   );
 
-  const sidebarPad = customStyles.margins?.left || "0.5in";
-  const mainPad = customStyles.margins?.right || "0.5in";
-  const topPad = customStyles.margins?.top || "0.5in";
-  const botPad = customStyles.margins?.bottom || "0.5in";
-
   return (
-    <div className="w-full text-slate-800 bg-white table" style={{ fontSize: customStyles.fontSize || "9.5pt", tableLayout: "fixed" }}>
+    <div style={{ width: "100%", display: "table", tableLayout: "fixed", fontSize: customStyles.fontSize || "9.5pt", lineHeight: customStyles.lineHeight || "1.4", background: "#fff" }}>
       {sidebarPosition === "left" ? (
-        <div className="table-row">
-          <div className="table-cell w-[35%] align-top select-all" style={{ backgroundColor: primaryColor, padding: `${topPad} 16px ${botPad} ${sidebarPad}` }}>
+        <div style={{ display: "table-row" }}>
+          <div style={{ display: "table-cell", width: "33%", verticalAlign: "top", backgroundColor: primaryColor, padding: `${topPad} 14px ${botPad} ${sidePad}` }}>
             {sidebarContent}
           </div>
-          <div className="table-cell w-[65%] align-top bg-white" style={{ padding: `${topPad} ${mainPad} ${botPad} 20px` }}>
+          <div style={{ display: "table-cell", width: "67%", verticalAlign: "top", backgroundColor: "#fff", padding: `${topPad} ${sidePad} ${botPad} 18px` }}>
             {mainContent}
           </div>
         </div>
       ) : (
-        <div className="table-row">
-          <div className="table-cell w-[65%] align-top bg-white" style={{ padding: `${topPad} 20px ${botPad} ${mainPad}` }}>
+        <div style={{ display: "table-row" }}>
+          <div style={{ display: "table-cell", width: "67%", verticalAlign: "top", backgroundColor: "#fff", padding: `${topPad} 18px ${botPad} ${sidePad}` }}>
             {mainContent}
           </div>
-          <div className="table-cell w-[35%] align-top select-all" style={{ backgroundColor: primaryColor, padding: `${topPad} ${sidebarPad} ${botPad} 16px` }}>
+          <div style={{ display: "table-cell", width: "33%", verticalAlign: "top", backgroundColor: primaryColor, padding: `${topPad} ${sidePad} ${botPad} 14px` }}>
             {sidebarContent}
           </div>
         </div>
