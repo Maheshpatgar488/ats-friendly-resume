@@ -92,7 +92,7 @@ const SectionHeader = ({ title, primaryColor, borderStyle = "solid" }) => {
   };
 
   return (
-    <div className={`mt-4 mb-2 pb-1 ${borderClasses[borderStyle] || "border-b border-slate-300"}`}>
+    <div className={`mt-4 mb-2 pb-1 ${borderClasses[borderStyle] || "border-b border-slate-300"}`} style={{ pageBreakAfter: "avoid", breakAfter: "avoid", breakInside: "avoid" }}>
       <h2 
         className="text-sm font-bold uppercase tracking-wider select-all" 
         style={{ color: primaryColor }}
