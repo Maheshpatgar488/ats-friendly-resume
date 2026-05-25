@@ -7,9 +7,15 @@ import { ResumeRenderer, templatesList } from "./templates/index";
 import { API_URL } from "../config";
 
 export default function LivePreview({ resumeData, customStyles, setCustomStyles, onExportBackup, onLoadSampleData, onClearResume }) {
-  const [zoom, setZoom] = useState(85); // Default zoom level to see the whole A4 page nicely
+  const [zoom, setZoom] = useState(85);
   const [pdfLoading, setPdfLoading] = useState(false);
-  const [activeSubTab, setActiveSubTab] = useState("templates"); // templates | typography | margins
+  const [activeSubTab, setActiveSubTab] = useState("templates");
+  const [previewHeight, setPreviewHeight] = useState(0);
+
+  // A4 page height in pixels at 96dpi = 297mm = ~1122px
+  const A4_PX = 1122;
+  const estimatedPages = previewHeight > 0 ? Math.ceil(previewHeight / A4_PX) : null;
+  const fitsOnePage = estimatedPages !== null && estimatedPages <= 1;
 
   // Curated color palette
   const colors = [
@@ -210,7 +216,8 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
 
             {/* Font Size Stepper */}
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Font Size</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Font Size</label>
+              <p className="text-[9px] text-slate-500 mb-2">Affects all body text, bullet points, and descriptions</p>
               <div className="flex items-center gap-2 bg-slate-900/40 rounded-lg border border-slate-700/50 p-1">
                 <button
                   onClick={() => {
@@ -248,7 +255,8 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
 
             {/* Line Height Stepper */}
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Line Spacing</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Line Spacing</label>
+              <p className="text-[9px] text-slate-500 mb-2">Space between lines of text — lower = more content fits</p>
               <div className="flex items-center gap-2 bg-slate-900/40 rounded-lg border border-slate-700/50 p-1">
                 <button
                   onClick={() => {
@@ -285,7 +293,8 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
 
             {/* Section Spacing Stepper */}
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Section Spacing</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Section Spacing</label>
+              <p className="text-[9px] text-slate-500 mb-2">Gap between sections (Experience, Education, Skills…)</p>
               <div className="flex items-center gap-2 bg-slate-900/40 rounded-lg border border-slate-700/50 p-1">
                 <button
                   onClick={() => {
@@ -457,17 +466,35 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
         {/* Canvas Area */}
         <div className="flex-1 overflow-auto bg-slate-950/65 flex justify-center items-start p-8 select-all">
           <div 
-            className="resume-preview-container origin-top"
+            className="resume-preview-container origin-top relative"
             style={{ 
               transform: `scale(${zoom / 100})`, 
               transformOrigin: "top center",
               marginBottom: `${Math.max(0, (zoom / 100 - 1) * 297)}mm`
             }}
           >
+            {/* Page count overlay */}
+            <div className={`absolute top-2 right-2 z-10 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider select-none pointer-events-none ${
+              fitsOnePage 
+                ? "bg-emerald-600/90 text-white" 
+                : estimatedPages !== null 
+                  ? "bg-red-600/90 text-white" 
+                  : "bg-slate-700/80 text-slate-300"
+            }`} style={{ position: "absolute" }}>
+              {estimatedPages !== null 
+                ? fitsOnePage ? "✓ 1 Page" : `⚠ ~${estimatedPages} Pages`
+                : "..."}
+            </div>
             <div 
               id="resume-pdf-content" 
               className="bg-white shadow-2xl"
               style={{ width: "210mm", minHeight: "297mm", padding: "0", boxSizing: "border-box" }}
+              ref={(el) => {
+                if (el) {
+                  const observer = new ResizeObserver(() => setPreviewHeight(el.scrollHeight));
+                  observer.observe(el);
+                }
+              }}
             >
               {/* Semantic templates mapper compiler */}
               <ResumeRenderer 
