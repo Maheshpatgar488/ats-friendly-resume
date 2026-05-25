@@ -178,7 +178,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
       ...prev,
       projects: [
         ...prev.projects,
-        { name: "", description: "", technologies: [], url: "" }
+        { name: "", highlights: [""], technologies: [], url: "" }
       ]
     }));
   };
@@ -200,6 +200,32 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
       } else {
         updated[idx] = { ...updated[idx], [field]: value };
       }
+      return { ...prev, projects: updated };
+    });
+  };
+
+  const addProjectHighlight = (projIdx) => {
+    setResumeData(prev => {
+      const updated = [...prev.projects];
+      updated[projIdx].highlights = [...(updated[projIdx].highlights || []), ""];
+      return { ...prev, projects: updated };
+    });
+  };
+
+  const removeProjectHighlight = (projIdx, hIdx) => {
+    setResumeData(prev => {
+      const updated = [...prev.projects];
+      updated[projIdx].highlights = updated[projIdx].highlights.filter((_, i) => i !== hIdx);
+      return { ...prev, projects: updated };
+    });
+  };
+
+  const updateProjectHighlight = (projIdx, hIdx, value) => {
+    setResumeData(prev => {
+      const updated = [...prev.projects];
+      const updatedHighlights = [...(updated[projIdx].highlights || [])];
+      updatedHighlights[hIdx] = value;
+      updated[projIdx].highlights = updatedHighlights;
       return { ...prev, projects: updated };
     });
   };
@@ -831,16 +857,6 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                   </div>
 
                   <div className="mb-4">
-                    <label className={labelStyle}>Project Description</label>
-                    <textarea 
-                      className={`${inputStyle} h-20 resize-none`} 
-                      placeholder="Designed a microservices-based API supporting 10k orders/day..." 
-                      value={proj.description || ""}
-                      onChange={(e) => updateProject(idx, "description", e.target.value)}
-                    />
-                  </div>
-
-                  <div>
                     <label className={labelStyle}>Technologies (Comma-separated)</label>
                     <input 
                       type="text" 
@@ -849,6 +865,42 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                       value={(proj.technologies || []).join(", ") || ""}
                       onChange={(e) => updateProject(idx, "technologies", e.target.value)}
                     />
+                  </div>
+
+                  {/* Project Highlights (bullet points) */}
+                  <div className="mt-4 border-t border-slate-700/40 pt-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <label className={labelStyle}>Project Highlights & Features</label>
+                      <button 
+                        onClick={() => addProjectHighlight(idx)}
+                        className="flex items-center gap-1 text-[11px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors uppercase tracking-wider"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> ADD BULLET
+                      </button>
+                    </div>
+
+                    <div className="space-y-3">
+                      {(proj.highlights || []).map((highlight, hIdx) => (
+                        <div key={hIdx} className="flex gap-2 items-start relative animate-fadeIn">
+                          <textarea 
+                            className={`${inputStyle} h-16 flex-1 py-1.5`}
+                            placeholder="Built a responsive e-commerce platform with real-time inventory tracking..."
+                            value={highlight}
+                            onChange={(e) => updateProjectHighlight(idx, hIdx, e.target.value)}
+                          />
+                          
+                          <div className="flex flex-col gap-1.5 pt-1.5">
+                            <button 
+                              onClick={() => removeProjectHighlight(idx, hIdx)}
+                              title="Delete bullet"
+                              className="p-1.5 bg-slate-800 border border-slate-700 text-slate-500 hover:text-red-400 rounded transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               ))
