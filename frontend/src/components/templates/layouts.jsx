@@ -71,9 +71,9 @@ const SectionHeader = ({ title, primaryColor, borderStyle = "solid" }) => {
 
   return (
     <div style={{
-      marginTop: "12px",
-      marginBottom: "6px",
-      paddingBottom: "3px",
+      marginTop: "10px",
+      marginBottom: "5px",
+      paddingBottom: "2px",
       borderBottom: borderMap[borderStyle] || borderMap.solid,
       pageBreakAfter: "avoid",
       breakAfter: "avoid",
@@ -102,33 +102,33 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
   } = resumeData;
 
   const primaryColor = customStyles.primaryColor || "#1e3a8a";
-  const secSpacing = customStyles.sectionSpacing || "12px";
-  const entSpacing = customStyles.entrySpacing || "8px";
+  const secSpacing = customStyles.sectionSpacing || "10px";
+  const entSpacing = customStyles.entrySpacing || "6px";
 
   const fs = {
-    name: "22pt",
-    contact: "9pt",
-    sectionTitle: "10pt",
-    body: "10pt",
-    entryTitle: "10.5pt",
-    entryMeta: "9.5pt",
-    skill: "9pt",
-    small: "9pt",
+    name: "20pt",
+    contact: "8.5pt",
+    sectionTitle: "9.5pt",
+    body: "9.5pt",
+    entryTitle: "10pt",
+    entryMeta: "9pt",
+    skill: "8.5pt",
+    small: "8.5pt",
   };
 
   return (
-    <div style={{ width: "100%", color: "#1e293b", background: "#fff", fontSize: fs.body, lineHeight: customStyles.lineHeight || "1.45" }}>
+    <div style={{ width: "100%", color: "#1e293b", background: "#fff", fontSize: fs.body, lineHeight: customStyles.lineHeight || "1.4" }}>
 
       {/* Header */}
       {headerBanner ? (
-        <div style={{ textAlign: "center", padding: "18px 20px", backgroundColor: primaryColor, color: "#fff" }}>
+        <div style={{ textAlign: "center", padding: "14px 20px", backgroundColor: primaryColor, color: "#fff" }}>
           <h1 style={{ fontSize: fs.name, fontWeight: 800, textTransform: "uppercase", margin: 0, color: "#fff", letterSpacing: "-0.3px" }}>
             {personalInfo.fullName || "Your Name"}
           </h1>
           <ContactBar personalInfo={personalInfo} color="#e2e8f0" />
         </div>
       ) : (
-        <div style={{ textAlign: "center", paddingBottom: "8px" }}>
+        <div style={{ textAlign: "center", paddingBottom: "6px" }}>
           <h1 style={{ fontSize: fs.name, fontWeight: 800, textTransform: "uppercase", margin: 0, color: primaryColor, letterSpacing: "-0.3px" }}>
             {personalInfo.fullName || "Your Name"}
           </h1>
@@ -137,13 +137,13 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
       )}
 
       {/* Body */}
-      <div style={{ paddingTop: "4px" }}>
+      <div style={{ paddingTop: "2px" }}>
 
         {/* Summary */}
         {summary && (
           <div style={{ marginBottom: secSpacing }}>
             <SectionHeader title="Professional Summary" primaryColor={primaryColor} borderStyle={borderStyle} />
-            <p style={{ color: "#334155", margin: "4px 0 0 0", textAlign: "justify", fontSize: fs.body }}>{summary}</p>
+            <p style={{ color: "#334155", margin: "3px 0 0 0", textAlign: "justify", fontSize: fs.body }}>{summary}</p>
           </div>
         )}
 
@@ -157,12 +157,12 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
                   <span>{exp.position}</span>
                   <span style={{ fontWeight: 500, fontSize: fs.entryMeta, color: "#475569", whiteSpace: "nowrap", marginLeft: "8px" }}>{exp.startDate} - {exp.endDate || "Present"}</span>
                 </div>
-                <div style={{ fontStyle: "italic", color: "#475569", fontSize: fs.entryMeta, marginBottom: "4px" }}>
+                <div style={{ fontStyle: "italic", color: "#475569", fontSize: fs.entryMeta, marginBottom: "3px" }}>
                   {exp.company}{exp.location ? ` | ${exp.location}` : ""}
                 </div>
-                <ul style={{ margin: "0 0 0 18px", padding: 0, color: "#334155", fontSize: fs.body }}>
+                <ul style={{ margin: "0 0 0 16px", padding: 0, color: "#334155", fontSize: fs.body }}>
                   {(exp.highlights || []).map((h, i) => (
-                    <li key={i} style={{ marginBottom: "2px", textAlign: "justify" }}>{h}</li>
+                    <li key={i} style={{ marginBottom: "1px", textAlign: "justify" }}>{h}</li>
                   ))}
                 </ul>
               </div>
@@ -175,7 +175,7 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
           <div style={{ marginBottom: secSpacing }}>
             <SectionHeader title="Education" primaryColor={primaryColor} borderStyle={borderStyle} />
             {education.map((edu, idx) => (
-              <div key={idx} style={{ marginBottom: "4px", pageBreakInside: "avoid" }}>
+              <div key={idx} style={{ marginBottom: "3px", pageBreakInside: "avoid" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", fontWeight: 700, fontSize: fs.entryTitle, color: "#0f172a" }}>
                   <span>{edu.institution}</span>
                   <span style={{ fontWeight: 500, fontSize: fs.entryMeta, color: "#475569", whiteSpace: "nowrap", marginLeft: "8px" }}>{edu.startDate} - {edu.endDate}</span>
@@ -193,12 +193,12 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
         {skills.length > 0 && (
           <div style={{ marginBottom: secSpacing }}>
             <SectionHeader title="Skills & Expertise" primaryColor={primaryColor} borderStyle={borderStyle} />
-            <div style={{ marginTop: "5px" }}>
+            <div style={{ marginTop: "4px" }}>
               {skills.map((skill, idx) => (
                 <span key={idx} style={{
                   display: "inline-block",
-                  margin: "3px 5px 3px 0",
-                  padding: "3px 9px",
+                  margin: "2px 4px 2px 0",
+                  padding: "2px 8px",
                   background: "#f1f5f9",
                   border: "1px solid #e2e8f0",
                   borderRadius: "4px",
@@ -228,7 +228,7 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
                     </a>
                   )}
                 </div>
-                <p style={{ color: "#334155", margin: "3px 0 2px 0", fontSize: fs.body, textAlign: "justify" }}>{proj.description}</p>
+                <p style={{ color: "#334155", margin: "2px 0 2px 0", fontSize: fs.body, textAlign: "justify" }}>{proj.description}</p>
                 {proj.technologies?.length > 0 && (
                   <div style={{ fontSize: fs.small, color: "#64748b" }}>
                     <strong>Technologies:</strong> {proj.technologies.join(", ")}
@@ -243,7 +243,7 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
         {certifications.length > 0 && (
           <div style={{ marginBottom: secSpacing }}>
             <SectionHeader title="Certifications" primaryColor={primaryColor} borderStyle={borderStyle} />
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", marginTop: "4px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5px", marginTop: "3px" }}>
               {certifications.map((cert, idx) => (
                 <div key={idx} style={{ borderLeft: `2px solid ${primaryColor}`, paddingLeft: "6px", fontSize: fs.body }}>
                   <div style={{ fontWeight: 600, color: "#0f172a" }}>{cert.name}</div>
@@ -258,9 +258,9 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
         {languages.length > 0 && (
           <div style={{ marginBottom: secSpacing }}>
             <SectionHeader title="Languages" primaryColor={primaryColor} borderStyle={borderStyle} />
-            <div style={{ marginTop: "4px" }}>
+            <div style={{ marginTop: "3px" }}>
               {languages.map((lang, idx) => (
-                <span key={idx} style={{ display: "inline-block", marginRight: "16px", fontSize: fs.body, fontWeight: 500, color: "#334155" }}>
+                <span key={idx} style={{ display: "inline-block", marginRight: "14px", fontSize: fs.body, fontWeight: 500, color: "#334155" }}>
                   &bull; {lang}
                 </span>
               ))}
