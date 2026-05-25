@@ -19,9 +19,9 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
   const fontFamily = customStyles.fontFamily || "Inter"; // Default Inter
   const fontSize = customStyles.fontSize || "10pt"; // Default 10pt for high-density ATS
   const lineHeight = customStyles.lineHeight || "1.4";
-  const margins = customStyles.margins || { top: "0.8in", bottom: "0.8in", left: "0.8in", right: "0.8in" };
-  const sectionSpacing = customStyles.sectionSpacing || "20px";
-  const entrySpacing = customStyles.entrySpacing || "14px";
+  const margins = customStyles.margins || { top: "0.5in", bottom: "0.5in", left: "0.55in", right: "0.55in" };
+  const sectionSpacing = customStyles.sectionSpacing || "10px";
+  const entrySpacing = customStyles.entrySpacing || "8px";
 
   // Map font families to standard CSS stacks
   const fontStacks = {
@@ -69,11 +69,11 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
 
     /* Standard ATS Headings Structure */
     .section-title {
-      font-size: 1.15rem;
+      font-size: 1.05rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       font-weight: 700;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       display: flex;
       align-items: center;
     }
@@ -99,7 +99,7 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
       display: flex;
       justify-content: space-between;
       font-weight: 700;
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       color: #0f172a;
     }
 
@@ -108,17 +108,17 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
       justify-content: space-between;
       font-style: italic;
       color: #475569;
-      font-size: 0.9rem;
-      margin-bottom: 3px;
+      font-size: 0.87rem;
+      margin-bottom: 2px;
     }
 
     ul.bullet-points {
-      margin-left: 16px;
+      margin-left: 14px;
       list-style-type: disc;
     }
 
     ul.bullet-points li {
-      margin-bottom: 2px;
+      margin-bottom: 1px;
       color: #334155;
     }
 
@@ -163,7 +163,7 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
   let templateCSS = "";
   let templateHTML = "";
 
-  const nameHTML = `<h1 style="font-size: 2.2rem; font-weight: 800; letter-spacing: -0.5px; color: ${primaryColor}; text-align: center; text-transform: uppercase;">${personalInfo.fullName || "Your Name"}</h1>`;
+  const nameHTML = `<h1 style="font-size: 1.9rem; font-weight: 800; letter-spacing: -0.5px; color: ${primaryColor}; text-align: center; text-transform: uppercase;">${personalInfo.fullName || "Your Name"}</h1>`;
   
   const contacts = [];
   if (personalInfo.email) {
@@ -189,7 +189,7 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
   }
 
   const contactBarHTML = `
-    <div class="contact-bar" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 6px; font-size: 0.85rem; color: #475569;">
+    <div class="contact-bar" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 4px; font-size: 0.8rem; color: #475569;">
       ${contacts.map(c => `<span class="contact-item">${c}</span>`).join(" &bull; ")}
     </div>
   `;
