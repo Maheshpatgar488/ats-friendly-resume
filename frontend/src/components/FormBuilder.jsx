@@ -3,6 +3,7 @@ import {
   User, Briefcase, GraduationCap, Code, FolderGit2, Award, 
   Plus, Trash2, Sparkles, ChevronDown, ChevronUp, AlertCircle
 } from "lucide-react";
+import { API_URL } from "../config";
 
 export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
   const [activeTab, setActiveTab] = useState("personal");
@@ -93,7 +94,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
     setAiLoading(prev => ({ ...prev, [loadingKey]: true }));
 
     try {
-      const response = await fetch("http://localhost:5000/api/enhance", {
+      const response = await fetch(`${API_URL}/api/enhance`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -263,7 +264,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
     }
     setSummaryLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/api/enhance", {
+      const response = await fetch(`${API_URL}/api/enhance`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
