@@ -24,6 +24,9 @@ const emptyResume = {
       location: "San Francisco, CA",
       startDate: "2022-01",
       endDate: "Present",
+      description: [
+        "Led a 6-person engineering team building and maintaining a high-traffic B2B SaaS platform serving 50K+ users."
+      ],
       highlights: [
         "Spearheaded redevelopment of high-traffic core SaaS platform, boosting page speeds by 40% and expanding scalability.",
         "Led a cross-functional team of 6 engineers to release high-fidelity real-time collaboration dashboards, driving 15% increase in user retention.",
@@ -48,7 +51,12 @@ const emptyResume = {
   projects: [
     {
       name: "ATS Resume Builder",
-      description: "A premium full-stack web application designed with 20+ visual templates to build resume files optimized for Applicant Tracking Systems.",
+      description: [
+        "Built a premium full-stack web application with 20+ visual templates for building ATS-optimized resume files."
+      ],
+      highlights: [
+        "Integrated Gemini AI for resume parsing, keyword matching, and STAR-method bullet optimization."
+      ],
       technologies: ["React", "Tailwind CSS", "Node.js", "Express", "Gemini AI"],
       url: "github.com/example/resume-builder"
     }

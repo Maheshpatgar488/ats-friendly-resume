@@ -39,7 +39,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
       ...prev,
       experience: [
         ...prev.experience,
-        { company: "", position: "", location: "", startDate: "", endDate: "", highlights: [""] }
+        { company: "", position: "", location: "", startDate: "", endDate: "", description: [""], highlights: [""] }
       ]
     }));
   };
@@ -178,7 +178,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
       ...prev,
       projects: [
         ...prev.projects,
-        { name: "", highlights: [""], technologies: [], url: "" }
+        { name: "", description: [""], highlights: [""], technologies: [], url: "" }
       ]
     }));
   };
@@ -282,6 +282,68 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
   // ----------------------------------------------------------------------
   // AI SUMMARY ENHANCER
   // ----------------------------------------------------------------------
+  // ----------------------------------------------------------------------
+  // EXPERIENCE DESCRIPTION BULLETS HELPERS
+  // ----------------------------------------------------------------------
+  const addDescriptionBullet = (expIdx) => {
+    setResumeData(prev => {
+      const updated = [...prev.experience];
+      const bullets = updated[expIdx].description || [];
+      updated[expIdx].description = [...bullets, ""];
+      return { ...prev, experience: updated };
+    });
+  };
+
+  const removeDescriptionBullet = (expIdx, bIdx) => {
+    setResumeData(prev => {
+      const updated = [...prev.experience];
+      const bullets = (updated[expIdx].description || []).filter((_, i) => i !== bIdx);
+      updated[expIdx].description = bullets;
+      return { ...prev, experience: updated };
+    });
+  };
+
+  const updateDescriptionBullet = (expIdx, bIdx, value) => {
+    setResumeData(prev => {
+      const updated = [...prev.experience];
+      const bullets = [...(updated[expIdx].description || [])];
+      bullets[bIdx] = value;
+      updated[expIdx].description = bullets;
+      return { ...prev, experience: updated };
+    });
+  };
+
+  // ----------------------------------------------------------------------
+  // PROJECT DESCRIPTION BULLETS HELPERS
+  // ----------------------------------------------------------------------
+  const addProjectDescBullet = (projIdx) => {
+    setResumeData(prev => {
+      const updated = [...prev.projects];
+      const bullets = updated[projIdx].description || [];
+      updated[projIdx].description = [...bullets, ""];
+      return { ...prev, projects: updated };
+    });
+  };
+
+  const removeProjectDescBullet = (projIdx, bIdx) => {
+    setResumeData(prev => {
+      const updated = [...prev.projects];
+      const bullets = (updated[projIdx].description || []).filter((_, i) => i !== bIdx);
+      updated[projIdx].description = bullets;
+      return { ...prev, projects: updated };
+    });
+  };
+
+  const updateProjectDescBullet = (projIdx, bIdx, value) => {
+    setResumeData(prev => {
+      const updated = [...prev.projects];
+      const bullets = [...(updated[projIdx].description || [])];
+      bullets[bIdx] = value;
+      updated[projIdx].description = bullets;
+      return { ...prev, projects: updated };
+    });
+  };
+
   const [summaryLoading, setSummaryLoading] = useState(false);
   const enhanceSummary = async () => {
     if (!resumeData.summary.trim()) {
@@ -593,6 +655,43 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                     </div>
                   </div>
 
+                  {/* Experience Description (Bullet Points) */}
+                  <div className="mt-4 border-t border-slate-700/40 pt-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <label className={labelStyle}>Role Overview (Bullet Points)</label>
+                      <button 
+                        onClick={() => addDescriptionBullet(idx)}
+                        className="flex items-center gap-1 text-[11px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors uppercase tracking-wider"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> ADD BULLET
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      {(exp.description || []).length === 0 && (
+                        <div className="text-xs text-slate-500 italic py-2">No role overview bullets added yet.</div>
+                      )}
+                      {(exp.description || []).map((descBullet, bIdx) => (
+                        <div key={bIdx} className="flex gap-2 items-start relative animate-fadeIn">
+                          <textarea 
+                            className={`${inputStyle} h-16 flex-1 py-1.5`}
+                            placeholder="Describe your overall role, team size, and key responsibilities..."
+                            value={descBullet}
+                            onChange={(e) => updateDescriptionBullet(idx, bIdx, e.target.value)}
+                          />
+                          <div className="flex flex-col gap-1.5 pt-1.5">
+                            <button 
+                              onClick={() => removeDescriptionBullet(idx, bIdx)}
+                              title="Delete bullet"
+                              className="p-1.5 bg-slate-800 border border-slate-700 text-slate-500 hover:text-red-400 rounded transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Highlights (bullet points) */}
                   <div className="mt-4 border-t border-slate-700/40 pt-4">
                     <div className="flex justify-between items-center mb-2">
@@ -865,6 +964,43 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                       value={(proj.technologies || []).join(", ") || ""}
                       onChange={(e) => updateProject(idx, "technologies", e.target.value)}
                     />
+                  </div>
+
+                  {/* Project Description (Bullet Points) */}
+                  <div className="mb-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <label className={labelStyle}>Project Overview (Bullet Points)</label>
+                      <button 
+                        onClick={() => addProjectDescBullet(idx)}
+                        className="flex items-center gap-1 text-[11px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors uppercase tracking-wider"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> ADD BULLET
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      {(proj.description || []).length === 0 && (
+                        <div className="text-xs text-slate-500 italic py-2">No project overview bullets added yet.</div>
+                      )}
+                      {(proj.description || []).map((descBullet, bIdx) => (
+                        <div key={bIdx} className="flex gap-2 items-start relative animate-fadeIn">
+                          <textarea 
+                            className={`${inputStyle} h-16 flex-1 py-1.5`}
+                            placeholder="Describe the project purpose, your contributions, and outcomes..."
+                            value={descBullet}
+                            onChange={(e) => updateProjectDescBullet(idx, bIdx, e.target.value)}
+                          />
+                          <div className="flex flex-col gap-1.5 pt-1.5">
+                            <button 
+                              onClick={() => removeProjectDescBullet(idx, bIdx)}
+                              title="Delete bullet"
+                              className="p-1.5 bg-slate-800 border border-slate-700 text-slate-500 hover:text-red-400 rounded transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Project Highlights (bullet points) */}

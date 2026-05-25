@@ -213,6 +213,11 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
           <div class="entry-subheader">
             <span>${exp.company || "Company"} ${exp.location ? `| ${exp.location}` : ""}</span>
           </div>
+          ${(exp.description || []).length > 0 ? `
+          <ul class="bullet-points" style="margin-bottom: 3px;">
+            ${(exp.description || []).map(d => `<li>${d}</li>`).join("")}
+          </ul>
+          ` : ""}
           <ul class="bullet-points">
             ${(exp.highlights || []).map(bullet => `<li>${bullet}</li>`).join("")}
           </ul>
@@ -257,7 +262,11 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
             <span>${proj.name}</span>
             <span>${proj.url ? `<a href="${proj.url.startsWith("http") ? proj.url : `https://${proj.url}`}" target="_blank" style="font-size: 0.78rem; font-weight: 600; color: ${primaryColor}; text-decoration: underline;">${proj.url}</a>` : ""}</span>
           </div>
-          <p style="color: #334155; font-size: 0.88rem; margin-top: 2px;">${proj.description || ""}</p>
+          ${(proj.description || []).length > 0 ? `
+          <ul style="margin: 2px 0 2px 14px; padding: 0; color: #334155; font-size: 0.88rem;">
+            ${(proj.description || []).map(d => `<li>${d}</li>`).join("")}
+          </ul>
+          ` : ""}
           ${proj.technologies && proj.technologies.length > 0 ? `
             <div style="font-size: 0.78rem; margin-top: 2px; color: #475569;">
               <strong>Technologies:</strong> ${proj.technologies.join(", ")}
