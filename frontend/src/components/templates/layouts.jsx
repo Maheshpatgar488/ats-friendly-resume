@@ -1,6 +1,16 @@
 import React from "react";
 
 // ----------------------------------------------------------------------
+// HELPER: Safely coerce a value to an flat array (prevents .map crashes)
+// ----------------------------------------------------------------------
+function safeArray(val) {
+  if (Array.isArray(val)) return val;
+  if (val === null || val === undefined) return [];
+  if (typeof val === "string") return val ? [val] : [];
+  return [];
+}
+
+// ----------------------------------------------------------------------
 // COMMON SUB-COMPONENTS — all inline styles for PDF compatibility
 // ----------------------------------------------------------------------
 
@@ -160,15 +170,21 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
                 <div style={{ fontStyle: "italic", color: "#475569", fontSize: fs.entryMeta, marginBottom: "3px" }}>
                   {exp.company}{exp.location ? ` | ${exp.location}` : ""}
                 </div>
-                {(exp.description || []).length > 0 && (
+{(Array.isArray(exp.description) && exp.description.length > 0) && (
                   <ul style={{ margin: "0 0 0 16px", padding: 0, color: "#334155", fontSize: fs.body, marginBottom: "3px" }}>
-                    {(exp.description || []).map((d, i) => (
+                    {exp.description.map((d, i) => (
                       <li key={i} style={{ marginBottom: "1px", textAlign: "justify" }}>{d}</li>
                     ))}
                   </ul>
                 )}
                 <ul style={{ margin: "0 0 0 16px", padding: 0, color: "#334155", fontSize: fs.body }}>
                   {(exp.highlights || []).map((h, i) => (
+                    <li key={i} style={{ marginBottom: "1px", textAlign: "justify" }}>{h}</li>
+                  ))}
+                </ul>
+                )}
+                <ul style={{ margin: "0 0 0 16px", padding: 0, color: "#334155", fontSize: fs.body }}>
+                  {safeArray(exp.highlights).map((h, i) => (
                     <li key={i} style={{ marginBottom: "1px", textAlign: "justify" }}>{h}</li>
                   ))}
                 </ul>
@@ -235,9 +251,9 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
                     </a>
                   )}
                 </div>
-                {(proj.description || []).length > 0 && (
+{(Array.isArray(proj.description) && proj.description.length > 0) && (
                   <ul style={{ margin: "2px 0 2px 16px", padding: 0, color: "#334155", fontSize: fs.body }}>
-                    {(proj.description || []).map((d, i) => (
+                    {proj.description.map((d, i) => (
                       <li key={i} style={{ marginBottom: "1px", textAlign: "justify" }}>{d}</li>
                     ))}
                   </ul>
@@ -335,13 +351,17 @@ export const CenteredLayout = ({ resumeData, customStyles, borderStyle = "double
                 <span style={{ fontWeight: 500, color: "#475569", whiteSpace: "nowrap", marginLeft: "8px" }}>{exp.startDate} - {exp.endDate || "Present"}</span>
               </div>
               <div style={{ fontStyle: "italic", color: "#475569", fontSize: "0.88em", marginBottom: "4px" }}>{exp.company}{exp.location ? ` | ${exp.location}` : ""}</div>
-              {(exp.description || []).length > 0 && (
+              {(Array.isArray(exp.description) && exp.description.length > 0) && (
                 <ul style={{ margin: "0 0 4px 18px", padding: 0, color: "#334155", fontSize: "0.9em" }}>
-                  {(exp.description || []).map((d, i) => <li key={i} style={{ marginBottom: "2px" }}>{d}</li>)}
+                  {exp.description.map((d, i) => <li key={i} style={{ marginBottom: "2px" }}>{d}</li>)}
                 </ul>
               )}
               <ul style={{ margin: "0 0 0 18px", padding: 0, color: "#334155", fontSize: "0.9em" }}>
                 {(exp.highlights || []).map((h, i) => <li key={i} style={{ marginBottom: "2px" }}>{h}</li>)}
+              </ul>
+              )}
+              <ul style={{ margin: "0 0 0 18px", padding: 0, color: "#334155", fontSize: "0.9em" }}>
+                {safeArray(exp.highlights).map((h, i) => <li key={i} style={{ marginBottom: "2px" }}>{h}</li>)}
               </ul>
             </div>
           ))}
@@ -388,12 +408,15 @@ export const CenteredLayout = ({ resumeData, customStyles, borderStyle = "double
                 <span>{proj.name}</span>
                 {proj.url && <a href={proj.url.startsWith("http") ? proj.url : `https://${proj.url}`} target="_blank" rel="noreferrer" style={{ fontSize: "0.82em", color: primaryColor, textDecoration: "underline" }}>{proj.url}</a>}
               </div>
-              {(proj.description || []).length > 0 && (
+              {(Array.isArray(proj.description) && proj.description.length > 0) && (
                 <ul style={{ margin: "3px 0 0 18px", padding: 0, color: "#475569", fontSize: "0.9em" }}>
-                  {(proj.description || []).map((d, i) => <li key={i} style={{ marginBottom: "2px" }}>{d}</li>)}
+                  {proj.description.map((d, i) => <li key={i} style={{ marginBottom: "2px" }}>{d}</li>)}
                 </ul>
               )}
             </div>
+          );
+        })}
+      </div>
           ))}
         </div>
       )}
@@ -502,13 +525,17 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
                 <span style={{ fontWeight: 500, color: "#475569", whiteSpace: "nowrap", marginLeft: "8px", fontSize: "0.9em" }}>{exp.startDate} - {exp.endDate || "Present"}</span>
               </div>
               <div style={{ fontStyle: "italic", color: "#475569", fontSize: "0.88em", marginBottom: "4px" }}>{exp.company}{exp.location ? ` | ${exp.location}` : ""}</div>
-              {(exp.description || []).length > 0 && (
+              {(Array.isArray(exp.description) && exp.description.length > 0) && (
                 <ul style={{ margin: "0 0 4px 16px", padding: 0, color: "#334155", fontSize: "0.88em" }}>
-                  {(exp.description || []).map((d, i) => <li key={i} style={{ marginBottom: "2px", textAlign: "justify" }}>{d}</li>)}
+                  {exp.description.map((d, i) => <li key={i} style={{ marginBottom: "2px", textAlign: "justify" }}>{d}</li>)}
                 </ul>
               )}
               <ul style={{ margin: "0 0 0 16px", padding: 0, color: "#334155", fontSize: "0.88em" }}>
                 {(exp.highlights || []).map((h, i) => <li key={i} style={{ marginBottom: "2px", textAlign: "justify" }}>{h}</li>)}
+              </ul>
+              )}
+              <ul style={{ margin: "0 0 0 16px", padding: 0, color: "#334155", fontSize: "0.88em" }}>
+                {safeArray(exp.highlights).map((h, i) => <li key={i} style={{ marginBottom: "2px", textAlign: "justify" }}>{h}</li>)}
               </ul>
             </div>
           ))}
@@ -523,15 +550,15 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
                 <span>{proj.name}</span>
                 {proj.url && <a href={proj.url.startsWith("http") ? proj.url : `https://${proj.url}`} target="_blank" rel="noreferrer" style={{ fontSize: "0.82em", color: primaryColor, textDecoration: "underline" }}>{proj.url}</a>}
               </div>
-              {(proj.description || []).length > 0 && (
+              {(Array.isArray(proj.description) && proj.description.length > 0) && (
                 <ul style={{ margin: "3px 0 2px 16px", padding: 0, color: "#334155", fontSize: "0.88em" }}>
-                  {(proj.description || []).map((d, i) => <li key={i} style={{ marginBottom: "2px", textAlign: "justify" }}>{d}</li>)}
+                  {proj.description.map((d, i) => <li key={i} style={{ marginBottom: "2px", textAlign: "justify" }}>{d}</li>)}
                 </ul>
               )}
             </div>
-          ))}
-        </div>
-      )}
+          );
+        })}
+      </div>
       {certifications.length > 0 && (
         <div style={{ marginBottom: secSpacing }}>
           <MainTitle title="Certifications" />

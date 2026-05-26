@@ -87,13 +87,62 @@ const defaultStyles = {
   }
 };
 
+/**
+ * Normalizes nested arrays to ensure fields like description and highlights are always arrays.
+ * This prevents `.map is not a function` errors when data is corrupted or comes from an external source.
+ * @param {Array} arr - The input array (e.g., experience, projects)
+ * @param {Array} fields - The fields to normalize (e.g., ['description', 'highlights'])
+ */
+function normalizeEntries(arr, fields) {
+  if (!Array.isArray(arr)) return [];
+  return arr.map(item => {
+    if (!item || typeof item !== 'object') return item;
+    const normalized = { ...item };
+    fields.forEach(field => {
+      const val = normalized[field];
+      if (val === null || val === undefined) {
+        normalized[field] = [];
+      } else if (typeof val === 'string') {
+        normalized[field] = [val];
+      } else if (!Array.isArray(val)) {
+        normalized[field] = [];
+      }
+    });
+    return normalized;
+  });
+}
+
+/**
+ * Deeply normalizes the entire resumeData object to ensure structural integrity.
+ * @param {Object} data - The raw resume data
+ * @returns {Object} - The normalized resume data
+ */
+function normalizeResumeData(data) {
+  if (!data || typeof data !== 'object') {
+    return { ...emptyResume }; // Return a fresh copy of empty resume
+  }
+
+  return {
+    ...data,
+    experience: normalizeEntries(data.experience, ['description', 'highlights']),
+    projects: normalizeEntries(data.projects, ['description', 'highlights', 'technologies']),
+    // Also ensure top-level arrays are truly arrays
+    education: Array.isArray(data.education) ? data.education : [],
+    skills: Array.isArray(data.skills) ? data.skills : [],
+    certifications: Array.isArray(data.certifications) ? data.certifications : [],
+    languages: Array.isArray(data.languages) ? data.languages : [],
+  };
+}
+
 export function useAutosave() {
-  const [resumeData, setResumeData] = useState(() => {
+  const [resumeData, setResumeDataState] = useState(() => {
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY_DATA);
-      return saved ? JSON.parse(saved) : emptyResume;
+      if (!saved) return { ...emptyResume };
+      const parsed = JSON.parse(saved);
+      return normalizeResumeData(parsed);
     } catch {
-      return emptyResume;
+      return { ...emptyResume };
     }
   });
 
@@ -113,6 +162,7 @@ export function useAutosave() {
   useEffect(() => {
     setIsSaved(false);
     
+    // Clear existing timer
     // Clear existing timer
     if (timerRef.current) {
       clearTimeout(timerRef.current);
@@ -135,6 +185,17 @@ export function useAutosave() {
       }
     };
   }, [resumeData, customStyles]);
+
+  /**
+   * Safely set resume data with normalization
+   */
+  const setResumeData = (value) => {
+    if (typeof value === 'function') {
+      setResumeDataState(prev => normalizeResumeData(value(prev)));
+    } else {
+      setResumeDataState(normalizeResumeData(value));
+    }
+  };
 
   /**
    * Reset data to completely empty
@@ -161,22 +222,22 @@ export function useAutosave() {
       certifications: [],
       languages: []
     };
-    setResumeData(freshData);
+    setResumeDataState(freshData);
   };
 
   /**
    * Reset data to standard professional template data
    */
   const loadSampleData = () => {
-    setResumeData(emptyResume);
+    setResumeDataState(normalizeResumeData({ ...emptyResume }));
     setCustomStyles(defaultStyles);
   };
 
   /**
-   * Overwrites active resume data
+   * Overwrites active resume data with normalization
    */
   const updateResumeData = (newData) => {
-    setResumeData(newData);
+    setResumeDataState(normalizeResumeData(newData));
   };
 
   /**

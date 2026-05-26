@@ -285,10 +285,12 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
   // ----------------------------------------------------------------------
   // EXPERIENCE DESCRIPTION BULLETS HELPERS
   // ----------------------------------------------------------------------
+  const toArray = (val) => Array.isArray(val) ? val : [];
+
   const addDescriptionBullet = (expIdx) => {
     setResumeData(prev => {
       const updated = [...prev.experience];
-      const bullets = updated[expIdx].description || [];
+      const bullets = toArray(updated[expIdx].description);
       updated[expIdx].description = [...bullets, ""];
       return { ...prev, experience: updated };
     });
@@ -297,7 +299,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
   const removeDescriptionBullet = (expIdx, bIdx) => {
     setResumeData(prev => {
       const updated = [...prev.experience];
-      const bullets = (updated[expIdx].description || []).filter((_, i) => i !== bIdx);
+      const bullets = toArray(updated[expIdx].description).filter((_, i) => i !== bIdx);
       updated[expIdx].description = bullets;
       return { ...prev, experience: updated };
     });
@@ -306,7 +308,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
   const updateDescriptionBullet = (expIdx, bIdx, value) => {
     setResumeData(prev => {
       const updated = [...prev.experience];
-      const bullets = [...(updated[expIdx].description || [])];
+      const bullets = [...toArray(updated[expIdx].description)];
       bullets[bIdx] = value;
       updated[expIdx].description = bullets;
       return { ...prev, experience: updated };
@@ -319,7 +321,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
   const addProjectDescBullet = (projIdx) => {
     setResumeData(prev => {
       const updated = [...prev.projects];
-      const bullets = updated[projIdx].description || [];
+      const bullets = toArray(updated[projIdx].description);
       updated[projIdx].description = [...bullets, ""];
       return { ...prev, projects: updated };
     });
@@ -328,7 +330,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
   const removeProjectDescBullet = (projIdx, bIdx) => {
     setResumeData(prev => {
       const updated = [...prev.projects];
-      const bullets = (updated[projIdx].description || []).filter((_, i) => i !== bIdx);
+      const bullets = toArray(updated[projIdx].description).filter((_, i) => i !== bIdx);
       updated[projIdx].description = bullets;
       return { ...prev, projects: updated };
     });
@@ -337,7 +339,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
   const updateProjectDescBullet = (projIdx, bIdx, value) => {
     setResumeData(prev => {
       const updated = [...prev.projects];
-      const bullets = [...(updated[projIdx].description || [])];
+      const bullets = [...toArray(updated[projIdx].description)];
       bullets[bIdx] = value;
       updated[projIdx].description = bullets;
       return { ...prev, projects: updated };
@@ -667,10 +669,10 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                       </button>
                     </div>
                     <div className="space-y-3">
-                      {(exp.description || []).length === 0 && (
+                      {(!Array.isArray(exp.description) || exp.description.length === 0) && (
                         <div className="text-xs text-slate-500 italic py-2">No role overview bullets added yet.</div>
                       )}
-                      {(exp.description || []).map((descBullet, bIdx) => (
+                      {Array.isArray(exp.description) && exp.description.map((descBullet, bIdx) => (
                         <div key={bIdx} className="flex gap-2 items-start relative animate-fadeIn">
                           <textarea 
                             className={`${inputStyle} h-16 flex-1 py-1.5`}
@@ -978,10 +980,10 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                       </button>
                     </div>
                     <div className="space-y-3">
-                      {(proj.description || []).length === 0 && (
+                      {(!Array.isArray(proj.description) || proj.description.length === 0) && (
                         <div className="text-xs text-slate-500 italic py-2">No project overview bullets added yet.</div>
                       )}
-                      {(proj.description || []).map((descBullet, bIdx) => (
+                      {Array.isArray(proj.description) && proj.description.map((descBullet, bIdx) => (
                         <div key={bIdx} className="flex gap-2 items-start relative animate-fadeIn">
                           <textarea 
                             className={`${inputStyle} h-16 flex-1 py-1.5`}

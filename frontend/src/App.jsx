@@ -311,7 +311,7 @@ export default function App() {
               />
             )}
 
-            {(activePanel === "ihub" || activePanel === "aihub") && (
+            {activePanel === "aihub" && (
               <AIHub 
                 resumeData={resumeData}
                 setResumeData={setResumeData}
