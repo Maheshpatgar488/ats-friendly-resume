@@ -263,7 +263,7 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
             <span>${proj.url ? `<a href="${proj.url.startsWith("http") ? proj.url : `https://${proj.url}`}" target="_blank" style="font-size: 0.78rem; font-weight: 600; color: ${primaryColor}; text-decoration: underline;">${proj.url}</a>` : ""}</span>
           </div>
           ${Array.isArray(proj.description) && proj.description.length > 0 ? `
-          <ul style="margin: 2px 0 2px 14px; padding: 0; color: #334155; font-size: 0.88rem;">
+          <ul style="margin: 2px 0 2px 14px; padding: 0; list-style-type: disc; color: #334155; font-size: 0.88rem;">
             ${proj.description.map(d => `<li>${d}</li>`).join("")}
           </ul>
           ` : ""}
