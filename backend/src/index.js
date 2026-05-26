@@ -432,14 +432,14 @@ app.post("/api/export-pdf", async (req, res) => {
     await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 1 });
 
     // Auto-scaling: reduce spacing before shrinking font to keep text readable
+    // Never go below 9pt — content that overflows at 9pt naturally goes to 2 pages
     const scalingSteps = [
+      { fontSize: "10pt",  lineHeight: "1.35", sectionSpacing: "8px",  entrySpacing: "6px"  },
       { fontSize: "9.5pt", lineHeight: "1.3",  sectionSpacing: "6px",  entrySpacing: "5px"  },
       { fontSize: "9.5pt", lineHeight: "1.25", sectionSpacing: "4px",  entrySpacing: "3px"  },
       { fontSize: "9pt",   lineHeight: "1.25", sectionSpacing: "3px",  entrySpacing: "2px"  },
-      { fontSize: "8.5pt", lineHeight: "1.2",  sectionSpacing: "2px",  entrySpacing: "2px"  },
-      { fontSize: "8pt",   lineHeight: "1.15", sectionSpacing: "1px",  entrySpacing: "1px"  },
-      { fontSize: "7.5pt", lineHeight: "1.1",  sectionSpacing: "1px",  entrySpacing: "0"    },
-      { fontSize: "7pt",   lineHeight: "1.1",  sectionSpacing: "0",    entrySpacing: "0"    },
+      { fontSize: "9pt",   lineHeight: "1.2",  sectionSpacing: "2px",  entrySpacing: "2px"  },
+      { fontSize: "9pt",   lineHeight: "1.15", sectionSpacing: "1px",  entrySpacing: "1px"  },
     ];
 
     let pdfBuffer = null;
@@ -474,11 +474,11 @@ app.post("/api/export-pdf", async (req, res) => {
       }
     }
 
-    // If still doesn't fit after all steps, use the smallest scale and allow 2 pages
-    // (No content is ever cut off — resumes can span 1-2 pages for completeness)
+    // If still doesn't fit after all steps, use the most readable scale and allow 2 pages
+    // Better to have readable text across 2 pages than tiny cramped text
     if (!pdfBuffer) {
-      const smallestScale = scalingSteps[scalingSteps.length - 1];
-      const scaledStyles = { ...customStyles, ...smallestScale };
+      const bestScale = scalingSteps[0];
+      const scaledStyles = { ...customStyles, ...bestScale };
       const htmlContent = compileResumeHTML(resumeData, templateId, scaledStyles);
       await page.setContent(htmlContent, { waitUntil: "domcontentloaded", timeout: 15000 });
 
@@ -486,7 +486,6 @@ app.post("/api/export-pdf", async (req, res) => {
         format: "A4",
         margin: pdfMargins,
         printBackground: true,
-        // Allow multi-page for extreme cases where content still doesn't fit
       });
     }
 
