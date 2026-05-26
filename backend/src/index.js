@@ -171,8 +171,29 @@ app.post("/api/extract-text", upload.single("file"), async (req, res) => {
     `;
 
     // 3. Request structured JSON from Gemini
-    const structuredData = await generateStructuredJSON(prompt, RESUME_JSON_SCHEMA);
-    res.json({ success: true, resumeData: structuredData });
+    let structuredData;
+    try {
+      structuredData = await generateStructuredJSON(prompt, RESUME_JSON_SCHEMA);
+      res.json({ success: true, resumeData: structuredData });
+    } catch (geminiError) {
+      // Gemini failed — return raw extracted text so user can fill in manually
+      console.error("Gemini Extraction Error:", geminiError);
+      res.json({
+        success: true,
+        partial: true,
+        warning: "AI parse failed. Raw text was extracted — fill in the form manually.",
+        resumeData: {
+          personalInfo: {},
+          summary: extractedText.substring(0, 3000),
+          experience: [],
+          education: [],
+          skills: [],
+          projects: [],
+          certifications: [],
+          languages: []
+        }
+      });
+    }
 
   } catch (error) {
     console.error("Extract Text Endpoint Error:", error);

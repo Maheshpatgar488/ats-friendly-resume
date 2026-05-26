@@ -85,11 +85,15 @@ export default function App() {
       }
 
       const data = await response.json();
-      if (response.ok && data.success && data.resumeData) {
+      if (data.success && data.resumeData) {
         updateResumeData(data.resumeData);
-        alert("🎉 Boom! Your old resume was successfully parsed and extracted. All details have been autofilled into the form builder!");
+        if (data.partial) {
+          alert("⚠️ " + (data.warning || "Could not AI-parse the resume. Raw text has been loaded into the summary field — please fill in the form manually."));
+        } else {
+          alert("🎉 Boom! Your old resume was successfully parsed and extracted. All details have been autofilled into the form builder!");
+        }
       } else {
-        alert(data.error || "Failed to parse the file. Please check if the backend is running and valid.");
+        alert((data.details ? data.details + " " : "") + (data.error || "Failed to parse the file. Please check if the backend is running and valid."));
       }
     } catch (err) {
       console.error(err);

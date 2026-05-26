@@ -149,9 +149,15 @@ export function useAutosave() {
   const [customStyles, setCustomStyles] = useState(() => {
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY_STYLES);
-      return saved ? JSON.parse(saved) : defaultStyles;
+      if (!saved) return { ...defaultStyles };
+      const parsed = JSON.parse(saved);
+      // Defensive: ensure parsed is a valid object, not null
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return { ...defaultStyles, ...parsed };
+      }
+      return { ...defaultStyles };
     } catch {
-      return defaultStyles;
+      return { ...defaultStyles };
     }
   });
 
@@ -162,7 +168,6 @@ export function useAutosave() {
   useEffect(() => {
     setIsSaved(false);
     
-    // Clear existing timer
     // Clear existing timer
     if (timerRef.current) {
       clearTimeout(timerRef.current);
