@@ -363,15 +363,22 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
           jobTitle: jobTitle
         })
       });
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseErr) {
+        const text = await response.text();
+        alert("Server returned non-JSON: status=" + response.status + " body=" + text.substring(0, 300));
+        return;
+      }
       if (data.success && data.enhancedText) {
         setResumeData(prev => ({ ...prev, summary: data.enhancedText }));
       } else {
-        alert(data.error || "Failed to enhance summary.");
+        alert((data.error || "Failed to enhance summary.") + " (status " + response.status + ")");
       }
     } catch (err) {
       console.error(err);
-      alert("Error contacting the AI summary enhancer.");
+      alert("Network error: " + err.message);
     } finally {
       setSummaryLoading(false);
     }
