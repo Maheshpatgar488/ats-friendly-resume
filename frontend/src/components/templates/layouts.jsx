@@ -168,7 +168,7 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
                   </ul>
                 )}
                 <ul style={{ margin: "0 0 0 16px", padding: 0, listStyleType: "disc", color: "#334155", fontSize: fs.body }}>
-                  {(exp.highlights || []).map((h, i) => (
+                  {safeArray(exp.highlights).map((h, i) => (
                     <li key={i} style={{ marginBottom: "1px", textAlign: "justify" }}>{h}</li>
                   ))}
                 </ul>

@@ -32,6 +32,14 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 7860;
 
+// Catch crashes before they kill the process
+process.on("uncaughtException", (err) => {
+  console.error("UNCAUGHT EXCEPTION:", err);
+});
+process.on("unhandledRejection", (reason) => {
+  console.error("UNHANDLED REJECTION:", reason);
+});
+
 // Enable CORS and JSON parsing middlewares
 app.use(cors());
 app.use(express.json());
@@ -61,6 +69,19 @@ const upload = multer({
 // ----------------------------------------------------
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// Debug: echo back request info
+app.post("/api/debug-upload", upload.single("file"), (req, res) => {
+  const info = {
+    hasFile: !!req.file,
+    fileName: req.file?.originalname,
+    fileSize: req.file?.size,
+    mimeType: req.file?.mimetype,
+    contentType: req.headers["content-type"]
+  };
+  console.log("Debug upload:", info);
+  res.json(info);
 });
 
 // ----------------------------------------------------
@@ -129,8 +150,20 @@ app.delete("/api/resumes/:id", async (req, res) => {
  * Endpoint: /api/extract-text
  * Takes an uploaded PDF/DOCX file, extracts raw text, and sends it to Gemini AI to structure it.
  */
-app.post("/api/extract-text", upload.single("file"), async (req, res) => {
+app.post("/api/extract-text", (req, res, next) => {
+  console.log("extract-text: received request, content-type:", req.headers["content-type"]);
+  upload.single("file")(req, res, (err) => {
+    if (err) {
+      console.error("extract-text: multer error:", err);
+      return res.status(400).json({ error: "Upload error: " + err.message });
+    }
+    handleExtractText(req, res, next);
+  });
+});
+
+async function handleExtractText(req, res) {
   if (!req.file) {
+    console.log("extract-text: no file in request");
     return res.status(400).json({ error: "Please upload a valid PDF or DOCX file." });
   }
 
@@ -202,7 +235,7 @@ app.post("/api/extract-text", upload.single("file"), async (req, res) => {
       details: error.message || error 
     });
   }
-});
+}
 
 /**
  * Endpoint: /api/enhance
