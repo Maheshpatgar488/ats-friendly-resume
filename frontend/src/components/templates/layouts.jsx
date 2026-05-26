@@ -1,16 +1,6 @@
 import React from "react";
 
 // ----------------------------------------------------------------------
-// HELPER: Safely coerce a value to an flat array (prevents .map crashes)
-// ----------------------------------------------------------------------
-function safeArray(val) {
-  if (Array.isArray(val)) return val;
-  if (val === null || val === undefined) return [];
-  if (typeof val === "string") return val ? [val] : [];
-  return [];
-}
-
-// ----------------------------------------------------------------------
 // COMMON SUB-COMPONENTS — all inline styles for PDF compatibility
 // ----------------------------------------------------------------------
 
@@ -179,12 +169,6 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
                 )}
                 <ul style={{ margin: "0 0 0 16px", padding: 0, color: "#334155", fontSize: fs.body }}>
                   {(exp.highlights || []).map((h, i) => (
-                    <li key={i} style={{ marginBottom: "1px", textAlign: "justify" }}>{h}</li>
-                  ))}
-                </ul>
-                )}
-                <ul style={{ margin: "0 0 0 16px", padding: 0, color: "#334155", fontSize: fs.body }}>
-                  {safeArray(exp.highlights).map((h, i) => (
                     <li key={i} style={{ marginBottom: "1px", textAlign: "justify" }}>{h}</li>
                   ))}
                 </ul>
@@ -359,10 +343,6 @@ export const CenteredLayout = ({ resumeData, customStyles, borderStyle = "double
               <ul style={{ margin: "0 0 0 18px", padding: 0, color: "#334155", fontSize: "0.9em" }}>
                 {(exp.highlights || []).map((h, i) => <li key={i} style={{ marginBottom: "2px" }}>{h}</li>)}
               </ul>
-              )}
-              <ul style={{ margin: "0 0 0 18px", padding: 0, color: "#334155", fontSize: "0.9em" }}>
-                {safeArray(exp.highlights).map((h, i) => <li key={i} style={{ marginBottom: "2px" }}>{h}</li>)}
-              </ul>
             </div>
           ))}
         </div>
@@ -414,9 +394,6 @@ export const CenteredLayout = ({ resumeData, customStyles, borderStyle = "double
                 </ul>
               )}
             </div>
-          );
-        })}
-      </div>
           ))}
         </div>
       )}
@@ -533,10 +510,6 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
               <ul style={{ margin: "0 0 0 16px", padding: 0, color: "#334155", fontSize: "0.88em" }}>
                 {(exp.highlights || []).map((h, i) => <li key={i} style={{ marginBottom: "2px", textAlign: "justify" }}>{h}</li>)}
               </ul>
-              )}
-              <ul style={{ margin: "0 0 0 16px", padding: 0, color: "#334155", fontSize: "0.88em" }}>
-                {safeArray(exp.highlights).map((h, i) => <li key={i} style={{ marginBottom: "2px", textAlign: "justify" }}>{h}</li>)}
-              </ul>
             </div>
           ))}
         </div>
@@ -556,9 +529,9 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
                 </ul>
               )}
             </div>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
       {certifications.length > 0 && (
         <div style={{ marginBottom: secSpacing }}>
           <MainTitle title="Certifications" />
