@@ -168,7 +168,7 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
                   </ul>
                 )}
                 <ul style={{ margin: "0 0 0 16px", padding: 0, listStyleType: "disc", color: "#334155", fontSize: fs.body }}>
-                  {safeArray(exp.highlights).map((h, i) => (
+                  {(exp.highlights || []).map((h, i) => (
                     <li key={i} style={{ marginBottom: "1px", textAlign: "justify" }}>{h}</li>
                   ))}
                 </ul>
@@ -341,7 +341,7 @@ export const CenteredLayout = ({ resumeData, customStyles, borderStyle = "double
                 </ul>
               )}
               <ul style={{ margin: "0 0 0 18px", padding: 0, listStyleType: "disc", color: "#334155", fontSize: "0.9em" }}>
-                {safeArray(exp.highlights).map((h, i) => <li key={i} style={{ marginBottom: "2px" }}>{h}</li>)}
+                {(exp.highlights || []).map((h, i) => <li key={i} style={{ marginBottom: "2px" }}>{h}</li>)}
               </ul>
             </div>
           ))}
@@ -508,7 +508,7 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
                 </ul>
               )}
               <ul style={{ margin: "0 0 0 16px", padding: 0, listStyleType: "disc", color: "#334155", fontSize: "0.88em" }}>
-                {safeArray(exp.highlights).map((h, i) => <li key={i} style={{ marginBottom: "2px", textAlign: "justify" }}>{h}</li>)}
+                {(exp.highlights || []).map((h, i) => <li key={i} style={{ marginBottom: "2px", textAlign: "justify" }}>{h}</li>)}
               </ul>
             </div>
           ))}
