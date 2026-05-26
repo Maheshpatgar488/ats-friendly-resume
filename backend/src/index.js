@@ -285,7 +285,17 @@ app.post("/api/enhance", async (req, res) => {
       `;
     }
 
-    const enhancedText = await generateText(prompt);
+    let enhancedText;
+    try {
+      enhancedText = await generateText(prompt);
+    } catch (geminiError) {
+      console.error("Gemini Enhance Error:", geminiError);
+      return res.json({
+        success: false,
+        error: "AI enhancement unavailable due to rate limiting. Please try again later.",
+        details: geminiError.message
+      });
+    }
     res.json({ success: true, enhancedText: enhancedText.trim().replace(/^"|"$/g, "") }); // trim quotes
 
   } catch (error) {
