@@ -104,15 +104,22 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
         })
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseErr) {
+        const text = await response.text();
+        alert("Server error: " + response.status + " " + text.substring(0, 200));
+        return;
+      }
       if (data.success && data.enhancedText) {
         updateHighlight(expIdx, hIdx, data.enhancedText);
       } else {
-        alert(data.error || "Failed to optimize bullet point. Please check your API key.");
+        alert((data.error || "Failed to optimize bullet.") + " (status " + response.status + ")");
       }
     } catch (err) {
       console.error(err);
-      alert("Error contacting the backend optimization engine.");
+      alert("Network error: " + err.message);
     } finally {
       setAiLoading(prev => ({ ...prev, [loadingKey]: false }));
     }
