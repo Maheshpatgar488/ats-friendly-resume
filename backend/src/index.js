@@ -377,16 +377,15 @@ app.post("/api/export-pdf", async (req, res) => {
     const page = await browser.newPage();
     await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 1 });
 
-    // Auto-scaling: try progressively smaller font/spacing until it fits 1 page
-    // More aggressive scaling steps to ensure content fits properly
+    // Auto-scaling: reduce spacing before shrinking font to keep text readable
     const scalingSteps = [
-      { fontSize: "10pt",  lineHeight: "1.4",  sectionSpacing: "10px", entrySpacing: "8px"  },
-      { fontSize: "9.5pt", lineHeight: "1.35", sectionSpacing: "8px",  entrySpacing: "6px"  },
-      { fontSize: "9pt",   lineHeight: "1.3",  sectionSpacing: "6px",  entrySpacing: "5px"  },
-      { fontSize: "8.5pt", lineHeight: "1.25", sectionSpacing: "5px",  entrySpacing: "4px"  },
-      { fontSize: "8pt",   lineHeight: "1.2",  sectionSpacing: "4px",  entrySpacing: "3px"  },
-      { fontSize: "7.5pt", lineHeight: "1.15", sectionSpacing: "3px",  entrySpacing: "2px"  },
-      { fontSize: "7pt",   lineHeight: "1.1",  sectionSpacing: "2px",  entrySpacing: "2px"  },
+      { fontSize: "9.5pt", lineHeight: "1.3",  sectionSpacing: "6px",  entrySpacing: "5px"  },
+      { fontSize: "9.5pt", lineHeight: "1.25", sectionSpacing: "4px",  entrySpacing: "3px"  },
+      { fontSize: "9pt",   lineHeight: "1.25", sectionSpacing: "3px",  entrySpacing: "2px"  },
+      { fontSize: "8.5pt", lineHeight: "1.2",  sectionSpacing: "2px",  entrySpacing: "2px"  },
+      { fontSize: "8pt",   lineHeight: "1.15", sectionSpacing: "1px",  entrySpacing: "1px"  },
+      { fontSize: "7.5pt", lineHeight: "1.1",  sectionSpacing: "1px",  entrySpacing: "0"    },
+      { fontSize: "7pt",   lineHeight: "1.1",  sectionSpacing: "0",    entrySpacing: "0"    },
     ];
 
     let pdfBuffer = null;

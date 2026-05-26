@@ -12,7 +12,7 @@ const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
  * Returns a configured Gemini generative model instance.
  * Falls back to throwing an error if the API key is missing.
  */
-export function getGeminiModel(modelName = "gemini-2.5-flash") {
+export function getGeminiModel(modelName = "gemini-2.0-flash") {
   if (!genAI) {
     throw new Error("GEMINI_API_KEY is not defined in the server environment (.env file).");
   }
