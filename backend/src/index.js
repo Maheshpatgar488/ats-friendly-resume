@@ -194,35 +194,7 @@ async function handleExtractText(req, res) {
     }
 
     // 2. Parse locally (no API key needed, works every time)
-    let resumeData = parseResumeText(extractedText);
-
-    // 3. Try Gemini AI enhancement (optional — if quota available)
-    const prompt = `
-      You are an elite ATS (Applicant Tracking System) resume parser. 
-      Analyze the raw unstructured text extracted from a resume and extract the details into the exact JSON schema provided.
-      
-      Important Formatting Rules:
-       1. Carefully identify the contact details (fullName, email, phone, location, links like linkedin/github/website).
-       2. Split the work experiences into separate items in the "experience" array. For each experience, extract the company name, position title, dates (startDate, endDate - or "Present"), location, a bullet-point "description" array (overall role context, team size, scope), and a list of key "highlights" bullet points (accomplishments, metrics).
-       3. Split education details.
-       4. Split skills into a clean array of individual skill terms.
-       5. Identify projects, languages, and certifications if present. For each project, include a bullet-point "description" array and a "highlights" array.
-       6. Maintain high factual accuracy. Do NOT fabricate or make up details not present in the raw text. If a section or specific detail is missing, omit it or leave it as an empty string.
-
-      Raw Resume Text:
-      """
-      ${extractedText}
-      """
-    `;
-
-    try {
-      const structuredData = await generateStructuredJSON(prompt, RESUME_JSON_SCHEMA);
-      // Keep local parser's contact info (display text + URL fields), let AI enhance everything else
-      const localPersonal = resumeData.personalInfo;
-      resumeData = { ...resumeData, ...structuredData, personalInfo: localPersonal };
-    } catch (aiError) {
-      console.error("AI Extraction Error (non-fatal):", aiError.message.substring(0, 200));
-    }
+    const resumeData = parseResumeText(extractedText);
 
     res.json({ success: true, resumeData });
 
