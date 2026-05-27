@@ -46,7 +46,7 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
       padding: 0;
     }
 
-    html, body {
+    html {
       width: 100%;
       margin: 0;
       padding: 0;
@@ -56,6 +56,9 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
     }
     
     body {
+      width: 100%;
+      margin: 0;
+      ${(() => { const t = parseInt(templateId) || 1; return t === 20 ? `padding: 0 ${margins.right} ${margins.bottom} ${margins.left};` : `padding: ${margins.top} ${margins.right} ${margins.bottom} ${margins.left};`; })()}
       ${selectedFontStack}
       font-size: ${fontSize};
       line-height: ${lineHeight};

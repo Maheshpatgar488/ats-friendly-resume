@@ -469,11 +469,6 @@ app.post("/api/export-pdf", async (req, res) => {
 
   try {
     const tid = parseInt(templateId, 10) || 1;
-    const isBannerTop = tid === 20;
-
-    const pdfMargins = isBannerTop
-      ? { top: "0", bottom: "0", left: "0", right: "0" }
-      : (customStyles?.margins || { top: "0.5in", bottom: "0.5in", left: "0.55in", right: "0.55in" });
 
     // Launch headless Chrome
     const launchOptions = {
@@ -529,7 +524,6 @@ app.post("/api/export-pdf", async (req, res) => {
         fittingScale = scale;
         pdfBuffer = await page.pdf({
           format: "A4",
-          margin: pdfMargins,
           printBackground: true
         });
         break;
@@ -546,7 +540,6 @@ app.post("/api/export-pdf", async (req, res) => {
 
       pdfBuffer = await page.pdf({
         format: "A4",
-        margin: pdfMargins,
         printBackground: true,
       });
     }
