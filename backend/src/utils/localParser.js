@@ -380,7 +380,7 @@ export function parseResumeText(text) {
         if (expGroup) result.experience.push(expGroup);
         expGroup = { company: "", position: "", startDate: "", endDate: "", location: "", description: [], highlights: [] };
 
-        const sdM = e.text.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s*-?\s*\d{4}\b/i);
+        const sdM = e.text.match(/((Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s*-?\s*\d{4})\b/i);
         if (sdM) expGroup.startDate = sdM[0].trim().replace(/\s+/g, " ");
         const edM = e.text.match(/[-–to]+\s*((Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s*-?\s*\d{4}|Present|Current|Now)\b/i);
         if (edM) expGroup.endDate = edM[1].trim().replace(/\s+/g, " ");
@@ -394,7 +394,7 @@ export function parseResumeText(text) {
         }
 
         // Position from text before first date
-        const datePos = e.text.search(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s*-?\s*\d{4}\b/i);
+        const datePos = e.text.search(/((Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s*-?\s*\d{4})\b/i);
         if (datePos > 0) {
           expGroup.position = e.text.substring(0, datePos).trim();
         } else {
