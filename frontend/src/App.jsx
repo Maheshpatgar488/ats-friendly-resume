@@ -323,6 +323,7 @@ export default function App() {
                 setJobDescription={setJobDescription}
                 jobTitle={jobTitle}
                 setJobTitle={setJobTitle}
+                setCustomStyles={setCustomStyles}
               />
             )}
 

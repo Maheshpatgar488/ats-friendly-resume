@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import { API_URL } from "../config";
 
-export default function AIHub({ resumeData, setResumeData, jobDescription, setJobDescription, jobTitle, setJobTitle }) {
+export default function AIHub({ resumeData, setResumeData, jobDescription, setJobDescription, jobTitle, setJobTitle, setCustomStyles }) {
   const [atsLoading, setAtsLoading] = useState(false);
   const [tailorLoading, setTailorLoading] = useState(false);
   const [scoreData, setScoreData] = useState(null);
@@ -80,9 +80,18 @@ export default function AIHub({ resumeData, setResumeData, jobDescription, setJo
   const applyTailoring = () => {
     if (!tailoredResume) return;
     setResumeData(tailoredResume);
+    if (setCustomStyles) {
+      setCustomStyles(prev => ({
+        ...prev,
+        sectionSpacing: "10px",
+        entrySpacing: "6px",
+        fontSize: "9.5pt",
+        lineHeight: "1.3",
+      }));
+    }
     setShowComparison(false);
     setTailoredResume(null);
-    alert("✨ Awesome! Your resume summary, experiences, and skills have been optimized and tailored for this job description!");
+    alert("✨ Awesome! Your resume has been optimized and tailored! Spacing was compacted to keep it on one page. Adjust in the Preview panel if needed.");
   };
 
   // Helper: return colored ring based on score
@@ -193,7 +202,7 @@ export default function AIHub({ resumeData, setResumeData, jobDescription, setJo
               <div className="bg-slate-900/30 border border-slate-800 rounded-xl p-5 flex flex-col sm:flex-row items-center gap-6 shadow-inner">
                 <div className="relative flex items-center justify-center h-24 w-24 rounded-full border-4 border-slate-800 shadow-xl">
                   <div className={`text-2xl font-black font-mono ${getScoreColor(scoreData.score)}`}>
-                    {scoreData.score}%
+                    {scoreData.score ?? "N/A"}%
                   </div>
                 </div>
                 <div className="text-center sm:text-left flex-1">
@@ -206,7 +215,7 @@ export default function AIHub({ resumeData, setResumeData, jobDescription, setJo
                     )}
                   </div>
                   <p className="text-xs text-slate-400 leading-relaxed mt-1">
-                    Your resume has a semantic match coefficient of {scoreData.score}% against the requirements. Aim for 80%+ to comfortably clear automated screening.
+                    Your resume has a semantic match coefficient of {scoreData.score ?? "N/A"}% against the requirements. Aim for 80%+ to comfortably clear automated screening.
                     {scoreData.fallback && (
                       <span className="block mt-1 text-amber-400/80 text-[10px]">
                         Running in offline mode. Connect a Gemini API key for enhanced AI analysis.

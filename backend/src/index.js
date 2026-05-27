@@ -325,6 +325,9 @@ app.post("/api/ats-score", async (req, res) => {
     `;
 
     const scoreData = await generateStructuredJSON(prompt, ATS_SCORE_SCHEMA);
+    scoreData.score = (typeof scoreData.score === "number" && !Number.isNaN(scoreData.score))
+      ? Math.round(Math.max(0, Math.min(100, scoreData.score)))
+      : 0;
     res.json({ success: true, ...scoreData, engine: "groq" });
 
   } catch (error) {
@@ -363,7 +366,8 @@ app.post("/api/tailor", async (req, res) => {
       2. **Mirror Job Terminology**: Rephrase and rewrite the "highlights" bullet points in the "experience" array using the **STAR methodology** (Situation, Task, Action, Result). Ensure every single bullet explicitly weaves in the exact verbs, technical terms, business metrics, and responsibilities outlined in the Job Description.
       3. **Tailor the Professional Summary**: Rewrite the "summary" to be dense with relevant key phrases. It should sound like the absolute perfect, hand-picked candidate for this specific role, emphasizing transferable achievements.
       4. **MAINTAIN FACTUAL INTEGRITY**: Do not invent fake work histories, fake companies, fake dates, or fake colleges. You are rephrasing, optimizing, and presenting the real facts of the user's career in the exact language of the recruiter to pass ATS filters!
-      5. Output the results strictly in the exact same Resume JSON format provided.
+      5. Keep all bullet points concise (1-2 lines max, ~15-25 words each) so the full resume fits on a single printed page. Prioritize the most impactful keywords from the job description.
+      6. Output the results strictly in the exact same Resume JSON format provided.
 
       Resume JSON:
       ${JSON.stringify(resumeData)}
