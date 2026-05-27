@@ -85,6 +85,24 @@ app.post("/api/debug-upload", upload.single("file"), (req, res) => {
   res.json(info);
 });
 
+// Debug: extract text from uploaded PDF/DOCX and return raw text
+app.post("/api/debug-extract-text", upload.single("file"), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+  try {
+    let extractedText = "";
+    if (req.file.mimetype === "application/pdf") {
+      const data = await pdfParse(req.file.buffer);
+      extractedText = data.text;
+    } else {
+      const data = await mammoth.extractRawText({ buffer: req.file.buffer });
+      extractedText = data.value;
+    }
+    res.json({ text: extractedText, length: extractedText.length });
+  } catch (error) {
+    res.status(500).json({ error: "Extraction failed", details: error.message });
+  }
+});
+
 // Debug: test local parser with raw text
 app.post("/api/debug-parse", express.text({ type: "*/*", limit: "1mb" }), (req, res) => {
   const text = typeof req.body === "string" ? req.body : req.body?.text || "";
