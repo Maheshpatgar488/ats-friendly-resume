@@ -58,7 +58,7 @@ export function parseResumeText(text) {
   const normalized = normalizeText(text);
 
   const result = {
-    personalInfo: { fullName: "", email: "", phone: "", location: "", website: "", linkedin: "", github: "" },
+    personalInfo: { fullName: "", email: "", phone: "", location: "", website: "", websiteUrl: "", linkedin: "", linkedinUrl: "", github: "", githubUrl: "" },
     summary: "",
     experience: [],
     education: [],
@@ -80,67 +80,70 @@ export function parseResumeText(text) {
 
   const emailDomain = result.personalInfo.email ? result.personalInfo.email.split("@")[1] : "";
 
-  // LinkedIn
-  let liMatch = fullText.match(/(?:linkedin\.com\/[^\s,;]+)/i);
-  if (!liMatch) liMatch = fullText.match(/(?:LinkedIn\s*[/:]?\s*([^\s,;•|]+))/i);
-  if (liMatch) {
-    const raw = liMatch[0].replace(/^https?:\/\//, "").replace(/^LinkedIn\s*[/:]\s*/i, "");
-    result.personalInfo.linkedin = "https://" + (raw.includes("linkedin.com") ? raw : "linkedin.com/in/" + raw);
+  // LinkedIn — extract display text from shorthand, URL from hyperlink or full URL
+  let liShorthand = fullText.match(/(?:LinkedIn\s*[/:]?\s*([^\s,;•|]+))/i);
+  if (liShorthand) {
+    result.personalInfo.linkedin = liShorthand[1].replace(/^https?:\/\//, "").replace(/\/$/, "");
+  }
+  let liFullUrl = fullText.match(/https?:\/\/(?:www\.)?linkedin\.com\/[^\s,;)]+/i);
+  if (!liFullUrl) {
+    const liHref = fullText.match(/(?:LinkedIn|linkedin)[^]*?https?:\/\/[^\s)]+/i);
+    if (liHref) liFullUrl = liHref[0].match(/https?:\/\/[^\s)]+/);
+  }
+  if (liFullUrl) {
+    result.personalInfo.linkedinUrl = liFullUrl[0].replace(/\/$/, "");
+    if (!result.personalInfo.linkedin) {
+      const path = liFullUrl[0].replace(/\/$/, "").split("/").pop();
+      if (path && path.length > 1) result.personalInfo.linkedin = path;
+    }
   }
 
-  // GitHub
-  let ghMatch = fullText.match(/(?:github\.com\/[^\s,;]+)/i);
-  if (!ghMatch) ghMatch = fullText.match(/(?:Git(?:Hub)?\s*[/:]?\s*([^\s,;•|]+))/i);
-  if (ghMatch) {
-    const raw = ghMatch[0].replace(/^https?:\/\//, "").replace(/^Git(?:Hub)?\s*[/:]\s*/i, "");
-    result.personalInfo.github = "https://" + (raw.includes("github.com") ? raw : "github.com/" + raw);
+  // GitHub — extract display text from shorthand, URL from hyperlink or full URL
+  let ghShorthand = fullText.match(/(?:Git(?:Hub)?\s*[/:]?\s*([^\s,;•|]+))/i);
+  if (ghShorthand) {
+    result.personalInfo.github = ghShorthand[1].replace(/^https?:\/\//, "").replace(/\/$/, "");
+  }
+  let ghFullUrl = fullText.match(/https?:\/\/(?:www\.)?github\.com\/[^\s,;)]+/i);
+  if (!ghFullUrl) {
+    const ghHref = fullText.match(/(?:Git(?:Hub)?|github)[^]*?https?:\/\/[^\s)]+/i);
+    if (ghHref) ghFullUrl = ghHref[0].match(/https?:\/\/[^\s)]+/);
+  }
+  if (ghFullUrl) {
+    result.personalInfo.githubUrl = ghFullUrl[0].replace(/\/$/, "");
+    if (!result.personalInfo.github) {
+      const path = ghFullUrl[0].replace(/\/$/, "").split("/").pop();
+      if (path && path.length > 1) result.personalInfo.github = path;
+    }
   }
 
-  // Website — require protocol to avoid matching email domains like gmail.com
-  const urlMatch = fullText.match(/https?:\/\/[^\s,;)]+/gi);
-  if (urlMatch) {
-    for (const u of urlMatch) {
-      const low = u.toLowerCase();
-      if (!low.includes("linkedin") && !low.includes("github") && !low.includes("gmail") && !low.includes("outlook") && !low.includes("yahoo") && !low.includes("hotmail")) {
-        result.personalInfo.website = u;
-        break;
-      }
+  // Website — display text from Portfolio label, URL from first non-social URL
+  const pfLabel = fullText.match(/(?:Portfolio|Website)\s*[/:]\s*([^\s,;•|]+)/i);
+  if (pfLabel) {
+    result.personalInfo.website = pfLabel[1].trim();
+  }
+  // Website URL: look for first non-social non-email URL
+  const allUrls = fullText.match(/https?:\/\/[^\s,;)]+/gi) || [];
+  for (const u of allUrls) {
+    const low = u.toLowerCase();
+    if (!low.includes("linkedin") && !low.includes("github") && !low.includes("gmail") && !low.includes("outlook") && !low.includes("yahoo") && !low.includes("hotmail")) {
+      result.personalInfo.websiteUrl = u;
+      break;
     }
   }
   // Fallback: portfolio/website label with URL after it
-  if (!result.personalInfo.website) {
+  if (!result.personalInfo.websiteUrl) {
     const pfUrl = fullText.match(/(?:Portfolio|Website)[^]*?https?:\/\/[^\s)]+/i);
     if (pfUrl) {
       const u = pfUrl[0].match(/https?:\/\/[^\s)]+/)[0];
       if (!u.toLowerCase().includes("linkedin") && !u.toLowerCase().includes("github")) {
-        result.personalInfo.website = u;
+        result.personalInfo.websiteUrl = u;
       }
     }
   }
-  // Last resort: portfolio shorthand (Portfolio/Mahesh) only if it looks like a domain
-  if (!result.personalInfo.website) {
-    const pfMatch = fullText.match(/(?:Portfolio|Website)\s*[/:]\s*([^\s,;•|]+)/i);
-    if (pfMatch) {
-      const val = pfMatch[1].trim();
-      if (val.match(/^(https?:\/\/)?[a-zA-Z0-9-]+\.(com|org|net|io|dev|app|in|co)\b/i)) {
-        result.personalInfo.website = val.startsWith("http") ? val : "https://" + val;
-      }
-    }
-  }
-
-  // LinkedIn URL (separate field for hyperlink)
-  const liHref = fullText.match(/(?:LinkedIn|linkedin)[^]*?https?:\/\/[^\s)]+/i);
-  if (liHref) {
-    const u = liHref[0].match(/https?:\/\/[^\s)]+/)[0];
-    if (u.toLowerCase().includes("linkedin.com")) {
-      result.personalInfo.linkedin = u;
-    }
-  }
-
-  // GitHub — prefer explicit github.com URL from full text
-  const ghUrl = fullText.match(/https?:\/\/github\.com\/[^\s,;)]+/i);
-  if (ghUrl) {
-    result.personalInfo.github = ghUrl[0].replace(/\/$/, "");
+  // Fallback display text from URL hostname if no label found
+  if (!result.personalInfo.website && result.personalInfo.websiteUrl) {
+    const host = result.personalInfo.websiteUrl.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+    result.personalInfo.website = host;
   }
 
   // ============================================================
