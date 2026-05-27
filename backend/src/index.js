@@ -85,6 +85,14 @@ app.post("/api/debug-upload", upload.single("file"), (req, res) => {
   res.json(info);
 });
 
+// Debug: test local parser with raw text
+app.post("/api/debug-parse", express.text({ type: "*/*", limit: "1mb" }), (req, res) => {
+  const text = typeof req.body === "string" ? req.body : req.body?.text || "";
+  if (!text) return res.status(400).json({ error: "Send raw resume text in request body" });
+  const parsed = parseResumeText(text);
+  res.json({ success: true, resumeData: parsed });
+});
+
 // ----------------------------------------------------
 // DATABASE & MANAGEMENT ENDPOINTS
 // ----------------------------------------------------
