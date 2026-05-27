@@ -218,9 +218,11 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
             ${exp.description.map(d => `<li>${d}</li>`).join("")}
           </ul>
           ` : ""}
+          ${Array.isArray(exp.highlights) && exp.highlights.length > 0 ? `
           <ul class="bullet-points">
-            ${(exp.highlights || []).map(bullet => `<li>${bullet}</li>`).join("")}
+            ${exp.highlights.map(bullet => `<li>${bullet}</li>`).join("")}
           </ul>
+          ` : ""}
         </div>
       `).join("")}
     </div>
