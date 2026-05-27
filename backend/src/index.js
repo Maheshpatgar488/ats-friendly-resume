@@ -218,8 +218,8 @@ async function handleExtractText(req, res) {
     try {
       const structuredData = await generateStructuredJSON(prompt, RESUME_JSON_SCHEMA);
       resumeData = structuredData;
-    } catch (geminiError) {
-      console.error("Gemini Extraction Error (non-fatal):", geminiError.message.substring(0, 200));
+    } catch (aiError) {
+      console.error("AI Extraction Error (non-fatal):", aiError.message.substring(0, 200));
     }
 
     res.json({ success: true, resumeData });
@@ -284,12 +284,12 @@ app.post("/api/enhance", async (req, res) => {
     let enhancedText;
     try {
       enhancedText = await generateText(prompt);
-    } catch (geminiError) {
-      console.error("Gemini Enhance Error:", geminiError);
+    } catch (aiError) {
+      console.error("AI Enhance Error:", aiError);
       return res.json({
         success: false,
-        error: "AI enhancement unavailable due to rate limiting. Please try again later.",
-        details: geminiError.message
+        error: "AI enhancement unavailable. Please try again later.",
+        details: aiError.message
       });
     }
     res.json({ success: true, enhancedText: enhancedText.trim().replace(/^"|"$/g, "") }); // trim quotes
@@ -333,10 +333,10 @@ app.post("/api/ats-score", async (req, res) => {
     `;
 
     const scoreData = await generateStructuredJSON(prompt, ATS_SCORE_SCHEMA);
-    res.json({ success: true, ...scoreData, engine: "gemini" });
+    res.json({ success: true, ...scoreData, engine: "groq" });
 
   } catch (error) {
-    console.warn("Gemini ATS scoring failed, falling back to local engine:", error.message || error);
+    console.warn("AI ATS scoring failed, falling back to local engine:", error.message || error);
 
     // 2. Fallback: Pure-JS local ATS engine (zero API cost, works offline)
     try {
@@ -361,7 +361,7 @@ app.post("/api/tailor", async (req, res) => {
   }
 
   try {
-    // 1. Try Gemini AI first for high-quality tailoring
+    // 1. Try AI first for high-quality tailoring
     const prompt = `
       You are an expert career consultant and elite resume architect specializing in maximizing ATS pass-rates.
       Your task is to review the provided Resume JSON data and **tailor it aggressively and comprehensively** to achieve an ATS match score **above 85% to 95%** against the provided Target Job Description.
@@ -383,10 +383,10 @@ app.post("/api/tailor", async (req, res) => {
     `;
 
     const tailoredData = await generateStructuredJSON(prompt, RESUME_JSON_SCHEMA);
-    res.json({ success: true, tailoredResumeData: tailoredData, engine: "gemini" });
+    res.json({ success: true, tailoredResumeData: tailoredData, engine: "groq" });
 
   } catch (error) {
-    console.warn("Gemini tailoring failed, falling back to local engine:", error.message || error);
+    console.warn("AI tailoring failed, falling back to local engine:", error.message || error);
 
     // 2. Fallback: Pure-JS local tailoring engine (zero API cost)
     try {

@@ -1,76 +1,53 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import Groq from "groq-sdk";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const apiKey = process.env.GEMINI_API_KEY;
+const apiKey = process.env.GROQ_API_KEY;
+const groq = apiKey ? new Groq({ apiKey }) : null;
+const MODEL = "llama3-70b-8192";
 
-// Check if API Key is available
-const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
-
-/**
- * Returns a configured Gemini generative model instance.
- * Falls back to throwing an error if the API key is missing.
- */
-export function getGeminiModel(modelName = "gemini-1.5-flash") {
-  if (!genAI) {
-    throw new Error("GEMINI_API_KEY is not defined in the server environment (.env file).");
+export function getGroq() {
+  if (!groq) {
+    throw new Error("GROQ_API_KEY is not defined in the server environment.");
   }
-  return genAI.getGenerativeModel({ model: modelName });
+  return groq;
 }
 
-/**
- * Generates structured JSON data from Gemini using a strict JSON schema.
- * This guarantees the model outputs valid, parseable JSON fitting our model.
- */
 export async function generateStructuredJSON(prompt, schema) {
   try {
-    const model = getGeminiModel();
-    const result = await model.generateContent({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: {
-        responseMimeType: "application/json",
-        responseSchema: schema,
-        temperature: 0.1, // low temperature for high extraction fidelity
-      },
+    const client = getGroq();
+    const result = await client.chat.completions.create({
+      model: MODEL,
+      messages: [
+        { role: "system", content: "You are a JSON generator. Output ONLY valid JSON matching the requested schema. No explanations, no markdown." },
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.1,
     });
-    
-    const responseText = result.response.text();
-    return JSON.parse(responseText);
+    return JSON.parse(result.choices[0].message.content);
   } catch (error) {
-    console.error("Gemini Structured JSON Generation Error:", error);
+    console.error("Groq Structured JSON Generation Error:", error);
     throw error;
   }
 }
 
-/**
- * Generates standard freeform text from Gemini.
- * Perfect for quick summaries or generic bullet point rewrites.
- */
 export async function generateText(prompt, temperature = 0.7) {
   try {
-    const model = getGeminiModel();
-    const result = await model.generateContent({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature,
-      },
+    const client = getGroq();
+    const result = await client.chat.completions.create({
+      model: MODEL,
+      messages: [{ role: "user", content: prompt }],
+      temperature,
     });
-    
-    return result.response.text();
+    return result.choices[0].message.content;
   } catch (error) {
-    console.error("Gemini Text Generation Error:", error);
+    console.error("Groq Text Generation Error:", error);
     throw error;
   }
 }
 
-// ----------------------------------------------------
-// Structuring JSON Schemas for Gemini AI
-// ----------------------------------------------------
-
-/**
- * Strict JSON schema for parsing and extracting unstructured resume text into a structured JSON profile.
- */
 export const RESUME_JSON_SCHEMA = {
   type: "object",
   properties: {
@@ -169,9 +146,6 @@ export const RESUME_JSON_SCHEMA = {
   required: ["personalInfo", "experience", "education", "skills"]
 };
 
-/**
- * Strict JSON schema for measuring ATS scores and extracting matching/missing keywords.
- */
 export const ATS_SCORE_SCHEMA = {
   type: "object",
   properties: {
