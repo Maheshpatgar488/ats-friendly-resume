@@ -77,8 +77,8 @@ const defaultStyles = {
   fontSize: "10pt",
   lineHeight: "1.4",
   primaryColor: "#3730a3", // Indigo accent
-  sectionSpacing: "8px",
-  entrySpacing: "4px",
+  sectionSpacing: "14px",
+  entrySpacing: "8px",
   margins: {
     top: "0.5in",
     bottom: "0.5in",

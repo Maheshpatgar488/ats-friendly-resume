@@ -102,15 +102,16 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
   } = resumeData;
 
   const primaryColor = customStyles.primaryColor || "#1e3a8a";
-  const secSpacing = customStyles.sectionSpacing || "10px";
-  const entSpacing = customStyles.entrySpacing || "6px";
+  const secSpacing = customStyles.sectionSpacing || "14px";
+  const entSpacing = customStyles.entrySpacing || "8px";
 
+  const bodyFs = customStyles.fontSize || "10pt";
   const fs = {
     name: "20pt",
     contact: "8.5pt",
     sectionTitle: "9.5pt",
-    body: "9.5pt",
-    entryTitle: "10pt",
+    body: bodyFs,
+    entryTitle: bodyFs,
     entryMeta: "9pt",
     skill: "8.5pt",
     small: "8.5pt",
@@ -161,15 +162,15 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
                   {exp.company}{exp.location ? ` | ${exp.location}` : ""}
                 </div>
 {(Array.isArray(exp.description) && exp.description.length > 0) && (
-                  <ul style={{ margin: "0 0 0 16px", padding: 0, listStyleType: "disc", color: "#334155", fontSize: fs.body, marginBottom: "3px" }}>
+                  <ul style={{ margin: "2px 0 0 16px", padding: 0, listStyleType: "disc", color: "#334155", fontSize: fs.body }}>
                     {exp.description.map((d, i) => (
-                      <li key={i} style={{ marginBottom: "1px", textAlign: "justify" }}>{d}</li>
+                      <li key={i} style={{ marginBottom: "3px", textAlign: "justify" }}>{d}</li>
                     ))}
                   </ul>
                 )}
-                <ul style={{ margin: "0 0 0 16px", padding: 0, listStyleType: "disc", color: "#334155", fontSize: fs.body }}>
+                <ul style={{ margin: "2px 0 0 16px", padding: 0, listStyleType: "disc", color: "#334155", fontSize: fs.body }}>
                   {(exp.highlights || []).map((h, i) => (
-                    <li key={i} style={{ marginBottom: "1px", textAlign: "justify" }}>{h}</li>
+                    <li key={i} style={{ marginBottom: "3px", textAlign: "justify" }}>{h}</li>
                   ))}
                 </ul>
               </div>
@@ -235,10 +236,10 @@ export const SingleColumnLayout = ({ resumeData, customStyles, borderStyle = "so
                     </a>
                   )}
                 </div>
-{(Array.isArray(proj.description) && proj.description.length > 0) && (
-                  <ul style={{ margin: "2px 0 2px 16px", padding: 0, listStyleType: "disc", color: "#334155", fontSize: fs.body }}>
+                {(Array.isArray(proj.description) && proj.description.length > 0) && (
+                  <ul style={{ margin: "2px 0 0 16px", padding: 0, listStyleType: "disc", color: "#334155", fontSize: fs.body }}>
                     {proj.description.map((d, i) => (
-                      <li key={i} style={{ marginBottom: "1px", textAlign: "justify" }}>{d}</li>
+                      <li key={i} style={{ marginBottom: "3px", textAlign: "justify" }}>{d}</li>
                     ))}
                   </ul>
                 )}
