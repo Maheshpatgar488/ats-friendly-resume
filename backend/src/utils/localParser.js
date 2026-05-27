@@ -463,8 +463,8 @@ export function parseResumeText(text) {
             const fullDegree = stopAt > -1 ? (kw + " " + rest.substring(0, stopAt).trim()) : (kw + " " + rest);
             eduGroup.degree = fullDegree.trim();
           }
-          const fieldM = e.text.match(/\bin\s+(.+?)(?:\s+GPA|$)/);
-          if (fieldM) eduGroup.fieldOfStudy = fieldM[1].trim();
+          const fieldM = e.text.match(/\bin\s+(.+?)(?:\s*GPA|$)/);
+          if (fieldM) eduGroup.fieldOfStudy = fieldM[1].trim().replace(/\s*GPA.*$/i, "");
           const gpam = e.text.match(/GPA:?\s*([\d./\s]+)/i);
           if (gpam) eduGroup.gpa = gpam[1].trim();
         }
