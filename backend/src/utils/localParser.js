@@ -96,22 +96,51 @@ export function parseResumeText(text) {
     result.personalInfo.github = "https://" + (raw.includes("github.com") ? raw : "github.com/" + raw);
   }
 
-  // Website — exclude email domains, linkedin, github
-  const urlMatch = fullText.match(/(?:https?:\/\/)?(?:www\.)?([\w-]+\.)+(com|org|net|io|dev|app|in|co)(?:\/[^\s,;]*)?/i);
+  // Website — require protocol to avoid matching email domains like gmail.com
+  const urlMatch = fullText.match(/https?:\/\/[^\s,;)]+/gi);
   if (urlMatch) {
-    const u = urlMatch[0].toLowerCase();
-    if (!u.includes("linkedin") && !u.includes("github") && !u.includes("gmail") && !u.includes("outlook") && !u.includes("yahoo") && !u.includes("hotmail")) {
-      result.personalInfo.website = u.startsWith("http") ? u : "https://" + u;
+    for (const u of urlMatch) {
+      const low = u.toLowerCase();
+      if (!low.includes("linkedin") && !low.includes("github") && !low.includes("gmail") && !low.includes("outlook") && !low.includes("yahoo") && !low.includes("hotmail")) {
+        result.personalInfo.website = u;
+        break;
+      }
     }
   }
+  // Fallback: portfolio/website label with URL after it
+  if (!result.personalInfo.website) {
+    const pfUrl = fullText.match(/(?:Portfolio|Website)[^]*?https?:\/\/[^\s)]+/i);
+    if (pfUrl) {
+      const u = pfUrl[0].match(/https?:\/\/[^\s)]+/)[0];
+      if (!u.toLowerCase().includes("linkedin") && !u.toLowerCase().includes("github")) {
+        result.personalInfo.website = u;
+      }
+    }
+  }
+  // Last resort: portfolio shorthand (Portfolio/Mahesh) only if it looks like a domain
   if (!result.personalInfo.website) {
     const pfMatch = fullText.match(/(?:Portfolio|Website)\s*[/:]\s*([^\s,;•|]+)/i);
     if (pfMatch) {
       const val = pfMatch[1].trim();
-      if (!val.toLowerCase().includes("linkedin") && !val.toLowerCase().includes("github") && val.match(/\.(com|org|net|io|dev|app|in|co)\b/i)) {
+      if (val.match(/^(https?:\/\/)?[a-zA-Z0-9-]+\.(com|org|net|io|dev|app|in|co)\b/i)) {
         result.personalInfo.website = val.startsWith("http") ? val : "https://" + val;
       }
     }
+  }
+
+  // LinkedIn URL (separate field for hyperlink)
+  const liHref = fullText.match(/(?:LinkedIn|linkedin)[^]*?https?:\/\/[^\s)]+/i);
+  if (liHref) {
+    const u = liHref[0].match(/https?:\/\/[^\s)]+/)[0];
+    if (u.toLowerCase().includes("linkedin.com")) {
+      result.personalInfo.linkedin = u;
+    }
+  }
+
+  // GitHub — prefer explicit github.com URL from full text
+  const ghUrl = fullText.match(/https?:\/\/github\.com\/[^\s,;)]+/i);
+  if (ghUrl) {
+    result.personalInfo.github = ghUrl[0].replace(/\/$/, "");
   }
 
   // ============================================================
@@ -299,7 +328,11 @@ export function parseResumeText(text) {
     "Numpy", "Pandas", "Scikit", "Matplotlib", "Seaborn", "Jupyter",
     "Flutter", "React.Native", "Android", "iOS", "SwiftUI", "UIKit",
     "Postman", "ChatGPT", "OpenAI", "Vite", "Getform", "EmailJS",
-    "Critical thinking", "Problem.solving", "Teamwork", "Communication", "Adaptability"
+    "Critical thinking", "Problem.solving", "Teamwork", "Communication", "Adaptability",
+    "Time management", "AI.assisted", "UI optimization", "REST APIs", "Web Development",
+    "Frontend Development", "Backend Development", "Full Stack", "Responsive Design",
+    "Performance Optimization", "Version Control", "Agile Methodologies",
+    "Project Management", "Team Leadership", "Cross.functional Collaboration"
   ];
 
   let inSkills = false;
@@ -467,6 +500,25 @@ export function parseResumeText(text) {
   }
   if (eduGroup) result.education.push(eduGroup);
 
+  // Merge adjacent education entries where one has institution and next has degree (separate lines)
+  let merged = true;
+  while (merged) {
+    merged = false;
+    for (let ei = 1; ei < result.education.length; ei++) {
+      const prev = result.education[ei - 1];
+      const curr = result.education[ei];
+      if (prev.institution && !prev.degree && (curr.degree || curr.gpa) && !curr.institution) {
+        prev.degree = curr.degree || prev.degree;
+        prev.fieldOfStudy = curr.fieldOfStudy || prev.fieldOfStudy;
+        prev.gpa = curr.gpa || prev.gpa;
+        prev.endDate = curr.endDate || prev.endDate;
+        result.education.splice(ei, 1);
+        merged = true;
+        break;
+      }
+    }
+  }
+
   // If education section wasn't found but we have degree patterns in full text, extract them
   if (!result.education.length) {
     const eduBlock = fullText.match(/(?:education|academic|qualification|degree|university|college)[\s\S]*?(?=\n\s*(?:experience|skills|projects|summary|professional)\b)/i);
@@ -491,20 +543,25 @@ export function parseResumeText(text) {
   for (const e of entry) {
     if (e.type === "section" && (e.section.match(/project/i))) { projSection = true; continue; }
     if (projSection && e.type === "section" && !e.section.match(/project/i)) break;
-    if (projSection && (e.type === "title" || e.type === "desc")) {
+    if (projSection) {
       const urlInLine = e.text.match(/(https?:\/\/[^\s]+)/i);
-      if (urlInLine) {
-        const projName = e.text.replace(/(https?:\/\/[^\s]+).*/i, "").trim();
+      if (urlInLine && (e.type === "title" || e.type === "desc")) {
+        const projName = e.text.replace(/(https?:\/\/[^\s]+).*/i, "").trim().replace(/\s*hyperlink:?\s*$/i, "");
         if (projName && projName.length < 60) {
           result.projects.push({ name: projName, description: [], technologies: [], url: urlInLine[1] });
-        } else {
-          if (result.projects.length) result.projects[result.projects.length - 1].url = urlInLine[1];
+        } else if (result.projects.length) {
+          result.projects[result.projects.length - 1].url = urlInLine[1];
         }
-      } else if (e.text.match(/^[A-Z][a-zA-Z0-9]+/) && e.text.length >= 4 && e.text.length < 32 && !e.text.match(/^(Technologies|Skills|A responsive|Built a|Developed a|Created|Implemented|Designed|Worked|Led|Managed|Optimized|Improved|Reduced|Increased)/i) && !e.text.match(/\.(com|org|net|io)\b/i)) {
-        result.projects.push({ name: e.text, description: [], technologies: [], url: "" });
+      } else if (e.type === "title" && !urlInLine) {
+        if (e.text.match(/^[A-Z][a-zA-Z0-9]+/) && e.text.length >= 4 && e.text.length < 32 && !e.text.match(/^(Technologies|Skills|A responsive|Built a|Developed a|Created|Implemented|Designed|Worked|Led|Managed|Optimized|Improved|Reduced|Increased)/i) && !e.text.match(/\.(com|org|net|io)\b/i)) {
+          result.projects.push({ name: e.text, description: [], technologies: [], url: "" });
+        }
+      } else if ((e.type === "bullet" || e.type === "desc") && result.projects.length) {
+        const t = e.text;
+        if (!t.match(/^(Technologies|Skills)/i) && !urlInLine) {
+          result.projects[result.projects.length - 1].description.push(t);
+        }
       }
-    } else if (projSection && e.type === "bullet" && result.projects.length) {
-      result.projects[result.projects.length - 1].description.push(e.text);
     }
   }
   for (const proj of result.projects) {
@@ -556,7 +613,20 @@ export function parseResumeText(text) {
 
   result.experience = result.experience.filter(e => e.company || e.position || e.highlights.length || e.description.length);
   result.education = result.education.filter(e => e.institution || e.degree);
-  result.skills = [...new Set(result.skills.map(s => s.replace(/[.,]$/, "").trim()).filter(s => s.length > 1))];
+
+  // Deduplicate skills: remove single-word fragments when the multi-word form exists
+  const skillSet = new Set(result.skills.map(s => s.replace(/[.,]$/, "").trim()).filter(s => s.length > 1));
+  const skillList = [...skillSet];
+  const filtered = skillList.filter(s => {
+    if (!s.includes(" ")) {
+      const sl = s.toLowerCase();
+      for (const other of skillList) {
+        if (other !== s && other.toLowerCase().split(/\s+/).includes(sl)) return false;
+      }
+    }
+    return true;
+  });
+  result.skills = filtered.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 
   return result;
 }
