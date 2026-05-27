@@ -16,7 +16,7 @@ jobs:
 
       - name: Copy files to HF clone
         run: |
-          rm -rf hf-sync/* hf-sync/.* 2>/dev/null || true
+          find hf-sync -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
           rsync -av --exclude='node_modules' --exclude='.env' --exclude='.env.example' --exclude='backend/node_modules' --exclude='frontend/node_modules' --exclude='backend/public' --exclude='frontend/dist' --exclude='.git' --exclude='.github' ./ hf-sync/
 
       - name: Commit and push to HF Spaces
