@@ -443,11 +443,37 @@ app.post("/api/tailor", async (req, res) => {
     `;
 
     const tailoredData = await generateStructuredJSON(prompt, RESUME_JSON_SCHEMA);
-    // Post-process: merge AI's rewritten text back into original structure if AI flattened it
-    tailoredData.experience = normalizeArrayField(tailoredData.experience, resumeData.experience, ["company", "position", "startDate", "endDate", "location", "highlights"]);
-    tailoredData.education = normalizeArrayField(tailoredData.education, resumeData.education, ["institution", "degree", "fieldOfStudy", "startDate", "endDate", "gpa", "location"]);
-    tailoredData.projects = normalizeArrayField(tailoredData.projects, resumeData.projects, ["name", "description", "technologies", "url"]);
-    tailoredData.certifications = normalizeArrayField(tailoredData.certifications, resumeData.certifications, ["name", "issuer", "date"]);
+    // Post-process: merge AI's rewritten text back into original structure.
+    // The AI often drops company/position/dates or merges entries, so we ALWAYS
+    // preserve the original structural fields and only replace text content.
+    const originalExp = Array.isArray(resumeData.experience) ? resumeData.experience : [];
+    const aiExp = Array.isArray(tailoredData.experience) ? tailoredData.experience : [];
+    tailoredData.experience = originalExp.map((orig, idx) => {
+      const ai = aiExp[idx];
+      return {
+        ...orig,
+        highlights: Array.isArray(ai?.highlights) && ai.highlights.length > 0 ? ai.highlights : orig.highlights || [],
+        description: Array.isArray(ai?.description) && ai.description.length > 0 ? ai.description : orig.description || [],
+      };
+    });
+    const originalEdu = Array.isArray(resumeData.education) ? resumeData.education : [];
+    const aiEdu = Array.isArray(tailoredData.education) ? tailoredData.education : [];
+    tailoredData.education = originalEdu.map((orig, idx) => {
+      const ai = aiEdu[idx];
+      if (typeof ai === "string") return { ...orig };
+      return { ...orig };
+    });
+    const originalProj = Array.isArray(resumeData.projects) ? resumeData.projects : [];
+    const aiProj = Array.isArray(tailoredData.projects) ? tailoredData.projects : [];
+    tailoredData.projects = originalProj.map((orig, idx) => {
+      const ai = aiProj[idx];
+      return {
+        ...orig,
+        description: Array.isArray(ai?.description) && ai.description.length > 0 ? ai.description : orig.description || [],
+      };
+    });
+    const originalCert = Array.isArray(resumeData.certifications) ? resumeData.certifications : [];
+    tailoredData.certifications = originalCert.map(orig => ({ ...orig }));
     // Ensure trainingData (if included) is removed
     if (tailoredData.trainingData) delete tailoredData.trainingData;
     res.json({ success: true, tailoredResumeData: tailoredData, engine: "groq" });
