@@ -327,6 +327,39 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
                   );
                 })}
               </div>
+              {/* Custom margin sliders */}
+              <div className="mt-3 pt-3 border-t border-slate-700/40">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Custom Margins</label>
+                <div className="space-y-2">
+                  {["top", "bottom", "left", "right"].map(dir => {
+                    const cur = customStyles.margins?.[dir] || "0.5in";
+                    const curVal = parseFloat(cur) || 0.5;
+                    const label = dir === "top" ? "Top" : dir === "bottom" ? "Bottom" : dir === "left" ? "Left" : "Right";
+                    return (
+                      <div key={dir} className="flex items-center gap-2 bg-slate-900/40 rounded-lg border border-slate-700/50 p-1">
+                        <span className="w-12 text-[10px] font-bold text-slate-400 uppercase">{label}</span>
+                        <button
+                          onClick={() => {
+                            const next = Math.max(0.1, Math.round((curVal - 0.05) * 100) / 100);
+                            const newMargins = { ...(customStyles.margins || { top: "0.5in", bottom: "0.5in", left: "0.5in", right: "0.5in" }), [dir]: `${next.toFixed(2)}in` };
+                            handleStyleChange("margins", newMargins);
+                          }}
+                          className="w-7 h-7 flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-slate-200 rounded font-bold text-base transition-colors"
+                        >−</button>
+                        <span className="flex-1 text-center text-xs font-bold text-indigo-300 font-mono">{cur}</span>
+                        <button
+                          onClick={() => {
+                            const next = Math.min(1.0, Math.round((curVal + 0.05) * 100) / 100);
+                            const newMargins = { ...(customStyles.margins || { top: "0.5in", bottom: "0.5in", left: "0.5in", right: "0.5in" }), [dir]: `${next.toFixed(2)}in` };
+                            handleStyleChange("margins", newMargins);
+                          }}
+                          className="w-7 h-7 flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-slate-200 rounded font-bold text-base transition-colors"
+                        >+</button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
             {/* Quick Fit Presets */}
