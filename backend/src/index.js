@@ -26,6 +26,7 @@ import {
   deleteResume 
 } from "./utils/db.js";
 import { compileResumeHTML } from "./utils/pdfGenerator.js";
+import { parseResumeText } from "./utils/localParser.js";
 
 dotenv.config();
 
@@ -184,7 +185,10 @@ async function handleExtractText(req, res) {
       return res.status(422).json({ error: "Could not extract any readable text from the uploaded document." });
     }
 
-    // 2. Format a clear prompt instructing Gemini to parse the resume text
+    // 2. Parse locally (no API key needed, works every time)
+    let resumeData = parseResumeText(extractedText);
+
+    // 3. Try Gemini AI enhancement (optional — if quota available)
     const prompt = `
       You are an elite ATS (Applicant Tracking System) resume parser. 
       Analyze the raw unstructured text extracted from a resume and extract the details into the exact JSON schema provided.
@@ -203,30 +207,14 @@ async function handleExtractText(req, res) {
       """
     `;
 
-    // 3. Request structured JSON from Gemini
-    let structuredData;
     try {
-      structuredData = await generateStructuredJSON(prompt, RESUME_JSON_SCHEMA);
-      res.json({ success: true, resumeData: structuredData });
+      const structuredData = await generateStructuredJSON(prompt, RESUME_JSON_SCHEMA);
+      resumeData = structuredData;
     } catch (geminiError) {
-      // Gemini failed — return raw extracted text so user can fill in manually
-      console.error("Gemini Extraction Error:", geminiError);
-      res.json({
-        success: true,
-        partial: true,
-        warning: "AI parse failed. Raw text was extracted — fill in the form manually.",
-        resumeData: {
-          personalInfo: {},
-          summary: extractedText.substring(0, 3000),
-          experience: [],
-          education: [],
-          skills: [],
-          projects: [],
-          certifications: [],
-          languages: []
-        }
-      });
+      console.error("Gemini Extraction Error (non-fatal):", geminiError.message.substring(0, 200));
     }
+
+    res.json({ success: true, resumeData });
 
   } catch (error) {
     console.error("Extract Text Endpoint Error:", error);
