@@ -124,6 +124,7 @@ function normalizeResumeData(data) {
 
   return {
     ...data,
+    personalInfo: data.personalInfo || { fullName: "", email: "", phone: "", location: "", website: "", websiteUrl: "", linkedin: "", linkedinUrl: "", github: "", githubUrl: "", title: "" },
     experience: normalizeEntries(data.experience, ['description', 'highlights']),
     projects: normalizeEntries(data.projects, ['description', 'highlights', 'technologies']),
     // Also ensure top-level arrays are truly arrays
