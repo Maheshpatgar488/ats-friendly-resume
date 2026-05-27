@@ -80,10 +80,10 @@ export function parseResumeText(text) {
 
   const emailDomain = result.personalInfo.email ? result.personalInfo.email.split("@")[1] : "";
 
-  // LinkedIn — extract display text from shorthand, URL from hyperlink or full URL
+  // LinkedIn — display text from shorthand, URL from hyperlink or full URL
   let liShorthand = fullText.match(/(?:LinkedIn\s*[/:]?\s*([^\s,;•|]+))/i);
   if (liShorthand) {
-    result.personalInfo.linkedin = liShorthand[1].replace(/^https?:\/\//, "").replace(/\/$/, "");
+    result.personalInfo.linkedin = liShorthand[0].replace(/^https?:\/\//, "").trim();
   }
   let liFullUrl = fullText.match(/https?:\/\/(?:www\.)?linkedin\.com\/[^\s,;)]+/i);
   if (!liFullUrl) {
@@ -94,14 +94,16 @@ export function parseResumeText(text) {
     result.personalInfo.linkedinUrl = liFullUrl[0].replace(/\/$/, "");
     if (!result.personalInfo.linkedin) {
       const path = liFullUrl[0].replace(/\/$/, "").split("/").pop();
-      if (path && path.length > 1) result.personalInfo.linkedin = path;
+      if (path && path.length > 1) result.personalInfo.linkedin = "LinkedIn/" + path;
     }
   }
 
-  // GitHub — extract display text from shorthand, URL from hyperlink or full URL
+  // GitHub — display text from shorthand, URL from hyperlink or full URL
   let ghShorthand = fullText.match(/(?:Git(?:Hub)?\s*[/:]?\s*([^\s,;•|]+))/i);
+  let ghPrefix = "GitHub";
   if (ghShorthand) {
-    result.personalInfo.github = ghShorthand[1].replace(/^https?:\/\//, "").replace(/\/$/, "");
+    ghPrefix = ghShorthand[0].includes("Github") ? "Github" : "GitHub";
+    result.personalInfo.github = ghShorthand[0].replace(/^https?:\/\//, "").trim();
   }
   let ghFullUrl = fullText.match(/https?:\/\/(?:www\.)?github\.com\/[^\s,;)]+/i);
   if (!ghFullUrl) {
@@ -110,9 +112,9 @@ export function parseResumeText(text) {
   }
   if (ghFullUrl) {
     result.personalInfo.githubUrl = ghFullUrl[0].replace(/\/$/, "");
-    if (!result.personalInfo.github) {
-      const path = ghFullUrl[0].replace(/\/$/, "").split("/").pop();
-      if (path && path.length > 1) result.personalInfo.github = path;
+    const path = ghFullUrl[0].replace(/\/$/, "").split("/").pop();
+    if (path && path.length > 1) {
+      result.personalInfo.github = ghPrefix + "/" + path;
     }
   }
 
