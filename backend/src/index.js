@@ -325,9 +325,14 @@ app.post("/api/ats-score", async (req, res) => {
     `;
 
     const scoreData = await generateStructuredJSON(prompt, ATS_SCORE_SCHEMA);
-    scoreData.score = (typeof scoreData.score === "number" && !Number.isNaN(scoreData.score))
-      ? Math.round(Math.max(0, Math.min(100, scoreData.score)))
+    // Normalize AI response — Groq often invents its own field names
+    const normalizedScore = scoreData.atsCompatibilityScore ?? scoreData.overallScore ?? scoreData.score;
+    scoreData.score = (typeof normalizedScore === "number" && !Number.isNaN(normalizedScore))
+      ? Math.round(Math.max(0, Math.min(100, normalizedScore)))
       : 0;
+    scoreData.keywordsMatched = scoreData.keywordsMatched ?? scoreData.matchedSkills ?? scoreData.matchedKeywords ?? [];
+    scoreData.keywordsMissing = scoreData.keywordsMissing ?? scoreData.missingSkills ?? scoreData.missingKeywords ?? [];
+    scoreData.suggestions = scoreData.suggestions ?? scoreData.actionableSuggestions ?? scoreData.improvementSuggestions ?? scoreData.recommendations ?? [];
     res.json({ success: true, ...scoreData, engine: "groq" });
 
   } catch (error) {
