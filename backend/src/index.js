@@ -293,46 +293,6 @@ app.post("/api/enhance", async (req, res) => {
 });
 
 /**
- * Normalizes an array field from the AI by merging flattened data back into the original structure.
- * If the AI returns strings instead of objects (e.g. experience as ["text"] instead of [{company, highlights:["text"]}]),
- * this reconstructs proper objects using the original resume data.
- */
-function normalizeArrayField(aiItems, originalItems, fields) {
-  if (!Array.isArray(aiItems)) return originalItems || [];
-  return aiItems.map((item, idx) => {
-    const orig = originalItems?.[idx] || {};
-    if (typeof item === "string") {
-      const obj = {};
-      for (const f of fields) {
-        if (f === "highlights" || f === "description" || f === "technologies") {
-          obj[f] = Array.isArray(orig[f]) ? [...orig[f]] : (f === "highlights" || f === "description" ? [item] : []);
-        } else {
-          obj[f] = orig[f] || "";
-        }
-      }
-      if (obj.highlights) obj.highlights = [item];
-      else if (obj.description) obj.description = [item];
-      return obj;
-    }
-    if (typeof item === "object" && item !== null) {
-      const obj = {};
-      for (const f of fields) {
-        const val = item[f];
-        if (val !== undefined && val !== null && val !== "") {
-          obj[f] = val;
-        } else if (f === "highlights" || f === "description" || f === "technologies") {
-          obj[f] = Array.isArray(orig[f]) ? [...orig[f]] : [];
-        } else {
-          obj[f] = orig[f] || "";
-        }
-      }
-      return obj;
-    }
-    return orig;
-  });
-}
-
-/**
  * Endpoint: /api/ats-score
  * Scores a resume against a target job description and extracts matched/missing keywords.
  */
@@ -399,8 +359,6 @@ app.post("/api/tailor", async (req, res) => {
   if (!resumeData || !jobDescription) {
     return res.status(400).json({ error: "Missing resumeData or jobDescription in request body." });
   }
-  
-  console.log("TAILOR INPUT exp count:", resumeData.experience?.length, "first company:", resumeData.experience?.[0]?.company);
 
   try {
     // 1. Try AI first for high-quality tailoring
@@ -445,13 +403,6 @@ app.post("/api/tailor", async (req, res) => {
     `;
 
     const tailoredData = await generateStructuredJSON(prompt, RESUME_JSON_SCHEMA);
-    // DEBUG: echo back what we received
-    const debugEcho = {
-      origExpCount: Array.isArray(resumeData.experience) ? resumeData.experience.length : "not array",
-      origExp0Company: resumeData.experience?.[0]?.company || "missing",
-      aiExpCount: Array.isArray(tailoredData.experience) ? tailoredData.experience.length : "not array",
-      aiExp0Company: tailoredData.experience?.[0]?.company || "missing",
-    };
     // Post-process: merge AI's rewritten text back into original structure.
     // The AI often drops company/position/dates or merges entries, so we ALWAYS
     // preserve the original structural fields and only replace text content.
@@ -485,7 +436,7 @@ app.post("/api/tailor", async (req, res) => {
     tailoredData.certifications = originalCert.map(orig => ({ ...orig }));
     // Ensure trainingData (if included) is removed
     if (tailoredData.trainingData) delete tailoredData.trainingData;
-    res.json({ success: true, tailoredResumeData: tailoredData, engine: "groq", _debug: debugEcho });
+    res.json({ success: true, tailoredResumeData: tailoredData, engine: "groq" });
 
   } catch (error) {
     console.warn("AI tailoring failed, falling back to local engine:", error.message || error);
