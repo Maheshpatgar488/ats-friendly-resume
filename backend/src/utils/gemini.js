@@ -5,7 +5,7 @@ dotenv.config();
 
 const apiKey = process.env.GROQ_API_KEY;
 const groq = apiKey ? new Groq({ apiKey }) : null;
-const MODEL = "llama3-70b-8192";
+const MODEL = "llama-3.3-70b-versatile";
 
 export function getGroq() {
   if (!groq) {
