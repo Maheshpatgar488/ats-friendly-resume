@@ -330,9 +330,12 @@ app.post("/api/ats-score", async (req, res) => {
     scoreData.score = (typeof normalizedScore === "number" && !Number.isNaN(normalizedScore))
       ? Math.round(Math.max(0, Math.min(100, normalizedScore)))
       : 0;
-    scoreData.keywordsMatched = scoreData.keywordsMatched ?? scoreData.matchedSkills ?? scoreData.matchedKeywords ?? [];
-    scoreData.keywordsMissing = scoreData.keywordsMissing ?? scoreData.missingSkills ?? scoreData.missingKeywords ?? [];
-    scoreData.suggestions = scoreData.suggestions ?? scoreData.actionableSuggestions ?? scoreData.improvementSuggestions ?? scoreData.recommendations ?? [];
+    scoreData.keywordsMatched = (scoreData.keywordsMatched ?? scoreData.matchedSkills ?? scoreData.matchedKeywords ?? [])
+      .map(k => typeof k === "string" ? k : k?.name || k?.skill || String(k));
+    scoreData.keywordsMissing = (scoreData.keywordsMissing ?? scoreData.missingSkills ?? scoreData.missingKeywords ?? [])
+      .map(k => typeof k === "string" ? k : k?.name || k?.skill || String(k));
+    scoreData.suggestions = (scoreData.suggestions ?? scoreData.actionableSuggestions ?? scoreData.improvementSuggestions ?? scoreData.recommendations ?? [])
+      .map(s => typeof s === "string" ? s : s?.suggestion || s?.action || JSON.stringify(s));
     res.json({ success: true, ...scoreData, engine: "groq" });
 
   } catch (error) {
