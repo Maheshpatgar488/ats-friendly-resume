@@ -488,9 +488,16 @@ app.post("/api/export-pdf", async (req, res) => {
     const page = await browser.newPage();
     await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 1 });
 
-    // Auto-scaling: reduce spacing before shrinking font to keep text readable
+    // Auto-scaling: start with user's custom spacing, then tighten if content overflows
     // Never go below 9pt — content that overflows at 9pt naturally goes to 2 pages
+    const userStep = {
+      fontSize: customStyles.fontSize || "10pt",
+      lineHeight: customStyles.lineHeight || "1.4",
+      sectionSpacing: customStyles.sectionSpacing || "10px",
+      entrySpacing: customStyles.entrySpacing || "6px",
+    };
     const scalingSteps = [
+      userStep,
       { fontSize: "10pt",  lineHeight: "1.35", sectionSpacing: "8px",  entrySpacing: "6px"  },
       { fontSize: "9.5pt", lineHeight: "1.3",  sectionSpacing: "6px",  entrySpacing: "5px"  },
       { fontSize: "9.5pt", lineHeight: "1.25", sectionSpacing: "4px",  entrySpacing: "3px"  },
