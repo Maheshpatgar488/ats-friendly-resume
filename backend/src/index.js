@@ -217,8 +217,9 @@ async function handleExtractText(req, res) {
 
     try {
       const structuredData = await generateStructuredJSON(prompt, RESUME_JSON_SCHEMA);
-      // Merge AI result with local parse to ensure all fields exist
-      resumeData = { ...resumeData, ...structuredData, personalInfo: { ...resumeData.personalInfo, ...(structuredData.personalInfo || {}) } };
+      // Keep local parser's contact info (display text + URL fields), let AI enhance everything else
+      const localPersonal = resumeData.personalInfo;
+      resumeData = { ...resumeData, ...structuredData, personalInfo: localPersonal };
     } catch (aiError) {
       console.error("AI Extraction Error (non-fatal):", aiError.message.substring(0, 200));
     }
