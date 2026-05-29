@@ -147,19 +147,47 @@ export function parseResumeText(text, pdfBuffer) {
     result.personalInfo.website = host;
   }
 
-  // Full-document scan for any remaining generic URLs (portfolio/website not caught by label)
+  // Score a URL for how likely it is to be a personal portfolio/website
+  const emailUser = result.personalInfo.email ? result.personalInfo.email.split("@")[0].toLowerCase() : "";
+  function scoreUrl(url) {
+    const ul = url.toLowerCase();
+    let score = 0;
+    if (ul.includes("portfolio")) score += 10;
+    if (ul.includes("personal") || ul.includes("website") || ul.includes("home")) score += 5;
+    if (emailUser && ul.includes(emailUser)) score += 8;
+    if (ul.includes("vercel") || ul.includes("netlify") || ul.includes("github.io")) score += 2;
+    try {
+      const pathSegs = new URL(url).pathname.replace(/\/$/, "").split("/").filter(Boolean).length;
+      score += Math.max(0, 5 - pathSegs);
+      if (pathSegs >= 3) score -= 3;
+    } catch { score += 1; }
+    return score;
+  }
+  function setWebsiteUrl(url) {
+    const cleaned = url.replace(/\/$/, "");
+    result.personalInfo.websiteUrl = cleaned;
+    if (!result.personalInfo.website) {
+      try {
+        result.personalInfo.website = new URL(cleaned).hostname;
+      } catch {
+        result.personalInfo.website = cleaned.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+      }
+    }
+  }
+
+  // Full-document scan: score all visible text URLs and pick the best one
   if (!result.personalInfo.websiteUrl) {
+    const textCandidates = [];
     const allUrls = fullText.matchAll(/https?:\/\/[^\s,;)]+/gi);
     for (const m of allUrls) {
       const u = m[0].toLowerCase();
       if (u.includes("linkedin") || u.includes("github")) continue;
       if (u.includes("example.com") || u.match(/\.(png|jpg|jpeg|gif|svg|ico)(\?|$)/i)) continue;
-      result.personalInfo.websiteUrl = m[0].replace(/\/$/, "");
-      if (!result.personalInfo.website) {
-        const host = result.personalInfo.websiteUrl.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
-        result.personalInfo.website = host;
-      }
-      break;
+      textCandidates.push(m[0].replace(/\/$/, ""));
+    }
+    if (textCandidates.length > 0) {
+      textCandidates.sort((a, b) => scoreUrl(b) - scoreUrl(a));
+      setWebsiteUrl(textCandidates[0]);
     }
   }
 
@@ -183,41 +211,17 @@ export function parseResumeText(text, pdfBuffer) {
         }
       }
     }
-    // For portfolio/website: score all generic annotation URLs and pick the best one
-    if (!result.personalInfo.websiteUrl) {
-      const candidates = annotationUrls
-        .filter(u => !u.toLowerCase().includes("linkedin") && !u.toLowerCase().includes("github"))
-        .map(u => u.replace(/\/$/, ""));
-      if (candidates.length > 0) {
-        const emailUser = result.personalInfo.email ? result.personalInfo.email.split("@")[0].toLowerCase() : "";
-        // Score each candidate: higher is better
-        const scored = candidates.map(u => {
-          const ul = u.toLowerCase();
-          let score = 0;
-          if (ul.includes("portfolio")) score += 10;
-          if (ul.includes("personal") || ul.includes("website") || ul.includes("home")) score += 5;
-          if (emailUser && ul.includes(emailUser)) score += 8;
-          if (ul.includes("vercel") || ul.includes("netlify") || ul.includes("github.io")) score += 2;
-          // Root domains or single path segments are more likely personal sites
-          try {
-            const pathSegs = new URL(u).pathname.replace(/\/$/, "").split("/").filter(Boolean).length;
-            score += Math.max(0, 5 - pathSegs);
-            if (pathSegs >= 3) score -= 3;
-          } catch { score += 1; }
-          return { url: u, score };
-        });
-        scored.sort((a, b) => b.score - a.score);
-        const best = scored[0];
-        result.personalInfo.websiteUrl = best.url;
-        if (!result.personalInfo.website) {
-          try {
-            const host = new URL(best.url).hostname;
-            result.personalInfo.website = host;
-          } catch {
-            const host = best.url.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
-            result.personalInfo.website = host;
-          }
-        }
+    // For portfolio/website: score annotation URLs and use if better than text match
+    const annCandidates = annotationUrls
+      .filter(u => !u.toLowerCase().includes("linkedin") && !u.toLowerCase().includes("github"))
+      .map(u => u.replace(/\/$/, ""));
+    if (annCandidates.length > 0) {
+      annCandidates.sort((a, b) => scoreUrl(b) - scoreUrl(a));
+      const bestAnn = annCandidates[0];
+      const annScore = scoreUrl(bestAnn);
+      const currentScore = result.personalInfo.websiteUrl ? scoreUrl(result.personalInfo.websiteUrl) : -1;
+      if (annScore > currentScore) {
+        setWebsiteUrl(bestAnn);
       }
     }
   }
