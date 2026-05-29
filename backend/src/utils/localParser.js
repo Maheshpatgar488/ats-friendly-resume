@@ -132,6 +132,22 @@ export function parseResumeText(text) {
     result.personalInfo.website = host;
   }
 
+  // Full-document scan for any remaining generic URLs (portfolio/website not caught by label)
+  if (!result.personalInfo.websiteUrl) {
+    const allUrls = fullText.matchAll(/https?:\/\/[^\s,;)]+/gi);
+    for (const m of allUrls) {
+      const u = m[0].toLowerCase();
+      if (u.includes("linkedin") || u.includes("github")) continue;
+      if (u.includes("example.com") || u.match(/\.(png|jpg|jpeg|gif|svg|ico)(\?|$)/i)) continue;
+      result.personalInfo.websiteUrl = m[0].replace(/\/$/, "");
+      if (!result.personalInfo.website) {
+        const host = result.personalInfo.websiteUrl.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+        result.personalInfo.website = host;
+      }
+      break;
+    }
+  }
+
   // ============================================================
   // SPLIT INTO LINES (from normalized text with forced breaks)
   // ============================================================
