@@ -166,6 +166,7 @@ export function parseResumeText(text, pdfBuffer) {
   // PDF link annotation fallback — URLs hidden behind hyperlinks (not visible in extracted text)
   if (pdfBuffer) {
     const annotationUrls = extractAnnotationUrls(pdfBuffer);
+    // Handle linkedin/github by domain match (unambiguous)
     for (const url of annotationUrls) {
       const ul = url.toLowerCase();
       if (ul.includes("linkedin") && !result.personalInfo.linkedinUrl) {
@@ -180,11 +181,42 @@ export function parseResumeText(text, pdfBuffer) {
           const path = url.replace(/\/$/, "").split("/").pop();
           if (path && path.length > 1) result.personalInfo.github = "GitHub/" + path;
         }
-      } else if (!ul.includes("linkedin") && !ul.includes("github") && !result.personalInfo.websiteUrl) {
-        result.personalInfo.websiteUrl = url.replace(/\/$/, "");
+      }
+    }
+    // For portfolio/website: score all generic annotation URLs and pick the best one
+    if (!result.personalInfo.websiteUrl) {
+      const candidates = annotationUrls
+        .filter(u => !u.toLowerCase().includes("linkedin") && !u.toLowerCase().includes("github"))
+        .map(u => u.replace(/\/$/, ""));
+      if (candidates.length > 0) {
+        const emailUser = result.personalInfo.email ? result.personalInfo.email.split("@")[0].toLowerCase() : "";
+        // Score each candidate: higher is better
+        const scored = candidates.map(u => {
+          const ul = u.toLowerCase();
+          let score = 0;
+          if (ul.includes("portfolio")) score += 10;
+          if (ul.includes("personal") || ul.includes("website") || ul.includes("home")) score += 5;
+          if (emailUser && ul.includes(emailUser)) score += 8;
+          if (ul.includes("vercel") || ul.includes("netlify") || ul.includes("github.io")) score += 2;
+          // Root domains or single path segments are more likely personal sites
+          try {
+            const pathSegs = new URL(u).pathname.replace(/\/$/, "").split("/").filter(Boolean).length;
+            score += Math.max(0, 5 - pathSegs);
+            if (pathSegs >= 3) score -= 3;
+          } catch { score += 1; }
+          return { url: u, score };
+        });
+        scored.sort((a, b) => b.score - a.score);
+        const best = scored[0];
+        result.personalInfo.websiteUrl = best.url;
         if (!result.personalInfo.website) {
-          const host = url.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
-          result.personalInfo.website = host;
+          try {
+            const host = new URL(best.url).hostname;
+            result.personalInfo.website = host;
+          } catch {
+            const host = best.url.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+            result.personalInfo.website = host;
+          }
         }
       }
     }
