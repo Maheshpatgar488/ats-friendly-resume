@@ -493,8 +493,8 @@ app.post("/api/export-pdf", async (req, res) => {
     const userStep = {
       fontSize: customStyles.fontSize || "10pt",
       lineHeight: customStyles.lineHeight || "1.4",
-      sectionSpacing: customStyles.sectionSpacing || "10px",
-      entrySpacing: customStyles.entrySpacing || "6px",
+      sectionSpacing: customStyles.sectionSpacing || "14px",
+      entrySpacing: customStyles.entrySpacing || "8px",
     };
     const scalingSteps = [
       userStep,

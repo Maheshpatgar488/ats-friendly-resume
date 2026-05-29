@@ -547,19 +547,31 @@ export function parseResumeText(text, pdfBuffer) {
   }
   if (eduGroup) result.education.push(eduGroup);
 
-  // Merge adjacent education entries where one has institution and next has degree (separate lines)
+  // Merge adjacent education entries (handles both degree-first and institution-first ordering)
   let merged = true;
   while (merged) {
     merged = false;
     for (let ei = 1; ei < result.education.length; ei++) {
       const prev = result.education[ei - 1];
       const curr = result.education[ei];
+      // Case 1: institution line before degree line
       if (prev.institution && !prev.degree && (curr.degree || curr.gpa) && !curr.institution) {
         prev.degree = curr.degree || prev.degree;
         prev.fieldOfStudy = curr.fieldOfStudy || prev.fieldOfStudy;
         prev.gpa = curr.gpa || prev.gpa;
         prev.endDate = curr.endDate || prev.endDate;
         result.education.splice(ei, 1);
+        merged = true;
+        break;
+      }
+      // Case 2: degree line before institution line
+      if (prev.degree && !prev.institution && curr.institution && !curr.degree) {
+        curr.degree = prev.degree;
+        curr.fieldOfStudy = prev.fieldOfStudy || curr.fieldOfStudy;
+        curr.gpa = prev.gpa || curr.gpa;
+        if (!curr.startDate) curr.startDate = prev.startDate;
+        if (!curr.endDate) curr.endDate = prev.endDate;
+        result.education.splice(ei - 1, 1);
         merged = true;
         break;
       }

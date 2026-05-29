@@ -32,4 +32,4 @@ jobs:
           git init
           git add .
           git commit -m "Deploy to Hugging Face"
-          git push https://Maheshpatgar488:${HF_TOKEN}@huggingface.co/spaces/Maheshpatgar488/resume-backend master:main --force
+          git push https://hf:${HF_TOKEN}@huggingface.co/spaces/Maheshpatgar488/resume-backend master:main --force
