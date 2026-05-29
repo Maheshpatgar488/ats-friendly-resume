@@ -390,6 +390,7 @@ app.post("/api/tailor", async (req, res) => {
       3. **Tailor the Professional Summary**: Rewrite the "summary" to be dense with relevant key phrases. It should sound like the absolute perfect, hand-picked candidate for this specific role, emphasizing transferable achievements.
       4. **MAINTAIN FACTUAL INTEGRITY**: Do not invent fake work histories, fake companies, fake dates, or fake colleges. You are rephrasing, optimizing, and presenting the real facts of the user's career in the exact language of the recruiter to pass ATS filters!
       5. Keep all bullet points concise (1-2 lines max, ~15-25 words each) so the full resume fits on a single printed page. Prioritize the most impactful keywords from the job description.
+      5b. **LIMIT BULLET POINTS**: Each experience entry must have at most 4 highlights. Choose the most impactful ones. Do not add more than 4.
       ${missingKWText ? `6. **ADDRESS MISSING KEYWORDS**: ${missingKWText.replace(/\n/g, "\n      ")}` : ""}
 
       **CRITICAL — Output the EXACT same JSON structure as the input.**
@@ -418,9 +419,10 @@ app.post("/api/tailor", async (req, res) => {
     const aiExp = Array.isArray(tailoredData.experience) ? tailoredData.experience : [];
     tailoredData.experience = originalExp.map((orig, idx) => {
       const ai = aiExp[idx];
+      const aiHighlights = Array.isArray(ai?.highlights) && ai.highlights.length > 0 ? ai.highlights : orig.highlights || [];
       return {
         ...orig,
-        highlights: Array.isArray(ai?.highlights) && ai.highlights.length > 0 ? ai.highlights : orig.highlights || [],
+        highlights: aiHighlights.slice(0, 4), // cap at 4 bullet points to prevent 2-page overflow
         description: Array.isArray(ai?.description) && ai.description.length > 0 ? ai.description : orig.description || [],
       };
     });
