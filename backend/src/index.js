@@ -458,6 +458,10 @@ app.post("/api/tailor", async (req, res) => {
       }
       tailoredData.skills = existingSkills;
     }
+    // Cap skills to 15 max to prevent overflow to 2 pages
+    if (Array.isArray(tailoredData.skills) && tailoredData.skills.length > 15) {
+      tailoredData.skills = tailoredData.skills.slice(0, 15);
+    }
     res.json({ success: true, tailoredResumeData: tailoredData, engine: "groq" });
 
   } catch (error) {
