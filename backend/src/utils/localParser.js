@@ -53,7 +53,22 @@ function normalizeText(text) {
   return t;
 }
 
-export function parseResumeText(text) {
+/**
+ * Extract hyperlink URLs from PDF link annotations.
+ * PDF stores link targets as `/URI (https://...)` in annotation objects.
+ */
+function extractAnnotationUrls(pdfBuffer) {
+  const raw = pdfBuffer.toString("latin1");
+  const uris = [];
+  const uriRe = /\/URI\s*\(([^\\)]+)\)/gi;
+  let m;
+  while ((m = uriRe.exec(raw)) !== null) {
+    uris.push(m[1]);
+  }
+  return uris;
+}
+
+export function parseResumeText(text, pdfBuffer) {
   const fullText = text;
   const normalized = normalizeText(text);
 
@@ -145,6 +160,33 @@ export function parseResumeText(text) {
         result.personalInfo.website = host;
       }
       break;
+    }
+  }
+
+  // PDF link annotation fallback — URLs hidden behind hyperlinks (not visible in extracted text)
+  if (pdfBuffer) {
+    const annotationUrls = extractAnnotationUrls(pdfBuffer);
+    for (const url of annotationUrls) {
+      const ul = url.toLowerCase();
+      if (ul.includes("linkedin") && !result.personalInfo.linkedinUrl) {
+        result.personalInfo.linkedinUrl = url.replace(/\/$/, "");
+        if (!result.personalInfo.linkedin) {
+          const path = url.replace(/\/$/, "").split("/").pop();
+          if (path && path.length > 1) result.personalInfo.linkedin = "LinkedIn/" + path;
+        }
+      } else if (ul.includes("github") && !result.personalInfo.githubUrl) {
+        result.personalInfo.githubUrl = url.replace(/\/$/, "");
+        if (!result.personalInfo.github) {
+          const path = url.replace(/\/$/, "").split("/").pop();
+          if (path && path.length > 1) result.personalInfo.github = "GitHub/" + path;
+        }
+      } else if (!ul.includes("linkedin") && !ul.includes("github") && !result.personalInfo.websiteUrl) {
+        result.personalInfo.websiteUrl = url.replace(/\/$/, "");
+        if (!result.personalInfo.website) {
+          const host = url.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+          result.personalInfo.website = host;
+        }
+      }
     }
   }
 

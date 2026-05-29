@@ -212,7 +212,7 @@ async function handleExtractText(req, res) {
     }
 
     // 2. Parse locally (no API key needed, works every time)
-    const resumeData = parseResumeText(extractedText);
+    const resumeData = parseResumeText(extractedText, req.file.buffer);
 
     res.json({ success: true, resumeData });
 
