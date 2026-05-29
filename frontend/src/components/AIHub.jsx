@@ -84,10 +84,10 @@ export default function AIHub({ resumeData, setResumeData, jobDescription, setJo
     if (setCustomStyles) {
       setCustomStyles(prev => ({
         ...prev,
-        sectionSpacing: "4px",
-        entrySpacing: "3px",
-        fontSize: "9pt",
-        lineHeight: "1.2",
+        sectionSpacing: "8px",
+        entrySpacing: "6px",
+        fontSize: "9.5pt",
+        lineHeight: "1.3",
       }));
     }
     setShowComparison(false);
