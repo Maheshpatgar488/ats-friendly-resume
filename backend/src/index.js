@@ -357,11 +357,15 @@ app.post("/api/ats-score", async (req, res) => {
  * Takes a resume and a job description and dynamically outputs a fully-tailored resume JSON.
  */
 app.post("/api/tailor", async (req, res) => {
-  const { resumeData, jobDescription } = req.body;
+  const { resumeData, jobDescription, missingKeywords } = req.body;
 
   if (!resumeData || !jobDescription) {
     return res.status(400).json({ error: "Missing resumeData or jobDescription in request body." });
   }
+
+  const missingKWText = Array.isArray(missingKeywords) && missingKeywords.length > 0
+    ? `\nThe following keywords from the job description are currently MISSING from the resume. You MUST weave them into the highlights, summary, and skills wherever they fit naturally:\n${missingKeywords.map(k => `  - ${k}`).join("\n")}\n`
+    : "";
 
   try {
     // 1. Try AI first for high-quality tailoring
@@ -386,6 +390,7 @@ app.post("/api/tailor", async (req, res) => {
       3. **Tailor the Professional Summary**: Rewrite the "summary" to be dense with relevant key phrases. It should sound like the absolute perfect, hand-picked candidate for this specific role, emphasizing transferable achievements.
       4. **MAINTAIN FACTUAL INTEGRITY**: Do not invent fake work histories, fake companies, fake dates, or fake colleges. You are rephrasing, optimizing, and presenting the real facts of the user's career in the exact language of the recruiter to pass ATS filters!
       5. Keep all bullet points concise (1-2 lines max, ~15-25 words each) so the full resume fits on a single printed page. Prioritize the most impactful keywords from the job description.
+      ${missingKWText ? `6. **ADDRESS MISSING KEYWORDS**: ${missingKWText.replace(/\n/g, "\n      ")}` : ""}
 
       **CRITICAL — Output the EXACT same JSON structure as the input.**
       Every array field (experience, education, projects, certifications) must be an array of **objects**, not strings.

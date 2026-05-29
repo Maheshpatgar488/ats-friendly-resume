@@ -58,7 +58,8 @@ export default function AIHub({ resumeData, setResumeData, jobDescription, setJo
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           resumeData,
-          jobDescription
+          jobDescription,
+          missingKeywords: scoreData?.keywordsMissing || []
         })
       });
       const data = await response.json();
