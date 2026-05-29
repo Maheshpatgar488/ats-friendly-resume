@@ -444,6 +444,18 @@ app.post("/api/tailor", async (req, res) => {
     tailoredData.certifications = originalCert.map(orig => ({ ...orig }));
     // Ensure trainingData (if included) is removed
     if (tailoredData.trainingData) delete tailoredData.trainingData;
+    // Force-merge missing keywords into skills array (AI often ignores this)
+    if (Array.isArray(missingKeywords) && missingKeywords.length > 0) {
+      const existingSkills = Array.isArray(tailoredData.skills) ? tailoredData.skills : [];
+      const skillSet = new Set(existingSkills.map(s => s.toLowerCase().replace(/[.,]$/, "")));
+      for (const kw of missingKeywords) {
+        if (!skillSet.has(kw.toLowerCase().replace(/[.,]$/, ""))) {
+          existingSkills.push(kw);
+          skillSet.add(kw.toLowerCase());
+        }
+      }
+      tailoredData.skills = existingSkills;
+    }
     res.json({ success: true, tailoredResumeData: tailoredData, engine: "groq" });
 
   } catch (error) {
