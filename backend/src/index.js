@@ -326,11 +326,11 @@ app.post("/api/ats-score", async (req, res) => {
 
   // Sanitize job description to strip image references (Groq API rejects non-text content)
   const cleanJD = jobDescription
-    .replace(/!\[.*?\]\(.*?\)/g, "")          // markdown images
-    .replace(/<img[^>]*>/gi, "")               // html img tags
-    .replace(/data:image\/[^;]+;base64[^"]*/gi, "") // base64 images
-    .replace(/\b\w+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\b/gi, "[image]") // image filenames
-    .replace(/\(https?:\/\/[^)]+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)[^)]*\)/gi, "([image link])"); // image URLs
+    .replace(/!\[.*?\]\(.*?\)/g, "")
+    .replace(/<img[^>]*>/gi, "")
+    .replace(/data:image\/[^;]+;base64[^"]*/gi, "")
+    .replace(/[^\s"'`(),;]*\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)[^\s"'`(),;]*/gi, "[image]")
+    .replace(/\(https?:\/\/[^)]+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)[^)]*\)/gi, "([image link])");
 
   try {
     // 1. Try AI first for high-quality semantic matching
