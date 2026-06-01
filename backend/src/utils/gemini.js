@@ -25,9 +25,20 @@ function getGroq() {
   return groq;
 }
 
+// Strip any image references from prompts — Gemini rejects non-text content
+function sanitizePrompt(text) {
+  return text
+    .replace(/!\[.*?\]\(.*?\)/g, " ")
+    .replace(/<img[^>]*>/gi, " ")
+    .replace(/data:image\/[^;]+;base64[^"]*/gi, " ")
+    .replace(/https?:\/\/[^\s]*\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)[^\s]*/gi, " ")
+    .replace(/[^\s"'`(),;]*\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)[^\s"'`(),;]*/gi, " ");
+}
+
 export async function generateStructuredJSON(prompt, schema, temperature = 0.1) {
   // Try Gemini first
   if (genAI) {
+    const safePrompt = sanitizePrompt(prompt);
     try {
       const model = getGemini().getGenerativeModel({
         model: GEMINI_MODEL,
@@ -36,7 +47,7 @@ export async function generateStructuredJSON(prompt, schema, temperature = 0.1) 
           temperature,
         },
       });
-      const result = await model.generateContent(prompt);
+      const result = await model.generateContent(safePrompt);
       const text = result.response.text();
       return JSON.parse(text);
     } catch (error) {
@@ -85,6 +96,7 @@ function extractTopLevelJSON(text) {
 export async function tailorStructuredJSON(prompt, schema) {
   // Try Gemini first (no JSON mode — same reasoning as Groq, it constrains rewrites)
   if (genAI) {
+    const safePrompt = sanitizePrompt(prompt);
     try {
       const model = getGemini().getGenerativeModel({
         model: GEMINI_MODEL,
@@ -93,7 +105,7 @@ export async function tailorStructuredJSON(prompt, schema) {
           maxOutputTokens: 8192,
         },
       });
-      const result = await model.generateContent(prompt);
+      const result = await model.generateContent(safePrompt);
       const text = result.response.text().trim();
       try {
         return JSON.parse(text);
