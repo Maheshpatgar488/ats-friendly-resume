@@ -454,10 +454,7 @@ app.post("/api/tailor", async (req, res) => {
       """
     `;
 
-    // Use tailorStructuredJSON instead of generateStructuredJSON for the tailor endpoint.
-    // The difference: no response_format constraint so the model actually rewrites content
-    // instead of copying input verbatim (JSON mode makes Llama models ultra-conservative).
-    const tailoredData = await tailorStructuredJSON(prompt, RESUME_JSON_SCHEMA);
+    const tailoredData = await generateStructuredJSON(prompt, RESUME_JSON_SCHEMA, 0.7);
     // Post-process: merge AI's rewritten text back into original structure.
     // The AI often drops company/position/dates or merges entries, so we ALWAYS
     // preserve the original structural fields and only replace text content.
