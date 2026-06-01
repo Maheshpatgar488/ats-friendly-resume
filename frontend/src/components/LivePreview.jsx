@@ -12,6 +12,7 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
   const [docxLoading, setDocxLoading] = useState(false);
   const [activeSubTab, setActiveSubTab] = useState("templates");
   const [previewHeight, setPreviewHeight] = useState(0);
+  const [showDebug, setShowDebug] = useState(false);
 
   // A4 page height in pixels at 96dpi = 297mm = ~1123px
   // Calculate pages based on actual content height (not minHeight)
@@ -593,6 +594,25 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
             </div>
           </div>
         </div>
+        {/* DEBUG: shows current resumeData highlights for verification */}
+        <div className="mt-2 flex justify-center">
+          <button onClick={() => setShowDebug(d => !d)} className="text-[9px] text-slate-600 hover:text-slate-400 underline">
+            {showDebug ? "Hide" : "Show"} data debug
+          </button>
+        </div>
+        {showDebug && (
+          <div className="mt-1 mx-auto max-w-lg bg-slate-900 border border-slate-700 rounded p-2 text-[9px] font-mono text-slate-400 overflow-auto max-h-40">
+            <div className="text-[8px] text-indigo-400 uppercase font-bold mb-1">Preview resumeData highlights[0]:</div>
+            {resumeData.experience?.map((e, i) => (
+              <div key={i} className="mb-1 border-b border-slate-800 pb-1 last:border-0">
+                <span className="text-slate-300">{e.company}: </span>
+                <span>{(e.highlights?.[0] || "(empty)").slice(0, 100)}</span>
+              </div>
+            ))}
+            <div className="text-[8px] text-indigo-400 uppercase font-bold mt-2 mb-1">sectionSpacing:</div>
+            <span>{customStyles.sectionSpacing} | entrySpacing: {customStyles.entrySpacing}</span>
+          </div>
+        )}
       </div>
     </div>
   );
