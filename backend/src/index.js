@@ -436,6 +436,10 @@ app.post("/api/tailor", async (req, res) => {
     // Post-process: merge AI's rewritten text back into original structure.
     // The AI often drops company/position/dates or merges entries, so we ALWAYS
     // preserve the original structural fields and only replace text content.
+    // Preserve personalInfo fields the AI schema may strip (websiteUrl, linkedinUrl, githubUrl, title, etc.)
+    const origPI = resumeData.personalInfo || {};
+    const aiPI = tailoredData.personalInfo || {};
+    tailoredData.personalInfo = { ...origPI, ...aiPI };
     const originalExp = Array.isArray(resumeData.experience) ? resumeData.experience : [];
     const aiExp = Array.isArray(tailoredData.experience) ? tailoredData.experience : [];
     tailoredData.experience = originalExp.map((orig, idx) => {
