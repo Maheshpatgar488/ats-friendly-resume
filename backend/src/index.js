@@ -440,11 +440,23 @@ app.post("/api/tailor", async (req, res) => {
     const origPI = resumeData.personalInfo || {};
     const aiPI = tailoredData.personalInfo || {};
     tailoredData.personalInfo = { ...origPI, ...aiPI };
+    // Preserve original summary if AI returns empty
+    if (!tailoredData.summary || tailoredData.summary.trim() === "") {
+      tailoredData.summary = resumeData.summary || "";
+    }
     const originalExp = Array.isArray(resumeData.experience) ? resumeData.experience : [];
     const aiExp = Array.isArray(tailoredData.experience) ? tailoredData.experience : [];
     tailoredData.experience = originalExp.map((orig, idx) => {
       const ai = aiExp[idx];
-      const aiHighlights = Array.isArray(ai?.highlights) && ai.highlights.length > 0 ? ai.highlights : orig.highlights || [];
+      // Prefer AI highlights; fall back to original highlights, then original descriptions
+      let aiHighlights = [];
+      if (Array.isArray(ai?.highlights) && ai.highlights.length > 0) {
+        aiHighlights = ai.highlights;
+      } else if (Array.isArray(orig.highlights) && orig.highlights.length > 0) {
+        aiHighlights = orig.highlights;
+      } else if (Array.isArray(orig.description) && orig.description.length > 0) {
+        aiHighlights = orig.description;
+      }
       return {
         ...orig,
         highlights: aiHighlights.slice(0, 4), // cap at 4 bullet points to prevent 2-page overflow
@@ -462,9 +474,10 @@ app.post("/api/tailor", async (req, res) => {
     const aiProj = Array.isArray(tailoredData.projects) ? tailoredData.projects : [];
     tailoredData.projects = originalProj.map((orig, idx) => {
       const ai = aiProj[idx];
+      const aiDesc = Array.isArray(ai?.description) && ai.description.length > 0 ? ai.description : orig.description || [];
       return {
         ...orig,
-        description: Array.isArray(ai?.description) && ai.description.length > 0 ? ai.description : orig.description || [],
+        description: aiDesc,
       };
     });
     const originalCert = Array.isArray(resumeData.certifications) ? resumeData.certifications : [];
