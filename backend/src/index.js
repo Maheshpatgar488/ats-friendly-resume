@@ -23,9 +23,7 @@ import {
   getAllResumes, 
   getResumeById, 
   saveResume, 
-  updateResume, 
-  deleteResume,
-  initDb 
+  deleteResume
 } from "./utils/db.js";
 import { generateDocx } from "./utils/docxGenerator.js";
 import { compileResumeHTML } from "./utils/pdfGenerator.js";
