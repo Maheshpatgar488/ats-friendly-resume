@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { 
   User, Briefcase, GraduationCap, Code, FolderGit2, Award, 
-  Plus, Trash2, Sparkles, ChevronDown, ChevronUp, AlertCircle
+  Plus, Trash2, Sparkles, ChevronDown, ChevronUp, AlertCircle,
+  Wand2, RefreshCw
 } from "lucide-react";
 import { API_URL } from "../config";
 
