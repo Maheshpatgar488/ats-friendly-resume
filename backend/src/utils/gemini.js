@@ -14,7 +14,7 @@ export function getGroq() {
   return groq;
 }
 
-export async function generateStructuredJSON(prompt, schema) {
+export async function generateStructuredJSON(prompt, schema, temperature = 0.1) {
   try {
     const client = getGroq();
     const result = await client.chat.completions.create({
@@ -24,7 +24,7 @@ export async function generateStructuredJSON(prompt, schema) {
         { role: "user", content: prompt },
       ],
       response_format: { type: "json_object" },
-      temperature: 0.1,
+      temperature,
     });
     return JSON.parse(result.choices[0].message.content);
   } catch (error) {

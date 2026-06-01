@@ -432,7 +432,7 @@ app.post("/api/tailor", async (req, res) => {
       """
     `;
 
-    const tailoredData = await generateStructuredJSON(prompt, RESUME_JSON_SCHEMA);
+    const tailoredData = await generateStructuredJSON(prompt, RESUME_JSON_SCHEMA, 0.5);
     // Post-process: merge AI's rewritten text back into original structure.
     // The AI often drops company/position/dates or merges entries, so we ALWAYS
     // preserve the original structural fields and only replace text content.
