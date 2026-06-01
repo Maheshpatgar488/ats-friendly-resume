@@ -94,13 +94,14 @@ function extractTopLevelJSON(text) {
 }
 
 export async function tailorStructuredJSON(prompt, schema) {
-  // Try Gemini first (no JSON mode — same reasoning as Groq, it constrains rewrites)
+  // Try Gemini first
   if (genAI) {
     const safePrompt = sanitizePrompt(prompt);
     try {
       const model = getGemini().getGenerativeModel({
         model: GEMINI_MODEL,
         generationConfig: {
+          responseMimeType: "application/json",
           temperature: 0.7,
           maxOutputTokens: 8192,
         },
