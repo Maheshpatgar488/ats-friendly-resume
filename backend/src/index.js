@@ -555,68 +555,16 @@ app.post("/api/export-pdf", async (req, res) => {
     const page = await browser.newPage();
     await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 1 });
 
-    // Auto-scaling: start with user's custom spacing, then tighten if content overflows
-    // Never go below 9pt — content that overflows at 9pt naturally goes to 2 pages
-    const userStep = {
-      fontSize: customStyles.fontSize || "10pt",
-      lineHeight: customStyles.lineHeight || "1.4",
-      sectionSpacing: customStyles.sectionSpacing || "14px",
-      entrySpacing: customStyles.entrySpacing || "8px",
-    };
-    const scalingSteps = [
-      userStep,
-      { fontSize: "10pt",  lineHeight: "1.35", sectionSpacing: "8px",  entrySpacing: "6px"  },
-      { fontSize: "9.5pt", lineHeight: "1.3",  sectionSpacing: "6px",  entrySpacing: "5px"  },
-      { fontSize: "9.5pt", lineHeight: "1.25", sectionSpacing: "4px",  entrySpacing: "3px"  },
-      { fontSize: "9pt",   lineHeight: "1.25", sectionSpacing: "3px",  entrySpacing: "2px"  },
-      { fontSize: "9pt",   lineHeight: "1.2",  sectionSpacing: "2px",  entrySpacing: "2px"  },
-      { fontSize: "9pt",   lineHeight: "1.15", sectionSpacing: "1px",  entrySpacing: "1px"  },
-    ];
+    // Use the user's custom styles directly — no auto-scaling.
+    // The preview already shows the page count warning, so the user can adjust spacing themselves.
+    // This ensures the PDF always matches the preview exactly.
+    const htmlContent = compileResumeHTML(resumeData, templateId, customStyles);
+    await page.setContent(htmlContent, { waitUntil: "domcontentloaded", timeout: 15000 });
 
-    let pdfBuffer = null;
-    let fittingScale = null;
-
-    for (const scale of scalingSteps) {
-      const scaledStyles = {
-        ...customStyles,
-        fontSize: scale.fontSize,
-        lineHeight: scale.lineHeight,
-        sectionSpacing: scale.sectionSpacing,
-        entrySpacing: scale.entrySpacing,
-      };
-
-      const htmlContent = compileResumeHTML(resumeData, templateId, scaledStyles);
-      await page.setContent(htmlContent, { waitUntil: "domcontentloaded", timeout: 15000 });
-
-      // Check how many pages it would produce
-      const contentHeight = await page.evaluate(() => document.body.scrollHeight);
-      const A4_HEIGHT_PX = 1123; // 297mm at 96dpi
-      const pageCount = Math.ceil(contentHeight / A4_HEIGHT_PX);
-
-      if (pageCount <= 1) {
-        // Fits on 1 page — generate the final PDF
-        fittingScale = scale;
-        pdfBuffer = await page.pdf({
-          format: "A4",
-          printBackground: true
-        });
-        break;
-      }
-    }
-
-    // If still doesn't fit after all steps, use the most readable scale and allow 2 pages
-    // Better to have readable text across 2 pages than tiny cramped text
-    if (!pdfBuffer) {
-      const bestScale = scalingSteps[0];
-      const scaledStyles = { ...customStyles, ...bestScale };
-      const htmlContent = compileResumeHTML(resumeData, templateId, scaledStyles);
-      await page.setContent(htmlContent, { waitUntil: "domcontentloaded", timeout: 15000 });
-
-      pdfBuffer = await page.pdf({
-        format: "A4",
-        printBackground: true,
-      });
-    }
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      printBackground: true
+    });
 
     await browser.close();
 
