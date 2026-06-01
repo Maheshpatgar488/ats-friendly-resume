@@ -33,6 +33,44 @@ export async function generateStructuredJSON(prompt, schema, temperature = 0.1) 
   }
 }
 
+/**
+ * Tailor-specific JSON generation that drops response_format to avoid the model
+ * copying input verbatim. Uses a higher temperature and a rewrite-focused system prompt.
+ */
+export async function tailorStructuredJSON(prompt, schema) {
+  try {
+    const client = getGroq();
+    const result = await client.chat.completions.create({
+      model: MODEL,
+      messages: [
+        { role: "system", content: "You are an elite resume rewrite specialist. Your job is to REWRITE and IMPROVE the resume content — change the wording, use STAR methodology, integrate keywords, and make every bullet stronger. Output ONLY a valid JSON object, no explanations, no markdown." },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.7,
+    });
+    const text = result.choices[0].message.content.trim();
+    // Try direct parse first, then try extracting JSON from backticks
+    try {
+      return JSON.parse(text);
+    } catch {
+      const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[1].trim());
+      }
+      // Try finding first { to last }
+      const start = text.indexOf('{');
+      const end = text.lastIndexOf('}');
+      if (start !== -1 && end > start) {
+        return JSON.parse(text.slice(start, end + 1));
+      }
+      throw new Error("Could not extract valid JSON from model response");
+    }
+  } catch (error) {
+    console.error("Groq Tailored JSON Generation Error:", error);
+    throw error;
+  }
+}
+
 export async function generateText(prompt, temperature = 0.7) {
   try {
     const client = getGroq();

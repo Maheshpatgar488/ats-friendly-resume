@@ -15,6 +15,7 @@ const pdfParse = require("pdf-parse");
 import { 
   generateStructuredJSON, 
   generateText, 
+  tailorStructuredJSON, 
   RESUME_JSON_SCHEMA, 
   ATS_SCORE_SCHEMA 
 } from "./utils/gemini.js";
@@ -404,6 +405,8 @@ app.post("/api/tailor", async (req, res) => {
       You are an expert career consultant and elite resume architect specializing in maximizing ATS pass-rates.
       Your task is to review the provided Resume JSON data and **tailor it aggressively and comprehensively** to achieve an ATS match score **above 85% to 95%** against the provided Target Job Description.
       
+      CRITICAL: You MUST output DIFFERENT content from the input. Every highlight in the "experience" array MUST be rewritten — change wording, use stronger action verbs, quantify results, integrate keywords from the job description. Do NOT just copy the input text back. If the input highlights are already good, make them better.
+      
       Strict Optimisation Rules:
       1. **Maximize Keyword Density**: Identify ALL key technical skills, tools, frameworks, databases, and methodologies mentioned in the Job Description, and safely integrate them directly into the "skills" array, organizing them logically.
       2. **Mirror Job Terminology**: Rephrase and rewrite the "highlights" bullet points in the "experience" array using the **STAR methodology** (Situation, Task, Action, Result). Ensure every single bullet explicitly weaves in the exact verbs, technical terms, business metrics, and responsibilities outlined in the Job Description.
@@ -432,7 +435,10 @@ app.post("/api/tailor", async (req, res) => {
       """
     `;
 
-    const tailoredData = await generateStructuredJSON(prompt, RESUME_JSON_SCHEMA, 0.5);
+    // Use tailorStructuredJSON instead of generateStructuredJSON for the tailor endpoint.
+    // The difference: no response_format constraint so the model actually rewrites content
+    // instead of copying input verbatim (JSON mode makes Llama models ultra-conservative).
+    const tailoredData = await tailorStructuredJSON(prompt, RESUME_JSON_SCHEMA);
     // Post-process: merge AI's rewritten text back into original structure.
     // The AI often drops company/position/dates or merges entries, so we ALWAYS
     // preserve the original structural fields and only replace text content.
