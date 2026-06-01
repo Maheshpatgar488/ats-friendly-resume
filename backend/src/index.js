@@ -324,16 +324,24 @@ app.post("/api/ats-score", async (req, res) => {
     return res.status(400).json({ error: "Missing resumeData or jobDescription in request body." });
   }
 
+  // Sanitize job description to strip image references (Groq API rejects non-text content)
+  const cleanJD = jobDescription
+    .replace(/!\[.*?\]\(.*?\)/g, "")          // markdown images
+    .replace(/<img[^>]*>/gi, "")               // html img tags
+    .replace(/data:image\/[^;]+;base64[^"]*/gi, "") // base64 images
+    .replace(/\b\w+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\b/gi, "[image]") // image filenames
+    .replace(/\(https?:\/\/[^)]+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)[^)]*\)/gi, "([image link])"); // image URLs
+
   try {
-    // 1. Try Gemini AI first for high-quality semantic matching
+    // 1. Try AI first for high-quality semantic matching
     const prompt = `
       You are an advanced Applicant Tracking System (ATS) matching algorithm.
-      Perform a rigorous, semantic keyword match comparison between the provided Resume JSON data and the pasted Target Job Description.
+      Perform an EXHAUSTIVE, rigorous keyword match comparison between the provided Resume JSON data and the pasted Target Job Description.
       
       Perform the following:
       1. Calculate an overall ATS compatibility score (0 to 100) reflecting how well the resume matches the requirements, skills, and expectations.
-      2. Extract a list of key technical skills and keywords from the job description that ARE successfully matched in the resume.
-      3. Extract a list of critical technical skills, methodologies, or buzzwords from the job description that ARE MISSING or neglected in the resume.
+      2. Extract a COMPLETE list of EVERY technical skill, tool, framework, methodology, and keyword from the job description that is matched in the resume. Do not omit any.
+      3. Extract a COMPLETE list of EVERY technical skill, tool, framework, methodology, and keyword from the job description that is MISSING from the resume. Be exhaustive — extract every single requirement mentioned.
       4. Provide 3-5 specific, bullet-point actionable suggestions to improve the resume match rate (e.g. rephrasing experience, including certifications, or adding specific skills).
 
       Resume JSON Data:
@@ -341,11 +349,11 @@ app.post("/api/ats-score", async (req, res) => {
 
       Target Job Description:
       """
-      ${jobDescription}
+      ${cleanJD}
       """
     `;
 
-    const scoreData = await generateStructuredJSON(prompt, ATS_SCORE_SCHEMA);
+    const scoreData = await generateStructuredJSON(prompt, ATS_SCORE_SCHEMA, 0.5);
     // Normalize AI response — Groq often invents its own field names
     const normalizedScore = scoreData.atsCompatibilityScore ?? scoreData.overallScore ?? scoreData.score;
     scoreData.score = (typeof normalizedScore === "number" && !Number.isNaN(normalizedScore))
@@ -384,6 +392,14 @@ app.post("/api/tailor", async (req, res) => {
     return res.status(400).json({ error: "Missing resumeData or jobDescription in request body." });
   }
 
+  // Sanitize job description to strip image references (Groq API rejects non-text content)
+  const cleanJD = jobDescription
+    .replace(/!\[.*?\]\(.*?\)/g, "")
+    .replace(/<img[^>]*>/gi, "")
+    .replace(/data:image\/[^;]+;base64[^"]*/gi, "")
+    .replace(/\b\w+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\b/gi, "[image]")
+    .replace(/\(https?:\/\/[^)]+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)[^)]*\)/gi, "([image link])");
+
   const missingKWText = Array.isArray(missingKeywords) && missingKeywords.length > 0
     ? `\nThe following keywords from the job description are currently MISSING from the resume. You MUST weave them into the highlights, summary, and skills wherever they fit naturally:\n${missingKeywords.map(k => `  - ${k}`).join("\n")}\n`
     : "";
@@ -403,19 +419,20 @@ app.post("/api/tailor", async (req, res) => {
 
     const prompt = `
       You are an expert career consultant and elite resume architect specializing in maximizing ATS pass-rates.
-      Your task is to review the provided Resume JSON data and **tailor it aggressively and comprehensively** to achieve an ATS match score **above 85% to 95%** against the provided Target Job Description.
+      Your task is to review ALL sections of the provided Resume JSON data and **tailor each section aggressively** to achieve an ATS match score **above 85% to 95%** against the provided Target Job Description.
       
-      CRITICAL: You MUST output DIFFERENT content from the input. Every highlight in the "experience" array MUST be rewritten — change wording, use stronger action verbs, quantify results, integrate keywords from the job description. Do NOT just copy the input text back. If the input highlights are already good, make them better.
+      CRITICAL: You MUST output DIFFERENT content from the input. Every section MUST be rewritten — experience highlights, education (degree, fieldOfStudy), certifications, projects, skills, and summary. Do NOT skip any section. Do NOT just copy the input text back.
       
       Strict Optimisation Rules:
-      1. **Maximize Keyword Density**: Identify ALL key technical skills, tools, frameworks, databases, and methodologies mentioned in the Job Description, and safely integrate them directly into the "skills" array, organizing them logically.
+       1. **Rewrite the Skills Array**: The "skills" array MUST be rewritten. Remove generic/obsolete skills. Add ALL relevant tech skills, tools, frameworks, databases, and methodologies mentioned in the Job Description. Reorder skills so the most JD-relevant ones come first. Do NOT return the same skills list as the input — output a different, JD-optimized list.
       2. **Mirror Job Terminology**: Rephrase and rewrite the "highlights" bullet points in the "experience" array using the **STAR methodology** (Situation, Task, Action, Result). Ensure every single bullet explicitly weaves in the exact verbs, technical terms, business metrics, and responsibilities outlined in the Job Description.
       3. **Tailor the Professional Summary**: Rewrite the "summary" to be dense with relevant key phrases. It should sound like the absolute perfect, hand-picked candidate for this specific role, emphasizing transferable achievements.
-      4. **MAINTAIN FACTUAL INTEGRITY**: Do not invent fake work histories, fake companies, fake dates, or fake colleges. You are rephrasing, optimizing, and presenting the real facts of the user's career in the exact language of the recruiter to pass ATS filters!
-      5. Keep all bullet points concise (1-2 lines max, ~15-25 words each) so the full resume fits on a single printed page. Prioritize the most impactful keywords from the job description.
-      5b. **LIMIT BULLET POINTS**: Each experience entry must have at most 4 highlights. Choose the most impactful ones. Do not add more than 4.
-      6. **PRESERVE PERSONAL INFO**: You MUST NOT change or overwrite the user's name, email, phone, location, or links in the personalInfo section. Leave personalInfo EXACTLY as it is in the input. Do NOT replace the name with the Job Title.
-      ${missingKWText ? `7. **ADDRESS MISSING KEYWORDS**: ${missingKWText.replace(/\n/g, "\n      ")}` : ""}
+      4. **Tailor Education, Certifications, and Projects too**: Rewrite degree names, certification titles, project descriptions, and technologies to use terminology from the job description where it naturally fits. Do NOT skip these sections.
+      5. **MAINTAIN FACTUAL INTEGRITY**: Do not invent fake work histories, fake companies, fake dates, or fake colleges. You are rephrasing, optimizing, and presenting the real facts of the user's career in the exact language of the recruiter to pass ATS filters!
+      6. Keep all bullet points concise (1-2 lines max, ~15-25 words each) so the full resume fits on a single printed page. Prioritize the most impactful keywords from the job description.
+      6b. **LIMIT BULLET POINTS**: Each experience entry must have at most 4 highlights. Choose the most impactful ones. Do not add more than 4.
+      7. **PRESERVE PERSONAL INFO**: You MUST NOT change or overwrite the user's name, email, phone, location, or links in the personalInfo section. Leave personalInfo EXACTLY as it is in the input. Do NOT replace the name with the Job Title.
+      ${missingKWText ? `8. **ADDRESS MISSING KEYWORDS**: ${missingKWText.replace(/\n/g, "\n      ")}` : ""}
 
       **CRITICAL — Output the EXACT same JSON structure as the input.**
       Every array field (experience, education, projects, certifications) must be an array of **objects**, not strings.
@@ -431,7 +448,7 @@ app.post("/api/tailor", async (req, res) => {
 
       Target Job Description:
       """
-      ${jobDescription}
+      ${cleanJD}
       """
     `;
 
@@ -473,8 +490,13 @@ app.post("/api/tailor", async (req, res) => {
     const aiEdu = Array.isArray(tailoredData.education) ? tailoredData.education : [];
     tailoredData.education = originalEdu.map((orig, idx) => {
       const ai = aiEdu[idx];
-      if (typeof ai === "string") return { ...orig };
-      return { ...orig };
+      if (!ai || typeof ai === "string") return { ...orig };
+      return {
+        ...orig,
+        degree: ai.degree || orig.degree,
+        fieldOfStudy: ai.fieldOfStudy || orig.fieldOfStudy,
+        gpa: ai.gpa || orig.gpa,
+      };
     });
     const originalProj = Array.isArray(resumeData.projects) ? resumeData.projects : [];
     const aiProj = Array.isArray(tailoredData.projects) ? tailoredData.projects : [];
@@ -487,25 +509,49 @@ app.post("/api/tailor", async (req, res) => {
       };
     });
     const originalCert = Array.isArray(resumeData.certifications) ? resumeData.certifications : [];
-    tailoredData.certifications = originalCert.map(orig => ({ ...orig }));
+    const aiCert = Array.isArray(tailoredData.certifications) ? tailoredData.certifications : [];
+    tailoredData.certifications = originalCert.map((orig, idx) => {
+      const ai = aiCert[idx];
+      if (!ai || typeof ai !== "object") return { ...orig };
+      return {
+        ...orig,
+        name: ai.name || orig.name,
+        issuer: ai.issuer || orig.issuer,
+      };
+    });
     // Ensure trainingData (if included) is removed
     if (tailoredData.trainingData) delete tailoredData.trainingData;
-    // Force-merge missing keywords into skills array (AI often ignores this)
+    // Use AI's reorganized skills as the base, then merge keywords directly from the JD
+    let baseSkills = Array.isArray(tailoredData.skills) && tailoredData.skills.length > 0
+      ? tailoredData.skills
+      : Array.isArray(resumeData.skills) ? [...resumeData.skills] : [];
+    const skillSet = new Set(baseSkills.map(s => s.toLowerCase().replace(/[.,]$/, "")));
+    // Merge missingKeywords from ATS scoring
     if (Array.isArray(missingKeywords) && missingKeywords.length > 0) {
-      const existingSkills = Array.isArray(tailoredData.skills) ? tailoredData.skills : [];
-      const skillSet = new Set(existingSkills.map(s => s.toLowerCase().replace(/[.,]$/, "")));
       for (const kw of missingKeywords) {
         if (!skillSet.has(kw.toLowerCase().replace(/[.,]$/, ""))) {
-          existingSkills.push(kw);
+          baseSkills.push(kw);
           skillSet.add(kw.toLowerCase());
         }
       }
-      tailoredData.skills = existingSkills;
+    }
+    // Safety net: extract keywords directly from the JD so skills always get updated
+    if (jobDescription) {
+      const rawTerms = jobDescription
+        .replace(/[^a-zA-Z0-9#+.#\-\/]/g, " ")
+        .split(/\s+/)
+        .filter(t => t.length > 2 && !["and","the","for","with","from","this","that","have","has","had","will","can","are","was","been","being","but","not","all","any","each","every","some","such","more","most","other","about","than","into","over","also","just","now","then","able","must","need","use","used","using","based","etc","per","its","may","too","very","good","new","well","get","set","way","part"].includes(t.toLowerCase()))
+        .map(t => t.trim());
+      const jdKeywordSet = new Set(rawTerms.map(t => t.toLowerCase()));
+      for (const kw of jdKeywordSet) {
+        if (!skillSet.has(kw) && kw.length > 2) {
+          baseSkills.push(kw.charAt(0).toUpperCase() + kw.slice(1));
+          skillSet.add(kw);
+        }
+      }
     }
     // Cap skills to 15 max to prevent overflow to 2 pages
-    if (Array.isArray(tailoredData.skills) && tailoredData.skills.length > 15) {
-      tailoredData.skills = tailoredData.skills.slice(0, 15);
-    }
+    tailoredData.skills = baseSkills.slice(0, 15);
     res.json({ success: true, tailoredResumeData: tailoredData, engine: "groq" });
 
   } catch (error) {
@@ -557,7 +603,7 @@ app.post("/api/export-pdf", async (req, res) => {
     // The preview already shows the page count warning, so the user can adjust spacing themselves.
     // This ensures the PDF always matches the preview exactly.
     const htmlContent = compileResumeHTML(resumeData, templateId, customStyles);
-    await page.setContent(htmlContent, { waitUntil: "domcontentloaded", timeout: 15000 });
+    await page.setContent(htmlContent, { waitUntil: "networkidle0", timeout: 30000 });
 
     const pdfBuffer = await page.pdf({
       format: "A4",
@@ -573,6 +619,53 @@ app.post("/api/export-pdf", async (req, res) => {
   } catch (error) {
     console.error("Export PDF Endpoint Error:", error);
     res.status(500).json({ error: "Failed to generate PDF.", details: error.message });
+  }
+});
+
+/**
+ * Endpoint: /api/export-pdf-from-html
+ * Accepts pre-rendered HTML from the frontend preview — guarantees the PDF
+ * matches the preview pixel-for-pixel since it uses the same rendered output.
+ */
+app.post("/api/export-pdf-from-html", async (req, res) => {
+  const { html } = req.body;
+
+  if (!html) {
+    return res.status(400).json({ error: "Missing 'html' in request body." });
+  }
+
+  try {
+    const launchOptions = {
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+      ]
+    };
+    if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+      launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+    }
+    const browser = await puppeteer.launch(launchOptions);
+    const page = await browser.newPage();
+    await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 1 });
+
+    await page.setContent(html, { waitUntil: "networkidle0", timeout: 30000 });
+
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      printBackground: true
+    });
+
+    await browser.close();
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="resume.pdf"`);
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error("Export PDF from HTML Error:", error);
+    res.status(500).json({ error: "Failed to generate PDF from HTML.", details: error.message });
   }
 });
 

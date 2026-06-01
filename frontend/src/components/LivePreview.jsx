@@ -42,23 +42,47 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
     { name: "Wide (0.75in)", val: { top: "0.75in", bottom: "0.75in", left: "0.75in", right: "0.75in" } }
   ];
 
-  // Native Browser PDF Generation (Bulletproof)
+  // PDF Generation — sends preview HTML to backend for pixel-perfect matching
   const downloadPDF = async () => {
     setPdfLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/export-pdf`, {
+      // Capture the React-rendered preview HTML (matches what user sees)
+      const previewEl = document.getElementById("resume-pdf-content");
+      const renderedHTML = previewEl ? previewEl.innerHTML : "";
+
+      // Build a complete HTML document with Tailwind CDN (generates all utility classes on the fly)
+      // and Google Fonts. This guarantees pixel-perfect matching with the preview.
+      const fullHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resume</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #fff; margin: 0; padding: 0; }
+  @page { size: A4; margin: 0; }
+  @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+</style>
+</head>
+<body>
+<div id="root" style="width: 210mm; margin: 0 auto; background: #fff;">${renderedHTML}</div>
+</body>
+</html>`;
+
+      const response = await fetch(`${API_URL}/api/export-pdf-from-html`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          resumeData,
-          templateId: customStyles.templateId || "3",
-          customStyles,
-        }),
+        body: JSON.stringify({ html: fullHTML }),
       });
 
       if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.error || "PDF generation failed");
+        const errText = await response.text().catch(() => "Unknown error");
+        throw new Error("PDF generation failed: " + errText);
       }
 
       const blob = await response.blob();

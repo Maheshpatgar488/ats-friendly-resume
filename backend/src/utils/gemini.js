@@ -37,6 +37,33 @@ export async function generateStructuredJSON(prompt, schema, temperature = 0.1) 
  * Tailor-specific JSON generation that drops response_format to avoid the model
  * copying input verbatim. Uses a higher temperature and a rewrite-focused system prompt.
  */
+/**
+ * Extracts a top-level JSON object from text by counting brace depth.
+ * This correctly matches the opening `{` with its corresponding `}` even
+ * when the text contains nested objects or trailing content.
+ */
+function extractTopLevelJSON(text) {
+  const start = text.indexOf('{');
+  if (start === -1) return null;
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+    if (escaped) { escaped = false; continue; }
+    if (ch === '\\' && inString) { escaped = true; continue; }
+    if (ch === '"') { inString = !inString; continue; }
+    if (!inString) {
+      if (ch === '{') depth++;
+      else if (ch === '}') {
+        depth--;
+        if (depth === 0) return text.slice(start, i + 1);
+      }
+    }
+  }
+  return null;
+}
+
 export async function tailorStructuredJSON(prompt, schema) {
   try {
     const client = getGroq();
@@ -47,6 +74,7 @@ export async function tailorStructuredJSON(prompt, schema) {
         { role: "user", content: prompt },
       ],
       temperature: 0.7,
+      max_tokens: 8192,
     });
     const text = result.choices[0].message.content.trim();
     // Try direct parse first, then try extracting JSON from backticks
@@ -57,11 +85,10 @@ export async function tailorStructuredJSON(prompt, schema) {
       if (jsonMatch) {
         return JSON.parse(jsonMatch[1].trim());
       }
-      // Try finding first { to last }
-      const start = text.indexOf('{');
-      const end = text.lastIndexOf('}');
-      if (start !== -1 && end > start) {
-        return JSON.parse(text.slice(start, end + 1));
+      // Use brace-depth extraction to correctly find the top-level JSON object
+      const extracted = extractTopLevelJSON(text);
+      if (extracted) {
+        return JSON.parse(extracted);
       }
       throw new Error("Could not extract valid JSON from model response");
     }
