@@ -411,7 +411,8 @@ app.post("/api/tailor", async (req, res) => {
       4. **MAINTAIN FACTUAL INTEGRITY**: Do not invent fake work histories, fake companies, fake dates, or fake colleges. You are rephrasing, optimizing, and presenting the real facts of the user's career in the exact language of the recruiter to pass ATS filters!
       5. Keep all bullet points concise (1-2 lines max, ~15-25 words each) so the full resume fits on a single printed page. Prioritize the most impactful keywords from the job description.
       5b. **LIMIT BULLET POINTS**: Each experience entry must have at most 4 highlights. Choose the most impactful ones. Do not add more than 4.
-      ${missingKWText ? `6. **ADDRESS MISSING KEYWORDS**: ${missingKWText.replace(/\n/g, "\n      ")}` : ""}
+      6. **PRESERVE PERSONAL INFO**: You MUST NOT change or overwrite the user's name, email, phone, location, or links in the personalInfo section. Leave personalInfo EXACTLY as it is in the input. Do NOT replace the name with the Job Title.
+      ${missingKWText ? `7. **ADDRESS MISSING KEYWORDS**: ${missingKWText.replace(/\n/g, "\n      ")}` : ""}
 
       **CRITICAL — Output the EXACT same JSON structure as the input.**
       Every array field (experience, education, projects, certifications) must be an array of **objects**, not strings.
