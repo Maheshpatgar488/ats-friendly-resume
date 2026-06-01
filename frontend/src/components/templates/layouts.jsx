@@ -72,7 +72,7 @@ const SectionHeader = ({ title, primaryColor, borderStyle = "solid" }) => {
   return (
     <div style={{
       marginTop: "10px",
-      marginBottom: "5px",
+      marginBottom: "8px",
       paddingBottom: "2px",
       borderBottom: borderMap[borderStyle] || borderMap.solid,
       pageBreakAfter: "avoid",
