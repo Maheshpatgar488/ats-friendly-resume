@@ -1,46 +1,64 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import Groq from "groq-sdk";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const apiKey = process.env.GROQ_API_KEY;
-const groq = apiKey ? new Groq({ apiKey }) : null;
-const MODEL = "llama-3.3-70b-versatile";
+const GEMINI_MODEL = "gemini-1.5-flash";
+const GROQ_MODEL = "llama-3.3-70b-versatile";
 
-export function getGroq() {
-  if (!groq) {
-    throw new Error("GROQ_API_KEY is not defined in the server environment.");
-  }
+// Gemini client (primary)
+const geminiApiKey = process.env.GEMINI_API_KEY;
+const genAI = geminiApiKey ? new GoogleGenerativeAI(geminiApiKey) : null;
+
+// Groq client (fallback)
+const groqApiKey = process.env.GROQ_API_KEY;
+const groq = groqApiKey ? new Groq({ apiKey: groqApiKey }) : null;
+
+function getGemini() {
+  if (!genAI) throw new Error("GEMINI_API_KEY is not defined.");
+  return genAI;
+}
+
+function getGroq() {
+  if (!groq) throw new Error("GROQ_API_KEY is not defined.");
   return groq;
 }
 
 export async function generateStructuredJSON(prompt, schema, temperature = 0.1) {
-  try {
-    const client = getGroq();
-    const result = await client.chat.completions.create({
-      model: MODEL,
-      messages: [
-        { role: "system", content: "You are a JSON generator. Output ONLY valid JSON matching the requested schema. No explanations, no markdown." },
-        { role: "user", content: prompt },
-      ],
-      response_format: { type: "json_object" },
-      temperature,
-    });
-    return JSON.parse(result.choices[0].message.content);
-  } catch (error) {
-    console.error("Groq Structured JSON Generation Error:", error);
-    throw error;
+  // Try Gemini first
+  if (genAI) {
+    try {
+      const model = getGemini().getGenerativeModel({
+        model: GEMINI_MODEL,
+        generationConfig: {
+          responseMimeType: "application/json",
+          temperature,
+        },
+      });
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+      return JSON.parse(text);
+    } catch (error) {
+      console.error("Gemini Structured JSON Error, falling back to Groq:", error.message);
+    }
   }
+  // Fallback to Groq
+  const client = getGroq();
+  const result = await client.chat.completions.create({
+    model: GROQ_MODEL,
+    messages: [
+      { role: "system", content: "You are a JSON generator. Output ONLY valid JSON matching the requested schema. No explanations, no markdown." },
+      { role: "user", content: prompt },
+    ],
+    response_format: { type: "json_object" },
+    temperature,
+  });
+  return JSON.parse(result.choices[0].message.content);
 }
 
 /**
- * Tailor-specific JSON generation that drops response_format to avoid the model
- * copying input verbatim. Uses a higher temperature and a rewrite-focused system prompt.
- */
-/**
  * Extracts a top-level JSON object from text by counting brace depth.
- * This correctly matches the opening `{` with its corresponding `}` even
- * when the text contains nested objects or trailing content.
  */
 function extractTopLevelJSON(text) {
   const start = text.indexOf('{');
@@ -65,52 +83,84 @@ function extractTopLevelJSON(text) {
 }
 
 export async function tailorStructuredJSON(prompt, schema) {
-  try {
-    const client = getGroq();
-    const result = await client.chat.completions.create({
-      model: MODEL,
-      messages: [
-        { role: "system", content: "You are an elite resume rewrite specialist. Your job is to REWRITE and IMPROVE the resume content — change the wording, use STAR methodology, integrate keywords, and make every bullet stronger. Output ONLY a valid JSON object, no explanations, no markdown." },
-        { role: "user", content: prompt },
-      ],
-      temperature: 0.7,
-      max_tokens: 8192,
-    });
-    const text = result.choices[0].message.content.trim();
-    // Try direct parse first, then try extracting JSON from backticks
+  // Try Gemini first (no JSON mode — same reasoning as Groq, it constrains rewrites)
+  if (genAI) {
     try {
-      return JSON.parse(text);
-    } catch {
-      const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[1].trim());
+      const model = getGemini().getGenerativeModel({
+        model: GEMINI_MODEL,
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 8192,
+        },
+      });
+      const result = await model.generateContent(prompt);
+      const text = result.response.text().trim();
+      try {
+        return JSON.parse(text);
+      } catch {
+        const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (jsonMatch) {
+          return JSON.parse(jsonMatch[1].trim());
+        }
+        const extracted = extractTopLevelJSON(text);
+        if (extracted) {
+          return JSON.parse(extracted);
+        }
+        throw new Error("Could not extract valid JSON from Gemini response");
       }
-      // Use brace-depth extraction to correctly find the top-level JSON object
-      const extracted = extractTopLevelJSON(text);
-      if (extracted) {
-        return JSON.parse(extracted);
-      }
-      throw new Error("Could not extract valid JSON from model response");
+    } catch (error) {
+      console.error("Gemini Tailored JSON Error, falling back to Groq:", error.message);
     }
-  } catch (error) {
-    console.error("Groq Tailored JSON Generation Error:", error);
-    throw error;
+  }
+  // Fallback to Groq
+  const client = getGroq();
+  const result = await client.chat.completions.create({
+    model: GROQ_MODEL,
+    messages: [
+      { role: "system", content: "You are an elite resume rewrite specialist. Your job is to REWRITE and IMPROVE the resume content — change the wording, use STAR methodology, integrate keywords, and make every bullet stronger. Output ONLY a valid JSON object, no explanations, no markdown." },
+      { role: "user", content: prompt },
+    ],
+    temperature: 0.7,
+    max_tokens: 8192,
+  });
+  const text = result.choices[0].message.content.trim();
+  try {
+    return JSON.parse(text);
+  } catch {
+    const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[1].trim());
+    }
+    const extracted = extractTopLevelJSON(text);
+    if (extracted) {
+      return JSON.parse(extracted);
+    }
+    throw new Error("Could not extract valid JSON from Groq response");
   }
 }
 
 export async function generateText(prompt, temperature = 0.7) {
-  try {
-    const client = getGroq();
-    const result = await client.chat.completions.create({
-      model: MODEL,
-      messages: [{ role: "user", content: prompt }],
-      temperature,
-    });
-    return result.choices[0].message.content;
-  } catch (error) {
-    console.error("Groq Text Generation Error:", error);
-    throw error;
+  // Try Gemini first
+  if (genAI) {
+    try {
+      const model = getGemini().getGenerativeModel({
+        model: GEMINI_MODEL,
+        generationConfig: { temperature },
+      });
+      const result = await model.generateContent(prompt);
+      return result.response.text();
+    } catch (error) {
+      console.error("Gemini Text Generation Error, falling back to Groq:", error.message);
+    }
   }
+  // Fallback to Groq
+  const client = getGroq();
+  const result = await client.chat.completions.create({
+    model: GROQ_MODEL,
+    messages: [{ role: "user", content: prompt }],
+    temperature,
+  });
+  return result.choices[0].message.content;
 }
 
 export const RESUME_JSON_SCHEMA = {

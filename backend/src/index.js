@@ -365,7 +365,7 @@ app.post("/api/ats-score", async (req, res) => {
       .map(k => typeof k === "string" ? k : k?.name || k?.skill || String(k));
     scoreData.suggestions = (scoreData.suggestions ?? scoreData.actionableSuggestions ?? scoreData.improvementSuggestions ?? scoreData.recommendations ?? [])
       .map(s => typeof s === "string" ? s : s?.suggestion || s?.action || JSON.stringify(s));
-    res.json({ success: true, ...scoreData, engine: "groq" });
+    res.json({ success: true, ...scoreData, engine: "ai" });
 
   } catch (error) {
     console.warn("AI ATS scoring failed, falling back to local engine:", error.message || error);
@@ -552,7 +552,7 @@ app.post("/api/tailor", async (req, res) => {
     }
     // Cap skills to 15 max to prevent overflow to 2 pages
     tailoredData.skills = baseSkills.slice(0, 15);
-    res.json({ success: true, tailoredResumeData: tailoredData, engine: "groq" });
+    res.json({ success: true, tailoredResumeData: tailoredData, engine: "ai" });
 
   } catch (error) {
     console.warn("AI tailoring failed, falling back to local engine:", error.message || error);

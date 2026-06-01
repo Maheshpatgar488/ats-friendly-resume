@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const apiKey = process.env.GEMINI_API_KEY || "AIzaSyCZ4Dzp0sJ9eCFx8bfPfYXyT5gv6muvLyE";
+const apiKey = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey);
 
 const modelsToTest = [
