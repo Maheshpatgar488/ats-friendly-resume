@@ -80,24 +80,23 @@ export default function App() {
 
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
-        const text = await response.text();
-        throw new Error(`Server returned HTML instead of JSON! Status: ${response.status}. Preview: ${text.substring(0, 150)}`);
+        throw new Error("Our AI extraction server is temporarily unreachable. Please try again later.");
       }
 
       const data = await response.json();
       if (data.success && data.resumeData) {
         updateResumeData(data.resumeData);
         if (data.partial) {
-          alert("⚠️ " + (data.warning || "Could not AI-parse the resume. Raw text has been loaded into the summary field — please fill in the form manually."));
+          alert("⚠️ " + (data.warning || "Could not completely AI-parse the resume. Raw text has been loaded — please fill in the remaining details manually."));
         } else {
           alert("🎉 Boom! Your old resume was successfully parsed and extracted. All details have been autofilled into the form builder!");
         }
       } else {
-        alert((data.details ? data.details + " " : "") + (data.error || "Failed to parse the file. Please check if the backend is running and valid."));
+        alert(data.error || "Failed to parse the file. Please check if the document is readable.");
       }
     } catch (err) {
-      console.error(err);
-      alert(`Error during extraction: ${err.message}`);
+      console.error("Extraction Error:", err);
+      alert(err.message || "An unexpected error occurred during extraction. Please try again.");
     } finally {
       setParseLoading(false);
       setFile(null);

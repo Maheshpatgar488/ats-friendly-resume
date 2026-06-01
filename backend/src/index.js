@@ -23,8 +23,11 @@ import {
   getAllResumes, 
   getResumeById, 
   saveResume, 
-  deleteResume 
+  updateResume, 
+  deleteResume,
+  initDb 
 } from "./utils/db.js";
+import { generateDocx } from "./utils/docxGenerator.js";
 import { compileResumeHTML } from "./utils/pdfGenerator.js";
 import { parseResumeText } from "./utils/localParser.js";
 
@@ -232,8 +235,12 @@ async function handleExtractText(req, res) {
 app.post("/api/enhance", async (req, res) => {
   const { type, content, jobTitle } = req.body;
 
-  if (!content) {
+  if (!content && type !== "generate-bullets") {
     return res.status(400).json({ error: "Missing content parameter to enhance." });
+  }
+
+  if (type === "generate-bullets" && !jobTitle) {
+    return res.status(400).json({ error: "Missing jobTitle parameter to generate bullets." });
   }
 
   try {
@@ -254,6 +261,21 @@ app.post("/api/enhance", async (req, res) => {
         "${content}"
         
         ${jobTitle ? `Target Role Title: "${jobTitle}"` : ""}
+      `;
+    } else if (type === "generate-bullets") {
+      prompt = `
+        You are an expert resume writer and career coach.
+        Generate 3 highly professional, ATS-optimized resume bullet points for the following role.
+        Use the **STAR methodology** (Situation, Task, Action, Result) where possible, starting each bullet with a strong action verb (e.g. Spearheaded, Engineered, Orchestrated).
+        
+        Role: "${jobTitle}"
+        ${content ? `Context/Description provided by the user: "${content}"` : ""}
+        
+        Guidelines:
+        1. Output EXACTLY 3 bullet points.
+        2. Do NOT use markdown list formatting (no asterisks or dashes at the start of the line). Just output the raw text for each bullet on a new line.
+        3. Do NOT include any headers or introductory text.
+        4. Separate each bullet with a newline character.
       `;
     } else {
       // type === "summary"
@@ -583,6 +605,29 @@ app.post("/api/export-pdf", async (req, res) => {
   } catch (error) {
     console.error("Export PDF Endpoint Error:", error);
     res.status(500).json({ error: "Failed to generate PDF.", details: error.message });
+  }
+});
+
+/**
+ * Endpoint: /api/export-docx
+ * Takes the resume data, builds a DOCX file using docx library, and returns a high-fidelity DOCX stream.
+ */
+app.post("/api/export-docx", async (req, res) => {
+  const { resumeData } = req.body;
+
+  if (!resumeData) {
+    return res.status(400).json({ error: "Missing resumeData in request body." });
+  }
+
+  try {
+    const docxBuffer = await generateDocx(resumeData);
+    
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+    res.setHeader("Content-Disposition", `attachment; filename="resume.docx"`);
+    res.send(docxBuffer);
+  } catch (error) {
+    console.error("Export DOCX Endpoint Error:", error);
+    res.status(500).json({ error: "Failed to generate DOCX.", details: error.message });
   }
 });
 

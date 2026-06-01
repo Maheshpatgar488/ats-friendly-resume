@@ -9,6 +9,7 @@ import { API_URL } from "../config";
 export default function LivePreview({ resumeData, customStyles, setCustomStyles, onExportBackup, onLoadSampleData, onClearResume }) {
   const [zoom, setZoom] = useState(85);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [docxLoading, setDocxLoading] = useState(false);
   const [activeSubTab, setActiveSubTab] = useState("templates");
   const [previewHeight, setPreviewHeight] = useState(0);
 
@@ -73,6 +74,37 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
       alert("PDF generation failed: " + error.message);
     } finally {
       setPdfLoading(false);
+    }
+  };
+
+  const downloadDOCX = async () => {
+    setDocxLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/export-docx`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resumeData }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || "DOCX generation failed");
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${resumeData.personalInfo?.fullName?.replace(/\s+/g, "_") || "Resume"}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("DOCX download error:", error);
+      alert("DOCX generation failed: " + error.message);
+    } finally {
+      setDocxLoading(false);
     }
   };
 
@@ -466,23 +498,50 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
               disabled={pdfLoading}
               className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-bold uppercase tracking-wider text-white rounded-md shadow-lg transition-all ${
                 pdfLoading 
-                  ? "bg-slate-700 cursor-not-allowed" 
-                  : "bg-indigo-600 hover:bg-indigo-500 hover:shadow-indigo-500/20 active:scale-98"
-              }`}
-            >
-              {pdfLoading ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span className="hidden sm:inline">Generating...</span>
-                </>
-              ) : (
-                <>
-                  <Download className="w-4 h-4" />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={downloadPDF}
+                disabled={pdfLoading}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border transition-all duration-300 group ${
+                  pdfLoading 
+                    ? "bg-slate-700 cursor-not-allowed border-slate-600" 
+                    : "bg-slate-800 hover:bg-slate-700 border-slate-600 hover:border-indigo-500/50"
+                }`}
+              >
+                {pdfLoading ? (
+                  <RefreshCw className="w-4 h-4 animate-spin text-indigo-400" />
+                ) : (
+                  <FileText className="w-4 h-4 text-indigo-400 group-hover:text-indigo-300 transition-colors" />
+                )}
+                <span className="font-semibold text-[13px] tracking-wide text-white uppercase flex items-center gap-2">
                   <span className="hidden sm:inline">Download PDF</span>
                   <span className="sm:hidden">PDF</span>
-                </>
-              )}
-            </button>
+                </span>
+              </button>
+              
+              <button 
+                onClick={downloadDOCX}
+                disabled={docxLoading}
+                className={`
+                  flex items-center gap-2 px-4 py-2.5 rounded-lg
+                  bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-600 hover:to-blue-500
+                  border border-blue-500/30 shadow-[0_4px_14px_0_rgba(37,99,235,0.39)]
+                  transition-all duration-300 group
+                  ${docxLoading ? 'opacity-70 cursor-not-allowed' : 'hover:-translate-y-0.5'}
+                `}
+                title="Download DOCX"
+              >
+                {docxLoading ? (
+                  <RefreshCw className="w-4 h-4 animate-spin text-blue-400" />
+                ) : (
+                  <Download className="w-4 h-4 text-blue-300 group-hover:text-blue-200 transition-colors" />
+                )}
+                <span className="font-semibold text-[13px] tracking-wide text-white uppercase flex items-center gap-2">
+                  <span className="hidden sm:inline">Download DOCX</span>
+                  <span className="sm:hidden">DOCX</span>
+                </span>
+              </button>
+            </div>
           </div>
         </div>
 

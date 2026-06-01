@@ -5,6 +5,8 @@ import {
 } from "lucide-react";
 import { API_URL } from "../config";
 
+import { DebouncedInput, DebouncedTextarea } from "./DebouncedInput";
+
 export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
   const [activeTab, setActiveTab] = useState("personal");
   const [newSkill, setNewSkill] = useState("");
@@ -108,18 +110,76 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
       try {
         data = await response.json();
       } catch (parseErr) {
-        const text = await response.text();
-        alert("Server error: " + response.status + " " + text.substring(0, 200));
+        alert("The AI optimization service is currently unavailable. Please check your connection or try again later.");
         return;
       }
       if (data.success && data.enhancedText) {
         updateHighlight(expIdx, hIdx, data.enhancedText);
       } else {
-        alert((data.error || "Failed to optimize bullet.") + " (status " + response.status + ")");
+        alert(data.error || "Failed to optimize bullet. Please try again.");
       }
     } catch (err) {
-      console.error(err);
-      alert("Network error: " + err.message);
+      console.error("AI Enhance Error:", err);
+      alert("A network error occurred while connecting to the AI service. Please try again.");
+    } finally {
+      setAiLoading(prev => ({ ...prev, [loadingKey]: false }));
+    }
+  };
+
+  const generateBulletsWithAI = async (expIdx) => {
+    const exp = resumeData.experience[expIdx];
+    const roleTitle = exp.title || jobTitle;
+    
+    if (!roleTitle) {
+      alert("Please provide a Job Title for this experience (or a global Target Role Title) so the AI knows what to generate!");
+      return;
+    }
+
+    const loadingKey = `generate-bullets-${expIdx}`;
+    setAiLoading(prev => ({ ...prev, [loadingKey]: true }));
+
+    try {
+      const response = await fetch(`${API_URL}/api/enhance`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "generate-bullets",
+          jobTitle: roleTitle,
+          content: exp.description?.join(" ") || ""
+        })
+      });
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseErr) {
+        alert("The AI generation service is currently unavailable. Please check your connection or try again later.");
+        return;
+      }
+      
+      if (data.success && data.enhancedText) {
+        // Split text by newlines and filter out empty ones
+        const newBullets = data.enhancedText
+          .split("\n")
+          .map(b => b.replace(/^[-*•]\s*/, "").trim()) // Remove markdown list chars if Gemini included them anyway
+          .filter(Boolean);
+          
+        if (newBullets.length > 0) {
+          setResumeData(prev => {
+            const updated = [...prev.experience];
+            updated[expIdx] = {
+              ...updated[expIdx],
+              highlights: [...(updated[expIdx].highlights || []), ...newBullets]
+            };
+            return { ...prev, experience: updated };
+          });
+        }
+      } else {
+        alert(data.error || "Failed to generate bullets. Please try again.");
+      }
+    } catch (err) {
+      console.error("AI Generate Error:", err);
+      alert("Failed to reach the AI generation service. Please try again later.");
     } finally {
       setAiLoading(prev => ({ ...prev, [loadingKey]: false }));
     }
@@ -374,18 +434,17 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
       try {
         data = await response.json();
       } catch (parseErr) {
-        const text = await response.text();
-        alert("Server returned non-JSON: status=" + response.status + " body=" + text.substring(0, 300));
+        alert("The AI optimization service is currently unavailable. Please check your connection or try again later.");
         return;
       }
       if (data.success && data.enhancedText) {
         setResumeData(prev => ({ ...prev, summary: data.enhancedText }));
       } else {
-        alert((data.error || "Failed to enhance summary.") + " (status " + response.status + ")");
+        alert(data.error || "Failed to enhance summary. Please try again.");
       }
     } catch (err) {
-      console.error(err);
-      alert("Network error: " + err.message);
+      console.error("AI Enhance Error:", err);
+      alert("A network error occurred while connecting to the AI service. Please try again.");
     } finally {
       setSummaryLoading(false);
     }
@@ -429,7 +488,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className={labelStyle}>Full Name *</label>
-                <input 
+                <DebouncedInput 
                   type="text" 
                   className={inputStyle} 
                   placeholder="John Doe" 
@@ -439,7 +498,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
               </div>
               <div>
                 <label className={labelStyle}>Target Job Title</label>
-                <input 
+                <DebouncedInput 
                   type="text" 
                   className={inputStyle} 
                   placeholder="Senior React Engineer" 
@@ -452,7 +511,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className={labelStyle}>Email Address</label>
-                <input 
+                <DebouncedInput 
                   type="email" 
                   className={inputStyle} 
                   placeholder="john.doe@example.com" 
@@ -462,7 +521,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
               </div>
               <div>
                 <label className={labelStyle}>Phone Number</label>
-                <input 
+                <DebouncedInput 
                   type="text" 
                   className={inputStyle} 
                   placeholder="+1 (555) 123-4567" 
@@ -472,7 +531,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
               </div>
               <div>
                 <label className={labelStyle}>Location</label>
-                <input 
+                <DebouncedInput 
                   type="text" 
                   className={inputStyle} 
                   placeholder="San Francisco, CA" 
@@ -488,7 +547,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                 <div className="space-y-2">
                   <div>
                     <label className={labelStyle}>Display Text</label>
-                    <input 
+                    <DebouncedInput 
                       type="text" 
                       className={inputStyle} 
                       placeholder="johndoe.dev" 
@@ -498,7 +557,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                   </div>
                   <div>
                     <label className={labelStyle}>Hyperlink URL</label>
-                    <input 
+                    <DebouncedInput 
                       type="text" 
                       className={inputStyle} 
                       placeholder="https://johndoe.dev" 
@@ -514,7 +573,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                 <div className="space-y-2">
                   <div>
                     <label className={labelStyle}>Display Text</label>
-                    <input 
+                    <DebouncedInput 
                       type="text" 
                       className={inputStyle} 
                       placeholder="LinkedIn" 
@@ -524,7 +583,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                   </div>
                   <div>
                     <label className={labelStyle}>Hyperlink URL</label>
-                    <input 
+                    <DebouncedInput 
                       type="text" 
                       className={inputStyle} 
                       placeholder="https://linkedin.com/in/johndoe" 
@@ -540,7 +599,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                 <div className="space-y-2">
                   <div>
                     <label className={labelStyle}>Display Text</label>
-                    <input 
+                    <DebouncedInput 
                       type="text" 
                       className={inputStyle} 
                       placeholder="GitHub" 
@@ -550,7 +609,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                   </div>
                   <div>
                     <label className={labelStyle}>Hyperlink URL</label>
-                    <input 
+                    <DebouncedInput 
                       type="text" 
                       className={inputStyle} 
                       placeholder="https://github.com/johndoe" 
@@ -574,7 +633,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                   {summaryLoading ? "Enhancing..." : "Optimize with AI"}
                 </button>
               </div>
-              <textarea 
+              <DebouncedTextarea 
                 className={`${inputStyle} h-28 resize-none`}
                 placeholder="A detail-oriented software engineer with 5+ years of experience..."
                 value={resumeData.summary || ""}
@@ -618,7 +677,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                       <label className={labelStyle}>Company Name *</label>
-                      <input 
+                      <DebouncedInput 
                         type="text" 
                         className={inputStyle} 
                         placeholder="Google" 
@@ -628,7 +687,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                     </div>
                     <div>
                       <label className={labelStyle}>Job Position / Title *</label>
-                      <input 
+                      <DebouncedInput 
                         type="text" 
                         className={inputStyle} 
                         placeholder="Senior Software Engineer" 
@@ -641,7 +700,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div>
                       <label className={labelStyle}>Location</label>
-                      <input 
+                      <DebouncedInput 
                         type="text" 
                         className={inputStyle} 
                         placeholder="Mountain View, CA" 
@@ -651,7 +710,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                     </div>
                     <div>
                       <label className={labelStyle}>Start Date</label>
-                      <input 
+                      <DebouncedInput 
                         type="text" 
                         className={inputStyle} 
                         placeholder="2022-01" 
@@ -661,7 +720,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                     </div>
                     <div>
                       <label className={labelStyle}>End Date</label>
-                      <input 
+                      <DebouncedInput 
                         type="text" 
                         className={inputStyle} 
                         placeholder="Present" 
@@ -688,7 +747,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                       )}
                       {Array.isArray(exp.description) && exp.description.map((descBullet, bIdx) => (
                         <div key={bIdx} className="flex gap-2 items-start relative animate-fadeIn">
-                          <textarea 
+                          <DebouncedTextarea 
                             className={`${inputStyle} h-16 flex-1 py-1.5`}
                             placeholder="Describe your overall role, team size, and key responsibilities..."
                             value={descBullet}
@@ -712,12 +771,26 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                   <div className="mt-4 border-t border-slate-700/40 pt-4">
                     <div className="flex justify-between items-center mb-2">
                       <label className={labelStyle}>Responsibilities & Accomplishments</label>
-                      <button 
-                        onClick={() => addHighlight(idx)}
-                        className="flex items-center gap-1 text-[11px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors uppercase tracking-wider"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> ADD BULLET
-                      </button>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => generateBulletsWithAI(idx)}
+                          disabled={aiLoading[`generate-bullets-${idx}`]}
+                          className="flex items-center gap-1 text-[11px] font-bold text-amber-500 hover:text-amber-400 transition-colors uppercase tracking-wider"
+                        >
+                          {aiLoading[`generate-bullets-${idx}`] ? (
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Wand2 className="w-3.5 h-3.5" />
+                          )}
+                          GENERATE AI
+                        </button>
+                        <button 
+                          onClick={() => addHighlight(idx)}
+                          className="flex items-center gap-1 text-[11px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors uppercase tracking-wider"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> ADD BULLET
+                        </button>
+                      </div>
                     </div>
 
                     <div className="space-y-3">
@@ -726,7 +799,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                         const isLoading = aiLoading[loadingKey];
                         return (
                           <div key={hIdx} className="flex gap-2 items-start relative animate-fadeIn">
-                            <textarea 
+                            <DebouncedTextarea 
                               className={`${inputStyle} h-16 flex-1 py-1.5`}
                               placeholder="Spearheaded development of backend API scaling capacity..."
                               value={highlight}
@@ -796,7 +869,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                       <label className={labelStyle}>Institution / University *</label>
-                      <input 
+                      <DebouncedInput 
                         type="text" 
                         className={inputStyle} 
                         placeholder="State University" 
@@ -806,7 +879,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                     </div>
                     <div>
                       <label className={labelStyle}>Degree / Certification *</label>
-                      <input 
+                      <DebouncedInput 
                         type="text" 
                         className={inputStyle} 
                         placeholder="Bachelor of Science" 
@@ -819,7 +892,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="md:col-span-2">
                       <label className={labelStyle}>Field of Study</label>
-                      <input 
+                      <DebouncedInput 
                         type="text" 
                         className={inputStyle} 
                         placeholder="Computer Science" 
@@ -829,7 +902,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                     </div>
                     <div>
                       <label className={labelStyle}>Start Date</label>
-                      <input 
+                      <DebouncedInput 
                         type="text" 
                         className={inputStyle} 
                         placeholder="2018-09" 
@@ -839,7 +912,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                     </div>
                     <div>
                       <label className={labelStyle}>End Date</label>
-                      <input 
+                      <DebouncedInput 
                         type="text" 
                         className={inputStyle} 
                         placeholder="2021-12" 
@@ -852,7 +925,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     <div>
                       <label className={labelStyle}>Location</label>
-                      <input 
+                      <DebouncedInput 
                         type="text" 
                         className={inputStyle} 
                         placeholder="Austin, TX" 
@@ -862,7 +935,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                     </div>
                     <div>
                       <label className={labelStyle}>GPA (Optional)</label>
-                      <input 
+                      <DebouncedInput 
                         type="text" 
                         className={inputStyle} 
                         placeholder="3.85 / 4.0" 
@@ -883,7 +956,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
             <h3 className="text-sm font-bold text-slate-200 uppercase tracking-widest border-b border-slate-700/60 pb-1.5 mb-2">Skills & Expertise</h3>
             
             <form onSubmit={addSkill} className="flex gap-2">
-              <input 
+              <DebouncedInput 
                 type="text" 
                 className={inputStyle} 
                 placeholder="Type a skill and press Enter (e.g. React.js, Python, Project Management)..." 
@@ -951,7 +1024,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                       <label className={labelStyle}>Project Name *</label>
-                      <input 
+                      <DebouncedInput 
                         type="text" 
                         className={inputStyle} 
                         placeholder="E-Commerce API Service" 
@@ -961,7 +1034,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                     </div>
                     <div>
                       <label className={labelStyle}>Project URL / Repo Link</label>
-                      <input 
+                      <DebouncedInput 
                         type="text" 
                         className={inputStyle} 
                         placeholder="github.com/myusername/project" 
@@ -973,7 +1046,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
 
                   <div className="mb-4">
                     <label className={labelStyle}>Technologies (Comma-separated)</label>
-                    <input 
+                    <DebouncedInput 
                       type="text" 
                       className={inputStyle} 
                       placeholder="Node.js, Express, React, MongoDB" 
@@ -999,7 +1072,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                       )}
                       {Array.isArray(proj.description) && proj.description.map((descBullet, bIdx) => (
                         <div key={bIdx} className="flex gap-2 items-start relative animate-fadeIn">
-                          <textarea 
+                          <DebouncedTextarea 
                             className={`${inputStyle} h-16 flex-1 py-1.5`}
                             placeholder="Describe the project purpose, your contributions, and outcomes..."
                             value={descBullet}
@@ -1034,7 +1107,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                     <div className="space-y-3">
                       {(proj.highlights || []).map((highlight, hIdx) => (
                         <div key={hIdx} className="flex gap-2 items-start relative animate-fadeIn">
-                          <textarea 
+                          <DebouncedTextarea 
                             className={`${inputStyle} h-16 flex-1 py-1.5`}
                             placeholder="Built a responsive e-commerce platform with real-time inventory tracking..."
                             value={highlight}
@@ -1094,7 +1167,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                       <div className="space-y-2.5">
                         <div>
                           <label className={labelStyle}>Certification Name *</label>
-                          <input 
+                          <DebouncedInput 
                             type="text" 
                             className={inputStyle} 
                             placeholder="AWS Certified Solutions Architect" 
@@ -1105,7 +1178,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                         <div className="grid grid-cols-2 gap-2">
                           <div>
                             <label className={labelStyle}>Issuer</label>
-                            <input 
+                            <DebouncedInput 
                               type="text" 
                               className={inputStyle} 
                               placeholder="Amazon Web Services" 
@@ -1115,7 +1188,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
                           </div>
                           <div>
                             <label className={labelStyle}>Date / Year</label>
-                            <input 
+                            <DebouncedInput 
                               type="text" 
                               className={inputStyle} 
                               placeholder="2024" 
@@ -1136,7 +1209,7 @@ export default function FormBuilder({ resumeData, setResumeData, jobTitle }) {
               <h3 className="text-sm font-bold text-slate-200 uppercase tracking-widest border-b border-slate-700/60 pb-1.5">Languages</h3>
               
               <form onSubmit={addLanguage} className="flex gap-2">
-                <input 
+                <DebouncedInput 
                   type="text" 
                   className={inputStyle} 
                   placeholder="Enter a language (e.g. English (Native), Spanish (Conversational)) and press Enter..." 

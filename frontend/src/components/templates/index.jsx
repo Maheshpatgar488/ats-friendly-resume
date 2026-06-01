@@ -1,5 +1,6 @@
 import React from "react";
 import { SingleColumnLayout, CenteredLayout, SplitSidebarLayout } from "./layouts";
+import { CanvaLayout } from "./canvaLayout";
 
 // Custom font family CSS classes injected into templates wrapper
 export const fontStyles = {
@@ -34,7 +35,8 @@ export const templatesList = [
   { id: "17", name: "Medical & Clinical", desc: "Clean sans-serif typography, gentle sky-blue dividers, structured.", style: { fontFamily: "Inter", primaryColor: "#0284c7", borderStyle: "solid" } },
   { id: "18", name: "Bordered Classic", desc: "Elegant, thin borders fully enclosing the resume in A4 page limits.", style: { fontFamily: "Inter", primaryColor: "#1e293b", borderStyle: "solid" } },
   { id: "19", name: "Retail & Service", desc: "Modern Calibri face, warm amber badges for active, friendly customer service.", style: { fontFamily: "Calibri", primaryColor: "#b45309", borderStyle: "solid" } },
-  { id: "20", name: "Vibrant Modern", desc: "Vibrant header block banner, slate-dark background banner at top, gold accents.", style: { fontFamily: "Inter", primaryColor: "#0f172a", borderStyle: "solid" } }
+  { id: "20", name: "Vibrant Modern", desc: "Vibrant header block banner, slate-dark background banner at top, gold accents.", style: { fontFamily: "Inter", primaryColor: "#0f172a", borderStyle: "solid" } },
+  { id: "21", name: "Canva-Style Premium", desc: "Modern premium design with Outfit font, highly optimized spacing, elegant.", style: { fontFamily: "Outfit", primaryColor: "#0f172a", borderStyle: "none" } }
 ];
 
 /**
@@ -134,6 +136,14 @@ export function ResumeRenderer({ resumeData, customStyles }) {
           borderStyle="solid" 
         />
       </div>
+    );
+  } else if (tid === 21) {
+    // Canva-Style Premium layout
+    content = (
+      <CanvaLayout 
+        resumeData={resumeData} 
+        customStyles={customStyles} 
+      />
     );
   }
 

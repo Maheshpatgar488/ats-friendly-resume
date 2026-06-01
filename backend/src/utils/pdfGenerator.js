@@ -2,7 +2,37 @@
  * Dynamic HTML and CSS compiler for 20+ ATS-friendly resume templates.
  * Compiles Resume JSON data and custom styling options into a semantic, print-ready HTML page.
  */
+function escapeHTML(str) {
+  if (typeof str !== 'string') return str;
+  return str.replace(/[&<>"']/g, function(match) {
+    const escape = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    };
+    return escape[match];
+  });
+}
+
+function sanitizeObject(obj) {
+  if (Array.isArray(obj)) {
+    return obj.map(item => sanitizeObject(item));
+  } else if (obj !== null && typeof obj === 'object') {
+    const sanitized = {};
+    for (const key in obj) {
+      sanitized[key] = sanitizeObject(obj[key]);
+    }
+    return sanitized;
+  }
+  return escapeHTML(obj);
+}
+
 export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
+  const sanitizedData = sanitizeObject(resumeData) || {};
+  const sanitizedStyles = sanitizeObject(customStyles) || {};
+  
   const {
     personalInfo = {},
     summary = "",
@@ -12,16 +42,16 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
     projects = [],
     certifications = [],
     languages = [],
-  } = resumeData;
+  } = sanitizedData;
 
   // Custom styling fallbacks
-  const primaryColor = customStyles.primaryColor || "#1e3a8a"; // Default deep Navy
-  const fontFamily = customStyles.fontFamily || "Inter"; // Default Inter
-  const fontSize = customStyles.fontSize || "9.5pt"; // Default 9.5pt for high-density ATS
-  const lineHeight = customStyles.lineHeight || "1.4";
-  const margins = customStyles.margins || { top: "0.5in", bottom: "0.5in", left: "0.5in", right: "0.5in" };
-  const sectionSpacing = customStyles.sectionSpacing || "14px";
-  const entrySpacing = customStyles.entrySpacing || "8px";
+  const primaryColor = sanitizedStyles.primaryColor || "#1e3a8a"; // Default deep Navy
+  const fontFamily = sanitizedStyles.fontFamily || "Inter"; // Default Inter
+  const fontSize = sanitizedStyles.fontSize || "9.5pt"; // Default 9.5pt for high-density ATS
+  const lineHeight = sanitizedStyles.lineHeight || "1.4";
+  const margins = sanitizedStyles.margins || { top: "0.5in", bottom: "0.5in", left: "0.5in", right: "0.5in" };
+  const sectionSpacing = sanitizedStyles.sectionSpacing || "14px";
+  const entrySpacing = sanitizedStyles.entrySpacing || "8px";
 
   // Map font families to standard CSS stacks
   const fontStacks = {
@@ -467,6 +497,131 @@ export function compileResumeHTML(resumeData, templateId, customStyles = {}) {
           ${skillsSection}
           ${projectsSection}
           ${certificationsSection}
+        </div>
+      </div>
+    `;
+  } else if (tid === 21) {
+    // 21. Canva-Style Premium (Modern typography, ample whitespace, elegant headers)
+    templateCSS = `
+      body { font-family: 'Outfit', sans-serif; background: #ffffff; color: #1e293b; }
+      .section-title { font-size: 1.15rem; color: ${primaryColor}; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; margin-bottom: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+      .section-title .divider { display: none; }
+      .entry-header { font-size: 1.05rem; font-weight: 700; color: #0f172a; }
+      .entry-subheader { color: #64748b; font-weight: 500; }
+      .skill-badge { background-color: #f8fafc; color: #334155; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 10px; font-weight: 500; font-size: 0.85rem; }
+      .summary-text { font-size: 0.95rem; line-height: 1.6; color: #334155; margin-bottom: 16px; }
+      .entry-list li { margin-bottom: 6px; line-height: 1.5; color: #475569; }
+    `;
+    templateHTML = `
+      <div style="padding: 10px;">
+        <div style="text-align: center; margin-bottom: 25px;">
+          <h1 style="font-size: 3rem; color: #0f172a; font-weight: 800; letter-spacing: -1px; margin-bottom: 8px;">${personalInfo.fullName || "Your Name"}</h1>
+          ${personalInfo.title ? `<div style="font-size: 1.2rem; color: ${primaryColor}; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px;">${personalInfo.title}</div>` : ""}
+          <div style="display: flex; justify-content: center; gap: 15px; font-size: 0.9rem; color: #64748b; flex-wrap: wrap;">
+            ${personalInfo.email ? `<span>${personalInfo.email}</span>` : ""}
+            ${personalInfo.phone ? `<span>&bull; ${personalInfo.phone}</span>` : ""}
+            ${personalInfo.location ? `<span>&bull; ${personalInfo.location}</span>` : ""}
+            ${personalInfo.linkedin ? `<span>&bull; ${personalInfo.linkedin}</span>` : ""}
+          </div>
+        </div>
+        
+        <div style="display: flex; gap: 30px;">
+          <!-- Left Column: Main Content -->
+          <div style="flex: 2;">
+            ${summary ? `
+              <div class="section-block">
+                <h2 class="section-title">Profile</h2>
+                <div class="summary-text">${summary}</div>
+              </div>
+            ` : ""}
+            
+            ${experience.length > 0 ? `
+              <div class="section-block">
+                <h2 class="section-title">Experience</h2>
+                ${experience.map(exp => `
+                  <div class="entry">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+                      <div class="entry-header">${exp.title}</div>
+                      <div style="font-size: 0.85rem; color: ${primaryColor}; font-weight: 600;">${exp.startDate} - ${exp.endDate}</div>
+                    </div>
+                    <div class="entry-subheader" style="margin-bottom: 8px;">${exp.company} ${exp.location ? `| ${exp.location}` : ""}</div>
+                    ${Array.isArray(exp.description) ? `
+                      <ul class="entry-list" style="padding-left: 18px; margin: 0;">
+                        ${exp.description.map(d => d ? `<li>${d}</li>` : "").join("")}
+                      </ul>
+                    ` : ""}
+                  </div>
+                `).join("")}
+              </div>
+            ` : ""}
+
+            ${projects.length > 0 ? `
+              <div class="section-block">
+                <h2 class="section-title">Projects</h2>
+                ${projects.map(proj => `
+                  <div class="entry">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+                      <div class="entry-header">${proj.name}</div>
+                      ${proj.url ? `<a href="${proj.url}" style="font-size: 0.85rem; color: ${primaryColor};">${proj.url}</a>` : ""}
+                    </div>
+                    ${proj.technologies && proj.technologies.length > 0 ? `<div style="font-size: 0.85rem; color: #64748b; margin-bottom: 8px;">Tech: ${proj.technologies.join(", ")}</div>` : ""}
+                    ${Array.isArray(proj.description) ? `
+                      <ul class="entry-list" style="padding-left: 18px; margin: 0;">
+                        ${proj.description.map(d => d ? `<li>${d}</li>` : "").join("")}
+                      </ul>
+                    ` : ""}
+                  </div>
+                `).join("")}
+              </div>
+            ` : ""}
+          </div>
+          
+          <!-- Right Column: Sidebar (Skills, Education, etc) -->
+          <div style="flex: 1;">
+            ${skills.length > 0 ? `
+              <div class="section-block">
+                <h2 class="section-title">Expertise</h2>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  ${skills.map(s => `<span class="skill-badge">${s}</span>`).join("")}
+                </div>
+              </div>
+            ` : ""}
+            
+            ${education.length > 0 ? `
+              <div class="section-block">
+                <h2 class="section-title">Education</h2>
+                ${education.map(edu => `
+                  <div class="entry" style="margin-bottom: 12px;">
+                    <div class="entry-header" style="font-size: 0.95rem;">${edu.degree}</div>
+                    <div class="entry-subheader" style="font-size: 0.85rem;">${edu.institution}</div>
+                    <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 2px;">${edu.startDate} - ${edu.endDate}</div>
+                  </div>
+                `).join("")}
+              </div>
+            ` : ""}
+
+            ${certifications.length > 0 ? `
+              <div class="section-block">
+                <h2 class="section-title">Certifications</h2>
+                ${certifications.map(cert => `
+                  <div class="entry" style="margin-bottom: 12px;">
+                    <div class="entry-header" style="font-size: 0.95rem;">${cert.name}</div>
+                    <div class="entry-subheader" style="font-size: 0.85rem;">${cert.issuer}</div>
+                    ${cert.date ? `<div style="font-size: 0.8rem; color: #94a3b8; margin-top: 2px;">${cert.date}</div>` : ""}
+                  </div>
+                `).join("")}
+              </div>
+            ` : ""}
+
+            ${languages.length > 0 ? `
+              <div class="section-block">
+                <h2 class="section-title">Languages</h2>
+                <ul class="entry-list" style="padding-left: 18px; margin: 0; font-size: 0.9rem;">
+                  ${languages.map(l => `<li>${l}</li>`).join("")}
+                </ul>
+              </div>
+            ` : ""}
+          </div>
         </div>
       </div>
     `;
