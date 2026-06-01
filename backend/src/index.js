@@ -324,14 +324,16 @@ app.post("/api/ats-score", async (req, res) => {
     return res.status(400).json({ error: "Missing resumeData or jobDescription in request body." });
   }
 
-  // Sanitize job description to strip image references (Gemini rejects non-text content)
+  // Sanitize job description to strip image/media references (Gemini rejects non-text content)
   const cleanJD = jobDescription
     .replace(/!\[.*?\]\(.*?\)/g, " ")
     .replace(/<img[^>]*>/gi, " ")
+    .replace(/<source[^>]*>/gi, " ")
     .replace(/data:image\/[^;]+;base64[^"]*/gi, " ")
-    .replace(/https?:\/\/[^\s]*\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)[^\s]*/gi, " ")
-    .replace(/[^\s"'`(),;]*\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)[^\s"'`(),;]*/gi, " ")
-    .replace(/\(https?:\/\/[^)]+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)[^)]*\)/gi, " ");
+    .replace(/data:video\/[^;]+;base64[^"]*/gi, " ")
+    .replace(/https?:\/\/[^\s]*\.(png|jpg|jpeg|gif|webp|svg|ico|bmp|mp4|webm|ogg)[^\s]*/gi, " ")
+    .replace(/\b\w+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\b/gi, " ")
+    .replace(/\S+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\S*/gi, " ");
 
   try {
     // 1. Try AI first for high-quality semantic matching
@@ -393,14 +395,16 @@ app.post("/api/tailor", async (req, res) => {
     return res.status(400).json({ error: "Missing resumeData or jobDescription in request body." });
   }
 
-  // Sanitize job description to strip image references (Gemini rejects non-text content)
+  // Sanitize job description to strip image/media references (Gemini rejects non-text content)
   const cleanJD = jobDescription
     .replace(/!\[.*?\]\(.*?\)/g, " ")
     .replace(/<img[^>]*>/gi, " ")
+    .replace(/<source[^>]*>/gi, " ")
     .replace(/data:image\/[^;]+;base64[^"]*/gi, " ")
-    .replace(/https?:\/\/[^\s]*\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)[^\s]*/gi, " ")
-    .replace(/[^\s"'`(),;]*\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)[^\s"'`(),;]*/gi, " ")
-    .replace(/\(https?:\/\/[^)]+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)[^)]*\)/gi, " ");
+    .replace(/data:video\/[^;]+;base64[^"]*/gi, " ")
+    .replace(/https?:\/\/[^\s]*\.(png|jpg|jpeg|gif|webp|svg|ico|bmp|mp4|webm|ogg)[^\s]*/gi, " ")
+    .replace(/\b\w+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\b/gi, " ")
+    .replace(/\S+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\S*/gi, " ");
 
   const missingKWText = Array.isArray(missingKeywords) && missingKeywords.length > 0
     ? `\nThe following keywords from the job description are currently MISSING from the resume. You MUST weave them into the highlights, summary, and skills wherever they fit naturally:\n${missingKeywords.map(k => `  - ${k}`).join("\n")}\n`

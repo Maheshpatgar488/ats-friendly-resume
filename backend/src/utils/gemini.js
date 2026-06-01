@@ -25,14 +25,18 @@ function getGroq() {
   return groq;
 }
 
-// Strip any image references from prompts — Gemini rejects non-text content
+// Aggressively strip any image/video/media references — Gemini rejects non-text content
 function sanitizePrompt(text) {
   return text
     .replace(/!\[.*?\]\(.*?\)/g, " ")
     .replace(/<img[^>]*>/gi, " ")
+    .replace(/<source[^>]*>/gi, " ")
     .replace(/data:image\/[^;]+;base64[^"]*/gi, " ")
-    .replace(/https?:\/\/[^\s]*\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)[^\s]*/gi, " ")
-    .replace(/[^\s"'`(),;]*\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)[^\s"'`(),;]*/gi, " ");
+    .replace(/data:video\/[^;]+;base64[^"]*/gi, " ")
+    .replace(/https?:\/\/[^\s]*\.(png|jpg|jpeg|gif|webp|svg|ico|bmp|mp4|webm|ogg)[^\s]*/gi, " ")
+    .replace(/https?:\/\/[^\s]+\/([^\s\/]+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp))/gi, " ")
+    .replace(/\b\w+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\b/gi, " ")
+    .replace(/\S+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\S*/gi, " ");
 }
 
 export async function generateStructuredJSON(prompt, schema, temperature = 0.1) {
