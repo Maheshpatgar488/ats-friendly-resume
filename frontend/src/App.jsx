@@ -323,6 +323,7 @@ export default function App() {
                 jobTitle={jobTitle}
                 setJobTitle={setJobTitle}
                 setCustomStyles={setCustomStyles}
+                onApplyTailoring={() => setActivePanel("builder")}
               />
             )}
 

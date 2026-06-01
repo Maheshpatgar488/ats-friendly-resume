@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import { API_URL } from "../config";
 
-export default function AIHub({ resumeData, setResumeData, jobDescription, setJobDescription, jobTitle, setJobTitle, setCustomStyles }) {
+export default function AIHub({ resumeData, setResumeData, jobDescription, setJobDescription, jobTitle, setJobTitle, setCustomStyles, onApplyTailoring }) {
   const [atsLoading, setAtsLoading] = useState(false);
   const [tailorLoading, setTailorLoading] = useState(false);
   const [scoreData, setScoreData] = useState(null);
@@ -96,6 +96,7 @@ export default function AIHub({ resumeData, setResumeData, jobDescription, setJo
     }
     setShowComparison(false);
     setTailoredResume(null);
+    if (onApplyTailoring) onApplyTailoring();
     alert(`✨ Tailored! Changes applied: ${changed ? "YES" : "NO"}\n\nOld: ${sampleOrig.slice(0, 80)}...\n\nNew: ${sampleNew.slice(0, 80)}...`);
   };
 
