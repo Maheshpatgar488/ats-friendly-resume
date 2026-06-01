@@ -80,6 +80,10 @@ export default function AIHub({ resumeData, setResumeData, jobDescription, setJo
   // Overwrites the active form builder resume state with the AI-optimized one
   const applyTailoring = () => {
     if (!tailoredResume) return;
+    // DEBUG: show a sample highlight to confirm data is different from original
+    const sampleOrig = resumeData.experience?.[0]?.highlights?.[0] || "(none)";
+    const sampleNew = tailoredResume.experience?.[0]?.highlights?.[0] || "(none)";
+    const changed = sampleOrig !== sampleNew;
     setResumeData(tailoredResume);
     if (setCustomStyles) {
       setCustomStyles(prev => ({
@@ -92,7 +96,7 @@ export default function AIHub({ resumeData, setResumeData, jobDescription, setJo
     }
     setShowComparison(false);
     setTailoredResume(null);
-    alert("✨ Awesome! Your resume has been optimized and tailored! Spacing was compacted to keep it on one page. Adjust in the Preview panel if needed.");
+    alert(`✨ Tailored! Changes applied: ${changed ? "YES" : "NO"}\n\nOld: ${sampleOrig.slice(0, 80)}...\n\nNew: ${sampleNew.slice(0, 80)}...`);
   };
 
   // Helper: return colored ring based on score
