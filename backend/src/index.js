@@ -535,8 +535,6 @@ app.post("/api/export-pdf", async (req, res) => {
   }
 
   try {
-    const tid = parseInt(templateId, 10) || 1;
-
     // Launch headless Chrome
     const launchOptions = {
       headless: true,
