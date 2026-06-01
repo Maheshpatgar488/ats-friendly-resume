@@ -492,12 +492,7 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
               </button>
             </div>
 
-            {/* Direct A4 PDF download button */}
-            <button
-              onClick={downloadPDF}
-              disabled={pdfLoading}
-              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-bold uppercase tracking-wider text-white rounded-md shadow-lg transition-all ${
-                pdfLoading 
+            {/* Export buttons */}
             <div className="flex items-center gap-2">
               <button
                 onClick={downloadPDF}
