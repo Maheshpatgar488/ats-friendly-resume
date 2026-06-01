@@ -144,10 +144,10 @@ export default function LivePreview({ resumeData, customStyles, setCustomStyles,
           </button>
         </div>
 
-        {/* SUBTAB 1: 20 ATS TEMPLATE PRESETS */}
+        {/* SUBTAB 1: 21 ATS TEMPLATE PRESETS */}
         {activeSubTab === "templates" && (
           <div className="space-y-3 flex-1 overflow-y-auto pr-1">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Select from 20 ATS templates</label>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Select from 21 ATS templates</label>
             <div className="space-y-2 max-h-[400px] xl:max-h-none overflow-y-auto">
               {templatesList.map(t => (
                 <button
