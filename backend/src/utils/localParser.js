@@ -707,6 +707,26 @@ export function parseResumeText(text, pdfBuffer) {
   // ============================================================
 
   result.experience = result.experience.filter(e => e.company || e.position || e.highlights.length || e.description.length);
+  // Move description items to highlights when no explicit bullet markers were found
+  for (const exp of result.experience) {
+    if (exp.highlights.length === 0 && exp.description.length > 0) {
+      exp.highlights = exp.description;
+      exp.description = [];
+    }
+  }
+  // Merge adjacent same-type lines within project descriptions (split across newlines)
+  for (const proj of result.projects) {
+    const merged = [];
+    for (const d of proj.description) {
+      const trimmed = d.trim();
+        if (merged.length > 0 && !trimmed.match(/^[A-Z][a-z]+:/) && merged[merged.length - 1].length + trimmed.length < 400) {
+        merged[merged.length - 1] = merged[merged.length - 1] + " " + trimmed;
+      } else if (trimmed) {
+        merged.push(trimmed);
+      }
+    }
+    proj.description = merged;
+  }
   result.education = result.education.filter(e => e.institution || e.degree);
 
   // Deduplicate skills: remove single-word fragments when the multi-word form exists
