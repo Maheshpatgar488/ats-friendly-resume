@@ -72,8 +72,8 @@ const SectionHeader = ({ title, primaryColor, borderStyle = "solid" }) => {
   return (
     <div style={{
       marginTop: "10px",
-      marginBottom: "8px",
-      paddingBottom: "2px",
+      marginBottom: "12px",
+      paddingBottom: "3px",
       borderBottom: borderMap[borderStyle] || borderMap.solid,
       pageBreakAfter: "avoid",
       breakAfter: "avoid",
@@ -307,7 +307,7 @@ export const CenteredLayout = ({ resumeData, customStyles, borderStyle = "double
   };
 
   const SectionTitle = ({ title }) => (
-    <div style={{ borderBottom: borderMap[borderStyle] || borderMap.solid, marginBottom: "8px", paddingBottom: "3px", marginTop: "12px" }}>
+    <div style={{ borderBottom: borderMap[borderStyle] || borderMap.solid, marginBottom: "12px", paddingBottom: "3px", marginTop: "12px" }}>
       <h2 style={{ textAlign: "center", fontSize: "0.85em", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: primaryColor, margin: 0 }}>{title}</h2>
     </div>
   );
@@ -438,7 +438,7 @@ export const SplitSidebarLayout = ({ resumeData, customStyles, sidebarPosition =
   );
 
   const MainTitle = ({ title }) => (
-    <div style={{ borderBottom: "1px solid #cbd5e1", marginBottom: "6px", paddingBottom: "3px", marginTop: "10px" }}>
+    <div style={{ borderBottom: "1px solid #cbd5e1", marginBottom: "12px", paddingBottom: "3px", marginTop: "10px" }}>
       <h2 style={{ fontSize: "0.85em", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: primaryColor, margin: 0 }}>{title}</h2>
     </div>
   );

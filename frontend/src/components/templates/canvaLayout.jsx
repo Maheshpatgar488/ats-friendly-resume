@@ -34,14 +34,14 @@ export const CanvaLayout = ({ resumeData, customStyles }) => {
         <div style={{ flex: "2 1 0" }}>
           {summary && (
             <div style={{ marginBottom: "1.2em" }}>
-              <h2 style={{ fontSize: "0.9em", color: primaryColor, borderBottom: "2px solid #e2e8f0", paddingBottom: "4px", marginBottom: "8px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>Profile</h2>
+              <h2 style={{ fontSize: "0.9em", color: primaryColor, borderBottom: "2px solid #e2e8f0", paddingBottom: "4px", marginBottom: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>Profile</h2>
               <div style={{ fontSize: "0.75em", lineHeight: 1.6, color: "#334155" }}>{summary}</div>
             </div>
           )}
 
           {experience.length > 0 && (
             <div style={{ marginBottom: "1.2em" }}>
-              <h2 style={{ fontSize: "0.9em", color: primaryColor, borderBottom: "2px solid #e2e8f0", paddingBottom: "4px", marginBottom: "8px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>Experience</h2>
+              <h2 style={{ fontSize: "0.9em", color: primaryColor, borderBottom: "2px solid #e2e8f0", paddingBottom: "4px", marginBottom: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>Experience</h2>
               {experience.map((exp, i) => (
                 <div key={i} style={{ marginBottom: "1em" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
@@ -63,7 +63,7 @@ export const CanvaLayout = ({ resumeData, customStyles }) => {
 
           {projects.length > 0 && (
             <div style={{ marginBottom: "1.2em" }}>
-              <h2 style={{ fontSize: "0.9em", color: primaryColor, borderBottom: "2px solid #e2e8f0", paddingBottom: "4px", marginBottom: "8px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>Projects</h2>
+              <h2 style={{ fontSize: "0.9em", color: primaryColor, borderBottom: "2px solid #e2e8f0", paddingBottom: "4px", marginBottom: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>Projects</h2>
               {projects.map((proj, i) => (
                 <div key={i} style={{ marginBottom: "1em" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
@@ -87,7 +87,7 @@ export const CanvaLayout = ({ resumeData, customStyles }) => {
         <div style={{ flex: "1 1 0" }}>
           {skills.length > 0 && (
             <div style={{ marginBottom: "1.2em" }}>
-              <h2 style={{ fontSize: "0.9em", color: primaryColor, borderBottom: "2px solid #e2e8f0", paddingBottom: "4px", marginBottom: "8px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>Expertise</h2>
+              <h2 style={{ fontSize: "0.9em", color: primaryColor, borderBottom: "2px solid #e2e8f0", paddingBottom: "4px", marginBottom: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>Expertise</h2>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                 {skills.map((s, i) => (
                   <span key={i} style={{ backgroundColor: "#f8fafc", color: "#334155", border: "1px solid #cbd5e1", borderRadius: "6px", padding: "3px 8px", fontWeight: 500, fontSize: "0.7em" }}>
@@ -100,7 +100,7 @@ export const CanvaLayout = ({ resumeData, customStyles }) => {
 
           {education.length > 0 && (
             <div style={{ marginBottom: "1.2em" }}>
-              <h2 style={{ fontSize: "0.9em", color: primaryColor, borderBottom: "2px solid #e2e8f0", paddingBottom: "4px", marginBottom: "8px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>Education</h2>
+              <h2 style={{ fontSize: "0.9em", color: primaryColor, borderBottom: "2px solid #e2e8f0", paddingBottom: "4px", marginBottom: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>Education</h2>
               {education.map((edu, i) => (
                 <div key={i} style={{ marginBottom: "10px" }}>
                   <div style={{ fontSize: "0.8em", fontWeight: 700, color: "#0f172a" }}>{edu.degree}</div>
@@ -113,7 +113,7 @@ export const CanvaLayout = ({ resumeData, customStyles }) => {
           
           {certifications.length > 0 && (
             <div style={{ marginBottom: "1.2em" }}>
-              <h2 style={{ fontSize: "0.9em", color: primaryColor, borderBottom: "2px solid #e2e8f0", paddingBottom: "4px", marginBottom: "8px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>Certifications</h2>
+              <h2 style={{ fontSize: "0.9em", color: primaryColor, borderBottom: "2px solid #e2e8f0", paddingBottom: "4px", marginBottom: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>Certifications</h2>
               {certifications.map((cert, i) => (
                 <div key={i} style={{ marginBottom: "10px" }}>
                   <div style={{ fontSize: "0.8em", fontWeight: 700, color: "#0f172a" }}>{cert.name}</div>
@@ -125,7 +125,7 @@ export const CanvaLayout = ({ resumeData, customStyles }) => {
 
           {languages.length > 0 && (
             <div style={{ marginBottom: "1.2em" }}>
-              <h2 style={{ fontSize: "0.9em", color: primaryColor, borderBottom: "2px solid #e2e8f0", paddingBottom: "4px", marginBottom: "8px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>Languages</h2>
+              <h2 style={{ fontSize: "0.9em", color: primaryColor, borderBottom: "2px solid #e2e8f0", paddingBottom: "4px", marginBottom: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>Languages</h2>
               <ul style={{ paddingLeft: "1.2em", margin: 0, fontSize: "0.75em", color: "#475569" }}>
                 {languages.map((l, i) => <li key={i}>{l}</li>)}
               </ul>
