@@ -527,8 +527,14 @@ app.post("/api/tailor", async (req, res) => {
     // Extract meaningful tech terms from the JD to build the new skills list
     const jdTerms = jobDescription
       ? [...new Set(jobDescription
+          // Split on common delimiters first
+          .replace(/[\/\\|,;_:&]+/g, " ")
+          // Split camelCase: "CopilotChatgpt" → "Copilot Chatgpt", "CSSGit" → "CSS Git"
           .replace(/([a-z])([A-Z])/g, "$1 $2")
           .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
+          // Split digit-letter boundaries: "HTML5CSS3" → "HTML5 CSS3"
+          .replace(/([a-zA-Z])(\d)/g, "$1 $2")
+          .replace(/(\d)([a-zA-Z])/g, "$1 $2")
           .replace(/[^a-zA-Z0-9#+.#\-\/\s]/g, " ")
           .split(/\s+/)
           .map(t => t.replace(/[.,;:!?()]+$/, "").trim())
@@ -537,14 +543,8 @@ app.post("/api/tailor", async (req, res) => {
     // Merge AI skills + JD terms + missing keywords into one clean list
     const aiSkills = Array.isArray(tailoredData.skills) ? tailoredData.skills : [];
     const origSkills = Array.isArray(resumeData.skills) ? resumeData.skills : [];
-    const seen = new Set();
-    const initial = [...origSkills, ...jdTerms, ...aiSkills, ...(Array.isArray(missingKeywords) ? missingKeywords : [])]
-      .flat(Infinity)
-      .flatMap(s => String(s).split(/[,;]/))
-      .map(s => (s || "").replace(/[.,;:!?]+$/g, "").trim())
-      .filter(s => { const k = s.toLowerCase(); if (!k || seen.has(k)) return false; seen.add(k); return true; });
-    // Remove camelCase fragments: e.g. "Type"+"Script"="TypeScript" → drop "Type" and "Script"
-    const combined = initial.filter(s => !initial.some(other => {
+    // Clean JD terms: remove camelCase fragments (e.g. "Type"+"Script"="TypeScript" → drop "Type", "Script")
+    const cleanJdTerms = jdTerms.filter(s => !jdTerms.some(other => {
       if (other === s) return false;
       const diff = other.length - s.length;
       if (diff < 2) return false;
@@ -552,6 +552,12 @@ app.post("/api/tailor", async (req, res) => {
       const lowO = other.toLowerCase();
       return lowO.startsWith(lowS) || lowO.endsWith(lowS);
     }));
+    const seen = new Set();
+    const combined = [...origSkills, ...cleanJdTerms, ...aiSkills, ...(Array.isArray(missingKeywords) ? missingKeywords : [])]
+      .flat(Infinity)
+      .flatMap(s => String(s).split(/[,;]/))
+      .map(s => (s || "").replace(/[.,;:!?]+$/g, "").trim())
+      .filter(s => { const k = s.toLowerCase(); if (!k || seen.has(k)) return false; seen.add(k); return true; });
     tailoredData.skills = combined.slice(0, 15);
     res.json({ success: true, tailoredResumeData: tailoredData, engine: "ai" });
 
