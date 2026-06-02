@@ -524,37 +524,18 @@ app.post("/api/tailor", async (req, res) => {
     });
     // Ensure trainingData (if included) is removed
     if (tailoredData.trainingData) delete tailoredData.trainingData;
-    // Use AI's reorganized skills as the base, then merge keywords directly from the JD
-    let baseSkills = Array.isArray(tailoredData.skills) && tailoredData.skills.length > 0
-      ? tailoredData.skills
-      : Array.isArray(resumeData.skills) ? [...resumeData.skills] : [];
-    const skillSet = new Set(baseSkills.map(s => s.toLowerCase().replace(/[.,]$/, "")));
-    // Merge missingKeywords from ATS scoring
-    if (Array.isArray(missingKeywords) && missingKeywords.length > 0) {
-      for (const kw of missingKeywords) {
-        if (!skillSet.has(kw.toLowerCase().replace(/[.,]$/, ""))) {
-          baseSkills.push(kw);
-          skillSet.add(kw.toLowerCase());
-        }
-      }
-    }
-    // Safety net: extract keywords directly from the JD so skills always get updated
-    if (jobDescription) {
-      const rawTerms = jobDescription
-        .replace(/[^a-zA-Z0-9#+.#\-\/]/g, " ")
-        .split(/\s+/)
-        .filter(t => t.length > 2 && !["and","the","for","with","from","this","that","have","has","had","will","can","are","was","been","being","but","not","all","any","each","every","some","such","more","most","other","about","than","into","over","also","just","now","then","able","must","need","use","used","using","based","etc","per","its","may","too","very","good","new","well","get","set","way","part"].includes(t.toLowerCase()))
-        .map(t => t.trim());
-      const jdKeywordSet = new Set(rawTerms.map(t => t.toLowerCase()));
-      for (const kw of jdKeywordSet) {
-        if (!skillSet.has(kw) && kw.length > 2) {
-          baseSkills.push(kw.charAt(0).toUpperCase() + kw.slice(1));
-          skillSet.add(kw);
-        }
-      }
-    }
-    // Cap skills to 15 max to prevent overflow to 2 pages
-    tailoredData.skills = baseSkills.slice(0, 15);
+    // Extract meaningful tech terms from the JD to build the new skills list
+    const jdTerms = jobDescription
+      ? [...new Set(jobDescription
+          .replace(/[^a-zA-Z0-9#+.#\-\/\s]/g, " ")
+          .split(/\s+/)
+          .filter(t => t.length > 2 && !["and","the","for","with","from","this","that","have","has","had","will","can","are","was","been","being","but","not","all","any","each","every","some","such","more","most","other","about","than","into","over","also","just","now","then","able","must","need","use","used","using","based","etc","per","its","may","too","very","good","new","well","get","set","way","part","looking","senior","junior","lead","experience","position","description","requirements","responsibilities","qualifications","minimum","preferred","plus","years","year","month","ability","work","team","including","developer","engineer","manager","architect","designer","analyst","strong","excellent","proven","track","record","building","managing","designing","developing","implementing","knowledge","proficiency","expertise","familiarity","understanding"].includes(t.toLowerCase())))]
+      : [];
+    // Merge AI skills + JD terms + missing keywords into one clean list
+    const aiSkills = Array.isArray(tailoredData.skills) ? tailoredData.skills : [];
+    const origSkills = Array.isArray(resumeData.skills) ? resumeData.skills : [];
+    const combined = [...new Set([...jdTerms, ...aiSkills, ...(Array.isArray(missingKeywords) ? missingKeywords : []), ...origSkills])];
+    tailoredData.skills = combined.slice(0, 15);
     res.json({ success: true, tailoredResumeData: tailoredData, engine: "ai" });
 
   } catch (error) {
