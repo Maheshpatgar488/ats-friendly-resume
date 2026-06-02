@@ -527,10 +527,8 @@ app.post("/api/tailor", async (req, res) => {
     // Extract meaningful tech terms from the JD to build the new skills list
     const jdTerms = jobDescription
       ? [...new Set(jobDescription
-          .replace(/\b(PostgreSQL|TypeScript|PowerShell|PowerBI|PowerPoint|WordPress|WebSocket|webpack|NextJs?|NuxtJs?|VueJs|CodeIgniter|CloudFormation|OpenStack|FastAPI|GraphQL|GitHub|GitLab|ChatGPT|OpenAI|MacOS|IOS|Android|Canva|Figma|InDesign|PhotoShop|LightRoom|AfterEffects|Illustrator|Dreamweaver|NodeJS|Node\.js|ReactJS|React\.js|AngularJS|Angular\.js|JavaScript|TypeScript|TypeScript\.js)\b/gi, (m) => m.replace(/([a-z])([A-Z])/g, (_,a,b) => a + '\x00' + b))
           .replace(/([a-z])([A-Z])/g, "$1 $2")
           .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
-          .replace(/\x00/g, "")
           .replace(/[^a-zA-Z0-9#+.#\-\/\s]/g, " ")
           .split(/\s+/)
           .map(t => t.replace(/[.,;:!?()]+$/, "").trim())
@@ -540,11 +538,20 @@ app.post("/api/tailor", async (req, res) => {
     const aiSkills = Array.isArray(tailoredData.skills) ? tailoredData.skills : [];
     const origSkills = Array.isArray(resumeData.skills) ? resumeData.skills : [];
     const seen = new Set();
-    const combined = [...origSkills, ...jdTerms, ...aiSkills, ...(Array.isArray(missingKeywords) ? missingKeywords : [])]
+    const initial = [...origSkills, ...jdTerms, ...aiSkills, ...(Array.isArray(missingKeywords) ? missingKeywords : [])]
       .flat(Infinity)
       .flatMap(s => String(s).split(/[,;]/))
       .map(s => (s || "").replace(/[.,;:!?]+$/g, "").trim())
       .filter(s => { const k = s.toLowerCase(); if (!k || seen.has(k)) return false; seen.add(k); return true; });
+    // Remove camelCase fragments: e.g. "Type"+"Script"="TypeScript" → drop "Type" and "Script"
+    const combined = initial.filter(s => !initial.some(other => {
+      if (other === s) return false;
+      const diff = other.length - s.length;
+      if (diff < 2) return false;
+      const lowS = s.toLowerCase();
+      const lowO = other.toLowerCase();
+      return lowO.startsWith(lowS) || lowO.endsWith(lowS);
+    }));
     tailoredData.skills = combined.slice(0, 15);
     res.json({ success: true, tailoredResumeData: tailoredData, engine: "ai" });
 
