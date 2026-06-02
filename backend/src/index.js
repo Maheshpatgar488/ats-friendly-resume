@@ -529,12 +529,16 @@ app.post("/api/tailor", async (req, res) => {
       ? [...new Set(jobDescription
           .replace(/[^a-zA-Z0-9#+.#\-\/\s]/g, " ")
           .split(/\s+/)
-          .filter(t => t.length > 2 && !["and","the","for","with","from","this","that","have","has","had","will","can","are","was","been","being","but","not","all","any","each","every","some","such","more","most","other","about","than","into","over","also","just","now","then","able","must","need","use","used","using","based","etc","per","its","may","too","very","good","new","well","get","set","way","part","looking","senior","junior","lead","experience","position","description","requirements","responsibilities","qualifications","minimum","preferred","plus","years","year","month","ability","work","team","including","developer","engineer","manager","architect","designer","analyst","strong","excellent","proven","track","record","building","managing","designing","developing","implementing","knowledge","proficiency","expertise","familiarity","understanding"].includes(t.toLowerCase())))]
+          .map(t => t.replace(/[.,;:!?()]+$/, "").trim())
+          .filter(t => t.length > 2 && !["and","the","for","with","from","this","that","have","has","had","will","can","are","was","been","being","but","not","all","any","each","every","some","such","more","most","other","about","than","into","over","also","just","now","then","able","must","need","use","used","using","based","etc","per","its","may","too","very","good","new","well","get","set","way","part","looking","senior","junior","lead","experience","position","description","requirements","responsibilities","qualifications","minimum","preferred","plus","years","year","month","ability","work","team","including","developer","engineer","manager","architect","designer","analyst","strong","excellent","proven","track","record","building","managing","designing","developing","implementing","knowledge","proficiency","expertise","familiarity","understanding","communication","leadership","skills"].includes(t.toLowerCase())))]
       : [];
     // Merge AI skills + JD terms + missing keywords into one clean list
     const aiSkills = Array.isArray(tailoredData.skills) ? tailoredData.skills : [];
     const origSkills = Array.isArray(resumeData.skills) ? resumeData.skills : [];
-    const combined = [...new Set([...origSkills, ...jdTerms, ...aiSkills, ...(Array.isArray(missingKeywords) ? missingKeywords : [])])];
+    const seen = new Set();
+    const combined = [...origSkills, ...jdTerms, ...aiSkills, ...(Array.isArray(missingKeywords) ? missingKeywords : [])]
+      .map(s => (s || "").replace(/[.,;:!?]+$/g, "").trim())
+      .filter(s => { const k = s.toLowerCase(); if (!k || seen.has(k)) return false; seen.add(k); return true; });
     tailoredData.skills = combined.slice(0, 15);
     res.json({ success: true, tailoredResumeData: tailoredData, engine: "ai" });
 
