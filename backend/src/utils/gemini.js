@@ -165,7 +165,7 @@ export async function generateText(prompt, temperature = 0.7) {
         model: GEMINI_MODEL,
         generationConfig: { temperature },
       });
-      const result = await model.generateContent(prompt);
+      const result = await model.generateContent(sanitizePrompt(prompt));
       return result.response.text();
     } catch (error) {
       console.error("Gemini Text Generation Error, falling back to Groq:", error.message);
