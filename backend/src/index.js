@@ -537,6 +537,8 @@ app.post("/api/tailor", async (req, res) => {
     const origSkills = Array.isArray(resumeData.skills) ? resumeData.skills : [];
     const seen = new Set();
     const combined = [...origSkills, ...jdTerms, ...aiSkills, ...(Array.isArray(missingKeywords) ? missingKeywords : [])]
+      .flat(Infinity)
+      .flatMap(s => String(s).split(/[,;]/))
       .map(s => (s || "").replace(/[.,;:!?]+$/g, "").trim())
       .filter(s => { const k = s.toLowerCase(); if (!k || seen.has(k)) return false; seen.add(k); return true; });
     tailoredData.skills = combined.slice(0, 15);

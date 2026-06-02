@@ -129,7 +129,7 @@ function normalizeResumeData(data) {
     projects: normalizeEntries(data.projects, ['description', 'highlights', 'technologies']),
     // Also ensure top-level arrays are truly arrays
     education: Array.isArray(data.education) ? data.education : [],
-    skills: Array.isArray(data.skills) ? data.skills : [],
+    skills: Array.isArray(data.skills) ? data.skills.flat(Infinity).flatMap(s => String(s).split(/[,;]/)).map(s => s.trim()).filter(Boolean) : [],
     certifications: Array.isArray(data.certifications) ? data.certifications : [],
     languages: Array.isArray(data.languages) ? data.languages : [],
   };

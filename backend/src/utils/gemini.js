@@ -48,6 +48,7 @@ export async function generateStructuredJSON(prompt, schema, temperature = 0.1) 
         model: GEMINI_MODEL,
         generationConfig: {
           responseMimeType: "application/json",
+          responseSchema: schema,
           temperature,
         },
       });
