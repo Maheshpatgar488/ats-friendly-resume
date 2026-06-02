@@ -73,8 +73,10 @@ for (const [canonical, variants] of Object.entries(SYNONYMS)) {
 function normalizePhrase(phrase) {
   return phrase
     .toLowerCase()
+    .replace(/\b(postgresql|typescript|powershell|powerbi|powerpoint|wordpress|websocket|webpack|nextjs?|nuxtjs?|vuejs|codeigniter|cloudformation|openstack|fastapi|graphql|github|gitlab|chatgpt|openai|macos|ios|android|canva|figma|indesign|photoshop|lightroom|aftereffects|illustrator|dreamweaver|nodejs?|reactjs?|angularjs?|javascript|typescript)\b/gi, (m) => m.replace(/([a-z])([A-Z])/g, (_,a,b) => a + '\x00' + b))
     .replace(/([a-z])([A-Z])/g, "$1 $2")
     .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
+    .replace(/\x00/g, "")
     .replace(/[^a-z0-9#+.#\/]/g, " ")
     .replace(/\s+/g, " ")
     .trim();

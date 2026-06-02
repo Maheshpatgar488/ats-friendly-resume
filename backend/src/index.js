@@ -527,8 +527,10 @@ app.post("/api/tailor", async (req, res) => {
     // Extract meaningful tech terms from the JD to build the new skills list
     const jdTerms = jobDescription
       ? [...new Set(jobDescription
+          .replace(/\b(PostgreSQL|TypeScript|PowerShell|PowerBI|PowerPoint|WordPress|WebSocket|webpack|NextJs?|NuxtJs?|VueJs|CodeIgniter|CloudFormation|OpenStack|FastAPI|GraphQL|GitHub|GitLab|ChatGPT|OpenAI|MacOS|IOS|Android|Canva|Figma|InDesign|PhotoShop|LightRoom|AfterEffects|Illustrator|Dreamweaver|NodeJS|Node\.js|ReactJS|React\.js|AngularJS|Angular\.js|JavaScript|TypeScript|TypeScript\.js)\b/gi, (m) => m.replace(/([a-z])([A-Z])/g, (_,a,b) => a + '\x00' + b))
           .replace(/([a-z])([A-Z])/g, "$1 $2")
           .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
+          .replace(/\x00/g, "")
           .replace(/[^a-zA-Z0-9#+.#\-\/\s]/g, " ")
           .split(/\s+/)
           .map(t => t.replace(/[.,;:!?()]+$/, "").trim())
