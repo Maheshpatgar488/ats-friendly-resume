@@ -524,38 +524,10 @@ app.post("/api/tailor", async (req, res) => {
     });
     // Ensure trainingData (if included) is removed
     if (tailoredData.trainingData) delete tailoredData.trainingData;
-    // Extract meaningful tech terms from the JD to build the new skills list
-    const jdTerms = jobDescription
-      ? [...new Set(jobDescription
-          // Split on common delimiters first
-          .replace(/[\/\\|,;_:&]+/g, " ")
-          // Split camelCase: "CopilotChatgpt" → "Copilot Chatgpt", "CSSGit" → "CSS Git"
-          .replace(/([a-z])([A-Z])/g, "$1 $2")
-          .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
-          // Split digit-letter boundaries: "HTML5CSS3" → "HTML5 CSS3"
-          .replace(/([a-zA-Z])(\d)/g, "$1 $2")
-          .replace(/(\d)([a-zA-Z])/g, "$1 $2")
-          .replace(/[^a-zA-Z0-9#+.#\-\/\s]/g, " ")
-          // Split on underscore as well
-          .replace(/_/g, " ")
-          .split(/\s+/)
-          .map(t => t.replace(/[.,;:!?()]+$/, "").trim())
-          .filter(t => t.length > 2 && !["and","the","for","with","from","this","that","have","has","had","will","can","are","was","been","being","but","not","all","any","each","every","some","such","more","most","other","about","than","into","over","also","just","now","then","able","must","need","use","used","using","based","etc","per","its","may","too","very","good","new","well","get","set","way","part","looking","senior","junior","lead","experience","position","description","requirements","responsibilities","qualifications","minimum","preferred","plus","years","year","month","ability","work","team","including","developer","engineer","manager","architect","designer","analyst","strong","excellent","proven","track","record","building","managing","designing","developing","implementing","knowledge","proficiency","expertise","familiarity","understanding","communication","leadership","skills"].includes(t.toLowerCase())))]
-      : [];
-    // Merge AI skills + JD terms + missing keywords into one clean list
     const aiSkills = Array.isArray(tailoredData.skills) ? tailoredData.skills : [];
     const origSkills = Array.isArray(resumeData.skills) ? resumeData.skills : [];
-    // Clean JD terms: remove camelCase fragments (e.g. "Type"+"Script"="TypeScript" → drop "Type", "Script")
-    const cleanJdTerms = jdTerms.filter(s => !jdTerms.some(other => {
-      if (other === s) return false;
-      const diff = other.length - s.length;
-      if (diff < 2) return false;
-      const lowS = s.toLowerCase();
-      const lowO = other.toLowerCase();
-      return lowO.startsWith(lowS) || lowO.endsWith(lowS);
-    }));
     const seen = new Set();
-    const combined = [...origSkills, ...cleanJdTerms, ...aiSkills, ...(Array.isArray(missingKeywords) ? missingKeywords : [])]
+    const combined = [...origSkills, ...aiSkills, ...(Array.isArray(missingKeywords) ? missingKeywords : [])]
       .flat(Infinity)
       .flatMap(s => String(s).split(/[,;]/))
       .map(s => (s || "").replace(/[.,;:!?]+$/g, "").trim())
