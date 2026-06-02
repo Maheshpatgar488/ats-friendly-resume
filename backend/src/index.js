@@ -536,6 +536,8 @@ app.post("/api/tailor", async (req, res) => {
           .replace(/([a-zA-Z])(\d)/g, "$1 $2")
           .replace(/(\d)([a-zA-Z])/g, "$1 $2")
           .replace(/[^a-zA-Z0-9#+.#\-\/\s]/g, " ")
+          // Split on underscore as well
+          .replace(/_/g, " ")
           .split(/\s+/)
           .map(t => t.replace(/[.,;:!?()]+$/, "").trim())
           .filter(t => t.length > 2 && !["and","the","for","with","from","this","that","have","has","had","will","can","are","was","been","being","but","not","all","any","each","every","some","such","more","most","other","about","than","into","over","also","just","now","then","able","must","need","use","used","using","based","etc","per","its","may","too","very","good","new","well","get","set","way","part","looking","senior","junior","lead","experience","position","description","requirements","responsibilities","qualifications","minimum","preferred","plus","years","year","month","ability","work","team","including","developer","engineer","manager","architect","designer","analyst","strong","excellent","proven","track","record","building","managing","designing","developing","implementing","knowledge","proficiency","expertise","familiarity","understanding","communication","leadership","skills"].includes(t.toLowerCase())))]
