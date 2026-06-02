@@ -18,7 +18,7 @@ RUN npm install
 
 COPY backend/ ./
 
-RUN mkdir -p /app/public
+RUN mkdir -p /app/public && touch /app/public/index.html
 
 EXPOSE 7860
 
