@@ -18,6 +18,8 @@ RUN npm install
 
 COPY backend/ ./
 
+RUN mkdir -p /app/public
+
 EXPOSE 7860
 
 RUN chown -R node:node /app
