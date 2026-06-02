@@ -534,7 +534,7 @@ app.post("/api/tailor", async (req, res) => {
     // Merge AI skills + JD terms + missing keywords into one clean list
     const aiSkills = Array.isArray(tailoredData.skills) ? tailoredData.skills : [];
     const origSkills = Array.isArray(resumeData.skills) ? resumeData.skills : [];
-    const combined = [...new Set([...jdTerms, ...aiSkills, ...(Array.isArray(missingKeywords) ? missingKeywords : []), ...origSkills])];
+    const combined = [...new Set([...origSkills, ...jdTerms, ...aiSkills, ...(Array.isArray(missingKeywords) ? missingKeywords : [])])];
     tailoredData.skills = combined.slice(0, 15);
     res.json({ success: true, tailoredResumeData: tailoredData, engine: "ai" });
 
