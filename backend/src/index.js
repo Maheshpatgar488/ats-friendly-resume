@@ -527,6 +527,8 @@ app.post("/api/tailor", async (req, res) => {
     // Extract meaningful tech terms from the JD to build the new skills list
     const jdTerms = jobDescription
       ? [...new Set(jobDescription
+          .replace(/([a-z])([A-Z])/g, "$1 $2")
+          .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
           .replace(/[^a-zA-Z0-9#+.#\-\/\s]/g, " ")
           .split(/\s+/)
           .map(t => t.replace(/[.,;:!?()]+$/, "").trim())

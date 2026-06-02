@@ -73,6 +73,8 @@ for (const [canonical, variants] of Object.entries(SYNONYMS)) {
 function normalizePhrase(phrase) {
   return phrase
     .toLowerCase()
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
     .replace(/[^a-z0-9#+.#\/]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
