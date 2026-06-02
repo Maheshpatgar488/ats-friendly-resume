@@ -561,7 +561,7 @@ app.post("/api/tailor", async (req, res) => {
       .map(s => (s || "").replace(/[.,;:!?]+$/g, "").trim())
       .filter(s => { const k = s.toLowerCase(); if (!k || seen.has(k)) return false; seen.add(k); return true; });
     tailoredData.skills = combined.slice(0, 15);
-    res.json({ success: true, tailoredResumeData: tailoredData, engine: "ai" });
+    res.json({ success: true, tailoredResumeData: tailoredData, engine: "ai", build: "2026-06-02-v2" });
 
   } catch (error) {
     console.warn("AI tailoring failed, falling back to local engine:", error.message || error);
