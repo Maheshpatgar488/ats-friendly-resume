@@ -192,39 +192,46 @@ export function parseResumeText(text, pdfBuffer) {
   }
 
   // PDF link annotation fallback — URLs hidden behind hyperlinks (not visible in extracted text)
-  if (pdfBuffer) {
-    const annotationUrls = extractAnnotationUrls(pdfBuffer);
-    // Handle linkedin/github by domain match (unambiguous)
-    for (const url of annotationUrls) {
-      const ul = url.toLowerCase();
-      if (ul.includes("linkedin") && !result.personalInfo.linkedinUrl) {
-        result.personalInfo.linkedinUrl = url.replace(/\/$/, "");
-        if (!result.personalInfo.linkedin) {
-          const path = url.replace(/\/$/, "").split("/").pop();
-          if (path && path.length > 1) result.personalInfo.linkedin = "LinkedIn/" + path;
-        }
-      } else if (ul.includes("github") && !result.personalInfo.githubUrl) {
-        result.personalInfo.githubUrl = url.replace(/\/$/, "");
-        if (!result.personalInfo.github) {
-          const path = url.replace(/\/$/, "").split("/").pop();
-          if (path && path.length > 1) result.personalInfo.github = "GitHub/" + path;
-        }
+  const annotationUrls = pdfBuffer ? extractAnnotationUrls(pdfBuffer) : [];
+  const usedAnnotationUrls = new Set();
+  // Handle linkedin/github by domain match (unambiguous)
+  for (const url of annotationUrls) {
+    const ul = url.toLowerCase();
+    if (ul.includes("linkedin") && !result.personalInfo.linkedinUrl) {
+      usedAnnotationUrls.add(url);
+      result.personalInfo.linkedinUrl = url.replace(/\/$/, "");
+      if (!result.personalInfo.linkedin) {
+        const path = url.replace(/\/$/, "").split("/").pop();
+        if (path && path.length > 1) result.personalInfo.linkedin = "LinkedIn/" + path;
       }
-    }
-    // For portfolio/website: score annotation URLs and use if better than text match
-    const annCandidates = annotationUrls
-      .filter(u => !u.toLowerCase().includes("linkedin") && !u.toLowerCase().includes("github"))
-      .map(u => u.replace(/\/$/, ""));
-    if (annCandidates.length > 0) {
-      annCandidates.sort((a, b) => scoreUrl(b) - scoreUrl(a));
-      const bestAnn = annCandidates[0];
-      const annScore = scoreUrl(bestAnn);
-      const currentScore = result.personalInfo.websiteUrl ? scoreUrl(result.personalInfo.websiteUrl) : -1;
-      if (annScore > currentScore) {
-        setWebsiteUrl(bestAnn);
+    } else if (ul.includes("github") && !result.personalInfo.githubUrl) {
+      usedAnnotationUrls.add(url);
+      result.personalInfo.githubUrl = url.replace(/\/$/, "");
+      if (!result.personalInfo.github) {
+        const path = url.replace(/\/$/, "").split("/").pop();
+        if (path && path.length > 1) result.personalInfo.github = "GitHub/" + path;
       }
     }
   }
+  // For portfolio/website: score annotation URLs and use if better than text match
+  const annCandidates = annotationUrls
+    .filter(u => !usedAnnotationUrls.has(u))
+    .filter(u => !u.toLowerCase().includes("linkedin") && !u.toLowerCase().includes("github"))
+    .map(u => u.replace(/\/$/, ""));
+  let portfolioAnnotationUrl = "";
+  if (annCandidates.length > 0) {
+    annCandidates.sort((a, b) => scoreUrl(b) - scoreUrl(a));
+    const bestAnn = annCandidates[0];
+    const annScore = scoreUrl(bestAnn);
+    const currentScore = result.personalInfo.websiteUrl ? scoreUrl(result.personalInfo.websiteUrl) : -1;
+    if (annScore > currentScore) {
+      setWebsiteUrl(bestAnn);
+      portfolioAnnotationUrl = bestAnn;
+    }
+  }
+  // Collect leftover annotation URLs not used for linkedin/github/portfolio for project URL assignment
+  const unusedAnnotationUrls = annotationUrls
+    .filter(u => !usedAnnotationUrls.has(u) && u.replace(/\/$/, "") !== portfolioAnnotationUrl);
 
   // ============================================================
   // SPLIT INTO LINES (from normalized text with forced breaks)
@@ -673,6 +680,15 @@ export function parseResumeText(text, pdfBuffer) {
       tseen.add(key);
       return true;
     });
+  }
+  // Assign leftover annotation URLs (hidden hyperlinks) to projects without a URL
+  if (unusedAnnotationUrls.length > 0) {
+    let urlIdx = 0;
+    for (const proj of result.projects) {
+      if (!proj.url && urlIdx < unusedAnnotationUrls.length) {
+        proj.url = unusedAnnotationUrls[urlIdx++].replace(/\/$/, "");
+      }
+    }
   }
 
   // ============================================================
