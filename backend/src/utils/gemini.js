@@ -27,7 +27,7 @@ function getGroq() {
 
 // Aggressively strip any image/video/media references — Gemini rejects non-text content
 function sanitizePrompt(text) {
-  return text
+  let cleaned = text
     .replace(/!\[.*?\]\(.*?\)/g, " ")
     .replace(/<img[^>]*>/gi, " ")
     .replace(/<source[^>]*>/gi, " ")
@@ -36,7 +36,14 @@ function sanitizePrompt(text) {
     .replace(/https?:\/\/[^\s]*\.(png|jpg|jpeg|gif|webp|svg|ico|bmp|mp4|webm|ogg)[^\s]*/gi, " ")
     .replace(/https?:\/\/[^\s]+\/([^\s\/]+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp))/gi, " ")
     .replace(/\b\w+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\b/gi, " ")
-    .replace(/\S+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\S*/gi, " ");
+    .replace(/\S+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\S*/gi, " ")
+    .replace(/\w+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\b/gi, " ")
+    .replace(/\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\b/gi, " ");
+  // If still longer than 20000 chars, truncate from middle to avoid hitting context limits
+  if (cleaned.length > 20000) {
+    cleaned = cleaned.slice(0, 10000) + "\n...[truncated]...\n" + cleaned.slice(-9000);
+  }
+  return cleaned;
 }
 
 export async function generateStructuredJSON(prompt, schema, temperature = 0.1) {

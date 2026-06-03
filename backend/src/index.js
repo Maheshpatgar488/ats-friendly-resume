@@ -333,7 +333,9 @@ app.post("/api/ats-score", async (req, res) => {
     .replace(/data:video\/[^;]+;base64[^"]*/gi, " ")
     .replace(/https?:\/\/[^\s]*\.(png|jpg|jpeg|gif|webp|svg|ico|bmp|mp4|webm|ogg)[^\s]*/gi, " ")
     .replace(/\b\w+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\b/gi, " ")
-    .replace(/\S+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\S*/gi, " ");
+    .replace(/\S+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\S*/gi, " ")
+    .replace(/\w+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\b/gi, " ")
+    .replace(/\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\b/gi, " ");
 
   try {
     // 1. Try AI first for high-quality semantic matching
@@ -404,7 +406,9 @@ app.post("/api/tailor", async (req, res) => {
     .replace(/data:video\/[^;]+;base64[^"]*/gi, " ")
     .replace(/https?:\/\/[^\s]*\.(png|jpg|jpeg|gif|webp|svg|ico|bmp|mp4|webm|ogg)[^\s]*/gi, " ")
     .replace(/\b\w+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\b/gi, " ")
-    .replace(/\S+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\S*/gi, " ");
+    .replace(/\S+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\S*/gi, " ")
+    .replace(/\w+\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\b/gi, " ")
+    .replace(/\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\b/gi, " ");
 
   const missingKWText = Array.isArray(missingKeywords) && missingKeywords.length > 0
     ? `\nThe following keywords from the job description are currently MISSING from the resume. You MUST weave them into the highlights, summary, and skills wherever they fit naturally:\n${missingKeywords.map(k => `  - ${k}`).join("\n")}\n`
@@ -527,7 +531,7 @@ app.post("/api/tailor", async (req, res) => {
     const aiSkills = Array.isArray(tailoredData.skills) ? tailoredData.skills : [];
     const origSkills = Array.isArray(resumeData.skills) ? resumeData.skills : [];
     // Known tech terms to detect and split merged AI skills (e.g. "CSSGitGithub" → "CSS"+"Git"+"Github")
-    const knownTech = ["JavaScript","TypeScript","Python","Java","React","Angular","Vue","Node","Express","Django","Flask","Spring","Docker","Kubernetes","AWS","Azure","GCP","Git","Github","GitLab","CSS","HTML","SQL","MongoDB","PostgreSQL","MySQL","Redis","GraphQL","REST","API","Microservices","Linux","Bash","Shell","Agile","Scrum","Jira","Figma","Photoshop","Illustrator","XD","TensorFlow","PyTorch","NLP","Tableau","PowerBI","ChatGPT","OpenAI","Vite","Next","Redux","Webpack","Babel","Flutter","ReactNative","Android","iOS","Copilot","ChatGPT","ThreeJS","D3"];
+    const knownTech = ["JavaScript","TypeScript","Python","Java","React","Angular","Vue","Node","Express","Django","Flask","Spring","Docker","Kubernetes","AWS","Azure","GCP","Git","Github","GitLab","CSS","HTML","SQL","MongoDB","PostgreSQL","MySQL","Redis","GraphQL","REST","API","Microservices","Linux","Bash","Shell","Agile","Scrum","Jira","Figma","Photoshop","Illustrator","XD","TensorFlow","PyTorch","NLP","Tableau","PowerBI","ChatGPT","OpenAI","Vite","Next","Redux","Webpack","Babel","Flutter","ReactNative","Android","iOS","Copilot","ChatGPT","ThreeJS","D3","Development","Communication","Management","Leadership","Strategy","Analysis","Design","Marketing","Sales","Support","Testing","Deployment","Security","Performance","Integration","Automation","Optimization","Migration","Configuration","Monitoring","Troubleshooting","Documentation","Planning","Research","Development","Engineering","Operations","Infrastructure","Architecture","Compliance","Governance","Mentoring","Training","Collaboration","ProblemSolving","CriticalThinking","Teamwork","Presentation","Negotiation","Reporting","Budgets","Forecasting","Roadmap","Backlog","Sprint","Kanban","Lean","DevOps","CI","CD","Pipeline","Container","Orchestration","Serverless","Edge","CDN","API","SDK","CLI","UI","UX","QA","E2E","UnitTesting","IntegrationTesting","PerformanceTesting","LoadTesting","A11y","i18n","Localization","Responsive","CrossPlatform","MobileFirst","Progressive","PWA","SPA","SSR","SSG","ISR","JAMstack","JWT","OAuth","SAML","SSO","LDAP","RBAC","ACL","CORS","RESTful","SOAP","gRPC","WebSocket","Webhook","EventDriven","MessageQueue","PubSub","Streaming","Batch","ETL","OLAP","OLTP","DataWarehouse","DataLake","DataPipeline","DataGovernance","DataQuality"];
     const seen = new Set();
     const combined = [...origSkills, ...aiSkills, ...(Array.isArray(missingKeywords) ? missingKeywords : [])]
       .flat(Infinity)
