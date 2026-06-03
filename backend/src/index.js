@@ -526,12 +526,32 @@ app.post("/api/tailor", async (req, res) => {
     if (tailoredData.trainingData) delete tailoredData.trainingData;
     const aiSkills = Array.isArray(tailoredData.skills) ? tailoredData.skills : [];
     const origSkills = Array.isArray(resumeData.skills) ? resumeData.skills : [];
+    // Known tech terms to detect and split merged AI skills (e.g. "CSSGitGithub" → "CSS"+"Git"+"Github")
+    const knownTech = ["JavaScript","TypeScript","Python","Java","React","Angular","Vue","Node","Express","Django","Flask","Spring","Docker","Kubernetes","AWS","Azure","GCP","Git","Github","GitLab","CSS","HTML","SQL","MongoDB","PostgreSQL","MySQL","Redis","GraphQL","REST","API","Microservices","Linux","Bash","Shell","Agile","Scrum","Jira","Figma","Photoshop","Illustrator","XD","TensorFlow","PyTorch","NLP","Tableau","PowerBI","ChatGPT","OpenAI","Vite","Next","Redux","Webpack","Babel","Flutter","ReactNative","Android","iOS","Copilot","ChatGPT","ThreeJS","D3"];
     const seen = new Set();
     const combined = [...origSkills, ...aiSkills, ...(Array.isArray(missingKeywords) ? missingKeywords : [])]
       .flat(Infinity)
       .flatMap(s => String(s).split(/[,;]/))
       .map(s => (s || "").replace(/[.,;:!?]+$/g, "").trim())
-      .filter(s => { const k = s.toLowerCase(); if (!k || seen.has(k)) return false; seen.add(k); return true; });
+      .filter(s => { const k = s.toLowerCase(); if (!k || seen.has(k)) return false; seen.add(k); return true; })
+      .flatMap(s => {
+        // Try to split merged skills: if a skill contains known tech terms as substrings, split them
+        const matched = knownTech.filter(t => s.toLowerCase() !== t.toLowerCase() && s.toLowerCase().includes(t.toLowerCase())).sort((a, b) => b.length - a.length);
+        if (matched.length >= 2) {
+          let remaining = s;
+          const parts = [];
+          for (const t of matched) {
+            const idx = remaining.toLowerCase().indexOf(t.toLowerCase());
+            if (idx >= 0) {
+              parts.push(t);
+              remaining = remaining.slice(0, idx) + remaining.slice(idx + t.length);
+            }
+          }
+          const cleaned = parts.filter(p => p.length >= 2);
+          if (cleaned.length >= 2) return cleaned;
+        }
+        return s;
+      });
     tailoredData.skills = combined.slice(0, 15);
     res.json({ success: true, tailoredResumeData: tailoredData, engine: "ai", build: "2026-06-02-v2" });
 

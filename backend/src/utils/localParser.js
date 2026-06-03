@@ -437,11 +437,11 @@ export function parseResumeText(text, pdfBuffer) {
     }
   }
 
-  // Also scan original full text for known tech keywords
+  // Also scan original full text for known tech keywords (no word boundary — catches merged words from PDFs)
   for (const kw of techKeywords) {
     try {
-      const re = new RegExp("\\b" + kw + "\\b", "i");
-      if (re.test(fullText)) {
+      const re = new RegExp(kw.replace(/\\\./g, "\\."), "i");
+      if (re.test(fullText) || fullText.toLowerCase().includes(kw.replace(/\\/g, "").replace(/\./g, "").toLowerCase())) {
         skillWords.add(kw.replace(/\\/g, "").replace(/\./g, ""));
       }
     } catch (e) { }
