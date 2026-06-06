@@ -11,6 +11,14 @@ const GROQ_MODEL = "llama-3.3-70b-versatile";
 export let geminiQuotaExhausted = false;
 export let groqQuotaExhausted = false;
 
+// Auto-reset quota flags every hour (most quotas reset daily)
+let lastReset = Date.now();
+setInterval(() => {
+  geminiQuotaExhausted = false;
+  groqQuotaExhausted = false;
+  lastReset = Date.now();
+}, 60 * 60 * 1000);
+
 function isQuotaError(error) {
   const msg = (error.message || "").toLowerCase();
   return msg.includes("429") || msg.includes("quota") || msg.includes("rate limit") || msg.includes("resource_exhausted") || msg.includes("api key not valid") || msg.includes("api key expired") || msg.includes("insufficient") || msg.includes("daily limit") || msg.includes("token limit");

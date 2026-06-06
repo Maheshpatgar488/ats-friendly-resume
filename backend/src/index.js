@@ -29,7 +29,7 @@ import {
 import { generateDocx } from "./utils/docxGenerator.js";
 import { compileResumeHTML } from "./utils/pdfGenerator.js";
 import { parseResumeText } from "./utils/localParser.js";
-import { geminiQuotaExhausted, groqQuotaExhausted } from "./utils/gemini.js";
+import { geminiQuotaExhausted, groqQuotaExhausted, resetQuotaFlags } from "./utils/gemini.js";
 
 dotenv.config();
 
@@ -319,10 +319,11 @@ app.post("/api/enhance", async (req, res) => {
       return res.json({
         success: false,
         error: "AI enhancement unavailable. Please try again later.",
-        details: aiError.message
+        details: aiError.message,
+        quotaExhausted: geminiQuotaExhausted && groqQuotaExhausted
       });
     }
-    res.json({ success: true, enhancedText: enhancedText.trim().replace(/^"|"$/g, "") }); // trim quotes
+    res.json({ success: true, enhancedText: enhancedText.trim().replace(/^"|"$/g, ""), quotaExhausted: geminiQuotaExhausted && groqQuotaExhausted }); // trim quotes
 
   } catch (error) {
     console.error("Enhance Endpoint Error:", error);
@@ -387,7 +388,7 @@ app.post("/api/ats-score", async (req, res) => {
       .map(k => typeof k === "string" ? k : k?.name || k?.skill || String(k));
     scoreData.suggestions = (scoreData.suggestions ?? scoreData.actionableSuggestions ?? scoreData.improvementSuggestions ?? scoreData.recommendations ?? [])
       .map(s => typeof s === "string" ? s : s?.suggestion || s?.action || JSON.stringify(s));
-    res.json({ success: true, ...scoreData, engine: "ai" });
+    res.json({ success: true, ...scoreData, engine: "ai", quotaExhausted: geminiQuotaExhausted && groqQuotaExhausted });
 
   } catch (error) {
     console.warn("AI ATS scoring failed, falling back to local engine:", error.message || error);
@@ -395,7 +396,7 @@ app.post("/api/ats-score", async (req, res) => {
     // 2. Fallback: Pure-JS local ATS engine (zero API cost, works offline)
     try {
       const localScore = computeLocalATSScore(resumeData, jobDescription);
-      res.json({ ...localScore, fallback: true });
+      res.json({ ...localScore, fallback: true, quotaExhausted: geminiQuotaExhausted && groqQuotaExhausted });
     } catch (localError) {
       console.error("Local ATS fallback also failed:", localError);
       res.status(500).json({ error: "Failed to compute ATS score.", details: localError.message });
@@ -574,7 +575,7 @@ app.post("/api/tailor", async (req, res) => {
         return s;
       });
     tailoredData.skills = combined.slice(0, 15);
-    res.json({ success: true, tailoredResumeData: tailoredData, engine: "ai", build: "2026-06-02-v2" });
+    res.json({ success: true, tailoredResumeData: tailoredData, engine: "ai", build: "2026-06-02-v2", quotaExhausted: geminiQuotaExhausted && groqQuotaExhausted });
 
   } catch (error) {
     console.warn("AI tailoring failed, falling back to local engine:", error.message || error);
@@ -582,7 +583,7 @@ app.post("/api/tailor", async (req, res) => {
     // 2. Fallback: Pure-JS local tailoring engine (zero API cost)
     try {
       const localTailored = tailorResumeLocally(resumeData, jobDescription);
-      res.json({ ...localTailored, fallback: true });
+      res.json({ ...localTailored, fallback: true, quotaExhausted: geminiQuotaExhausted && groqQuotaExhausted });
     } catch (localError) {
       console.error("Local tailoring fallback also failed:", localError);
       res.status(500).json({ error: "Failed to tailor resume.", details: localError.message });
