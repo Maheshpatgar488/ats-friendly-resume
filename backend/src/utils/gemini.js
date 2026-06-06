@@ -7,6 +7,21 @@ dotenv.config();
 const GEMINI_MODEL = "gemini-2.0-flash";
 const GROQ_MODEL = "llama-3.3-70b-versatile";
 
+// Track API quota status for user visibility
+export let geminiQuotaExhausted = false;
+export let groqQuotaExhausted = false;
+
+function isQuotaError(error) {
+  const msg = (error.message || "").toLowerCase();
+  return msg.includes("429") || msg.includes("quota") || msg.includes("rate limit") || msg.includes("resource_exhausted") || msg.includes("api key not valid") || msg.includes("api key expired") || msg.includes("insufficient") || msg.includes("daily limit") || msg.includes("token limit");
+}
+
+// Reset quota flags periodically (called on successful API call)
+export function resetQuotaFlags() {
+  geminiQuotaExhausted = false;
+  groqQuotaExhausted = false;
+}
+
 // Gemini client (primary)
 const geminiApiKey = process.env.GEMINI_API_KEY;
 const genAI = geminiApiKey ? new GoogleGenerativeAI(geminiApiKey) : null;
@@ -61,48 +76,32 @@ export async function generateStructuredJSON(prompt, schema, temperature = 0.1) 
       });
       const result = await model.generateContent(safePrompt);
       const text = result.response.text();
+      resetQuotaFlags();
       return JSON.parse(text);
     } catch (error) {
       console.error("Gemini Structured JSON Error, falling back to Groq:", error.message);
+      if (isQuotaError(error)) geminiQuotaExhausted = true;
     }
   }
   // Fallback to Groq
-  const client = getGroq();
-  const result = await client.chat.completions.create({
-    model: GROQ_MODEL,
-    messages: [
-      { role: "system", content: "You are a JSON generator. Output ONLY valid JSON matching the requested schema. No explanations, no markdown." },
-      { role: "user", content: prompt },
-    ],
-    response_format: { type: "json_object" },
-    temperature,
-  });
-  return JSON.parse(result.choices[0].message.content);
-}
-
-/**
- * Extracts a top-level JSON object from text by counting brace depth.
- */
-function extractTopLevelJSON(text) {
-  const start = text.indexOf('{');
-  if (start === -1) return null;
-  let depth = 0;
-  let inString = false;
-  let escaped = false;
-  for (let i = start; i < text.length; i++) {
-    const ch = text[i];
-    if (escaped) { escaped = false; continue; }
-    if (ch === '\\' && inString) { escaped = true; continue; }
-    if (ch === '"') { inString = !inString; continue; }
-    if (!inString) {
-      if (ch === '{') depth++;
-      else if (ch === '}') {
-        depth--;
-        if (depth === 0) return text.slice(start, i + 1);
-      }
-    }
+  try {
+    const client = getGroq();
+    const result = await client.chat.completions.create({
+      model: GROQ_MODEL,
+      messages: [
+        { role: "system", content: "You are a JSON generator. Output ONLY valid JSON matching the requested schema. No explanations, no markdown." },
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+      temperature,
+    });
+    resetQuotaFlags();
+    return JSON.parse(result.choices[0].message.content);
+  } catch (error) {
+    console.error("Groq Structured JSON Error:", error.message);
+    if (isQuotaError(error)) groqQuotaExhausted = true;
+    throw error;
   }
-  return null;
 }
 
 export async function tailorStructuredJSON(prompt, schema) {
@@ -119,6 +118,7 @@ export async function tailorStructuredJSON(prompt, schema) {
         },
       });
       const result = await model.generateContent(safePrompt);
+      resetQuotaFlags();
       const text = result.response.text().trim();
       try {
         return JSON.parse(text);
@@ -135,32 +135,40 @@ export async function tailorStructuredJSON(prompt, schema) {
       }
     } catch (error) {
       console.error("Gemini Tailored JSON Error, falling back to Groq:", error.message);
+      if (isQuotaError(error)) geminiQuotaExhausted = true;
     }
   }
   // Fallback to Groq
-  const client = getGroq();
-  const result = await client.chat.completions.create({
-    model: GROQ_MODEL,
-    messages: [
-      { role: "system", content: "You are an elite resume rewrite specialist. Your job is to REWRITE and IMPROVE the resume content — change the wording, use STAR methodology, integrate keywords, and make every bullet stronger. Output ONLY a valid JSON object, no explanations, no markdown." },
-      { role: "user", content: prompt },
-    ],
-    temperature: 0.7,
-    max_tokens: 8192,
-  });
-  const text = result.choices[0].message.content.trim();
   try {
-    return JSON.parse(text);
-  } catch {
-    const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[1].trim());
+    const client = getGroq();
+    const result = await client.chat.completions.create({
+      model: GROQ_MODEL,
+      messages: [
+        { role: "system", content: "You are an elite resume rewrite specialist. Your job is to REWRITE and IMPROVE the resume content — change the wording, use STAR methodology, integrate keywords, and make every bullet stronger. Output ONLY a valid JSON object, no explanations, no markdown." },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.7,
+      max_tokens: 8192,
+    });
+    resetQuotaFlags();
+    const text = result.choices[0].message.content.trim();
+    try {
+      return JSON.parse(text);
+    } catch {
+      const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[1].trim());
+      }
+      const extracted = extractTopLevelJSON(text);
+      if (extracted) {
+        return JSON.parse(extracted);
+      }
+      throw new Error("Could not extract valid JSON from Groq response");
     }
-    const extracted = extractTopLevelJSON(text);
-    if (extracted) {
-      return JSON.parse(extracted);
-    }
-    throw new Error("Could not extract valid JSON from Groq response");
+  } catch (error) {
+    console.error("Groq Tailored JSON Error:", error.message);
+    if (isQuotaError(error)) groqQuotaExhausted = true;
+    throw error;
   }
 }
 
@@ -173,19 +181,28 @@ export async function generateText(prompt, temperature = 0.7) {
         generationConfig: { temperature },
       });
       const result = await model.generateContent(sanitizePrompt(prompt));
+      resetQuotaFlags();
       return result.response.text();
     } catch (error) {
       console.error("Gemini Text Generation Error, falling back to Groq:", error.message);
+      if (isQuotaError(error)) geminiQuotaExhausted = true;
     }
   }
   // Fallback to Groq
-  const client = getGroq();
-  const result = await client.chat.completions.create({
-    model: GROQ_MODEL,
-    messages: [{ role: "user", content: prompt }],
-    temperature,
-  });
-  return result.choices[0].message.content;
+  try {
+    const client = getGroq();
+    const result = await client.chat.completions.create({
+      model: GROQ_MODEL,
+      messages: [{ role: "user", content: prompt }],
+      temperature,
+    });
+    resetQuotaFlags();
+    return result.choices[0].message.content;
+  } catch (error) {
+    console.error("Groq Text Generation Error:", error.message);
+    if (isQuotaError(error)) groqQuotaExhausted = true;
+    throw error;
+  }
 }
 
 export const RESUME_JSON_SCHEMA = {

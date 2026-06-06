@@ -29,6 +29,7 @@ import {
 import { generateDocx } from "./utils/docxGenerator.js";
 import { compileResumeHTML } from "./utils/pdfGenerator.js";
 import { parseResumeText } from "./utils/localParser.js";
+import { geminiQuotaExhausted, groqQuotaExhausted } from "./utils/gemini.js";
 
 dotenv.config();
 
@@ -169,6 +170,22 @@ app.delete("/api/resumes/:id", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: "Failed to delete resume." });
   }
+});
+
+// Check AI API quota status (tracks if keys are exhausted)
+app.get("/api/quota-status", (req, res) => {
+  res.json({
+    geminiExhausted: geminiQuotaExhausted,
+    groqExhausted: groqQuotaExhausted,
+    anyExhausted: geminiQuotaExhausted && groqQuotaExhausted,
+    message: geminiQuotaExhausted && groqQuotaExhausted
+      ? "Both AI API keys are exhausted. AI features fall back to local engine. Replace keys in HF Space secrets."
+      : geminiQuotaExhausted
+      ? "Gemini API key exhausted. Falling back to Groq."
+      : groqQuotaExhausted
+      ? "Groq API key exhausted. Falling back to Gemini."
+      : "All AI API keys are working."
+  });
 });
 
 // ----------------------------------------------------
