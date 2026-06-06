@@ -8,6 +8,7 @@ import { useAutosave } from "./hooks/useAutosave";
 import FormBuilder from "./components/FormBuilder";
 import LivePreview from "./components/LivePreview";
 import AIHub from "./components/AIHub";
+import QuotaBanner from "./components/QuotaBanner";
 import { API_URL } from "./config";
 
 export default function App() {
@@ -336,6 +337,8 @@ export default function App() {
       <footer className="bg-slate-900/30 border-t border-slate-900 py-3 text-center text-3xs font-semibold text-slate-600 uppercase tracking-widest select-none">
         Developed by Antigravity AI &bull; DeepMind Premium Suite &bull; Windows Local Dev
       </footer>
+
+      <QuotaBanner />
 
     </div>
   );
