@@ -40,7 +40,7 @@ export const CanvaLayout = ({ resumeData, customStyles }) => {
       <div style={{ display: "table-row" }}>
         
         {/* LEFT SIDEBAR (Dual Tone) */}
-        <div style={{ display: "table-cell", width: "31%", verticalAlign: "top", backgroundColor: primaryColor, padding: `${mTop} 20px ${mBottom} ${mLeft}`, color: "#fff" }}>
+        <div style={{ display: "table-cell", width: "31%", verticalAlign: "top", backgroundColor: primaryColor, padding: `${mTop} 24px ${mBottom} 24px`, color: "#fff" }}>
           
           {/* Header Info in Sidebar */}
           <div style={{ textAlign: "left", marginBottom: "20px" }}>
@@ -128,7 +128,7 @@ export const CanvaLayout = ({ resumeData, customStyles }) => {
         </div>
 
         {/* RIGHT MAIN CONTENT (White Background) */}
-        <div style={{ display: "table-cell", width: "69%", verticalAlign: "top", backgroundColor: "#fff", padding: `${mTop} ${mRight} ${mBottom} 24px`, color: "#1e293b" }}>
+        <div style={{ display: "table-cell", width: "69%", verticalAlign: "top", backgroundColor: "#fff", padding: `${mTop} 32px ${mBottom} 32px`, color: "#1e293b" }}>
           
           {/* Summary */}
           {summary && (
