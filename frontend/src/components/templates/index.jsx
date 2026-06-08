@@ -65,6 +65,7 @@ export function ResumeRenderer({ resumeData, customStyles }) {
   // Compile container styles (e.g. template 18 has an outer border)
   const isBordered = tid === 18;
   const isBannerTop = tid === 20;
+  const isFullBleed = tid === 21;
 
   let content = null;
 
@@ -161,7 +162,7 @@ export function ResumeRenderer({ resumeData, customStyles }) {
   return (
     <div 
       className={`w-full bg-white text-slate-800 ${fontClass} leading-normal`}
-      style={isBannerTop ? { paddingTop: 0, paddingBottom: marginStyles.paddingBottom, paddingLeft: marginStyles.paddingLeft, paddingRight: marginStyles.paddingRight } : marginStyles}
+      style={isFullBleed ? { padding: 0 } : (isBannerTop ? { paddingTop: 0, paddingBottom: marginStyles.paddingBottom, paddingLeft: marginStyles.paddingLeft, paddingRight: marginStyles.paddingRight } : marginStyles)}
     >
       {content}
     </div>

@@ -13,6 +13,12 @@ export const CanvaLayout = ({ resumeData, customStyles }) => {
   const secSpacing = customStyles.sectionSpacing || "12px";
   const entSpacing = customStyles.entrySpacing || "8px";
   const lineHeight = customStyles.lineHeight || "1.4";
+  const bodyFs = customStyles.fontSize || "9.5pt";
+
+  const mTop = customStyles.margins?.top || "0.5in";
+  const mBottom = customStyles.margins?.bottom || "0.5in";
+  const mLeft = customStyles.margins?.left || "0.5in";
+  const mRight = customStyles.margins?.right || "0.5in";
 
   // Lighten primary color for badges or text backgrounds in the sidebar
   const bgBadge = "rgba(255, 255, 255, 0.15)";
@@ -30,11 +36,11 @@ export const CanvaLayout = ({ resumeData, customStyles }) => {
   );
 
   return (
-    <div style={{ width: "100%", display: "table", tableLayout: "fixed", fontSize: "9.5pt", lineHeight: lineHeight, background: "#fff", fontFamily: "'Outfit', sans-serif" }}>
+    <div style={{ width: "100%", display: "table", tableLayout: "fixed", fontSize: bodyFs, lineHeight: lineHeight, background: "#fff", fontFamily: "'Outfit', sans-serif" }}>
       <div style={{ display: "table-row" }}>
         
         {/* LEFT SIDEBAR (Dual Tone) */}
-        <div style={{ display: "table-cell", width: "34%", verticalAlign: "top", backgroundColor: primaryColor, padding: "20px 16px", color: "#fff" }}>
+        <div style={{ display: "table-cell", width: "34%", verticalAlign: "top", backgroundColor: primaryColor, padding: `${mTop} 16px ${mBottom} ${mLeft}`, color: "#fff" }}>
           
           {/* Header Info in Sidebar */}
           <div style={{ textAlign: "center", marginBottom: "20px" }}>
@@ -122,7 +128,7 @@ export const CanvaLayout = ({ resumeData, customStyles }) => {
         </div>
 
         {/* RIGHT MAIN CONTENT (White Background) */}
-        <div style={{ display: "table-cell", width: "66%", verticalAlign: "top", backgroundColor: "#fff", padding: "20px 20px", color: "#1e293b" }}>
+        <div style={{ display: "table-cell", width: "66%", verticalAlign: "top", backgroundColor: "#fff", padding: `${mTop} ${mRight} ${mBottom} 20px`, color: "#1e293b" }}>
           
           {/* Summary */}
           {summary && (
