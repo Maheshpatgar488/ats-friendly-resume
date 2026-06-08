@@ -1,5 +1,6 @@
 import React from "react";
 import { SingleColumnLayout, CenteredLayout, SplitSidebarLayout } from "./layouts";
+import { FaangLayout } from "./faangLayout";
 import { CanvaLayout } from "./canvaLayout";
 
 // Custom font family CSS classes injected into templates wrapper
@@ -36,7 +37,8 @@ export const templatesList = [
   { id: "18", name: "Bordered Classic", desc: "Elegant, thin borders fully enclosing the resume in A4 page limits.", style: { fontFamily: "Inter", primaryColor: "#1e293b", borderStyle: "solid" } },
   { id: "19", name: "Retail & Service", desc: "Modern Calibri face, warm amber badges for active, friendly customer service.", style: { fontFamily: "Calibri", primaryColor: "#b45309", borderStyle: "solid" } },
   { id: "20", name: "Vibrant Modern", desc: "Vibrant header block banner, slate-dark background banner at top, gold accents.", style: { fontFamily: "Inter", primaryColor: "#0f172a", borderStyle: "solid" } },
-  { id: "21", name: "Canva-Style Premium", desc: "Modern premium design with Outfit font, highly optimized spacing, elegant.", style: { fontFamily: "Outfit", primaryColor: "#0f172a", borderStyle: "none" } }
+  { id: "21", name: "Canva-Style Premium", desc: "Modern premium design with Outfit font, highly optimized spacing, elegant.", style: { fontFamily: "Outfit", primaryColor: "#0f172a", borderStyle: "none" } },
+  { id: "22", name: "FAANG ATS Standard", desc: "Strict single-column, high-density layout optimized for Google, Amazon, and top tech companies.", style: { fontFamily: "Inter", primaryColor: "#000000", borderStyle: "solid" } }
 ];
 
 /**
@@ -141,6 +143,14 @@ export function ResumeRenderer({ resumeData, customStyles }) {
     // Canva-Style Premium layout
     content = (
       <CanvaLayout 
+        resumeData={resumeData} 
+        customStyles={customStyles} 
+      />
+    );
+  } else if (tid === 22) {
+    // FAANG ATS Single Page layout
+    content = (
+      <FaangLayout 
         resumeData={resumeData} 
         customStyles={customStyles} 
       />
