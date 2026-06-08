@@ -48,6 +48,20 @@ process.on("unhandledRejection", (reason) => {
 app.use(cors());
 app.use(express.json());
 
+// Deep-sanitize any object to strip .png/.jpg etc references from all string values
+function stripImageRefs(obj) {
+  if (typeof obj === "string") {
+    return obj.replace(/\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\b[^\s]*/gi, " ").replace(/\S*\.(png|jpg|jpeg|gif|webp|svg|ico|bmp)\S*/gi, " ");
+  }
+  if (Array.isArray(obj)) return obj.map(stripImageRefs);
+  if (obj && typeof obj === "object") {
+    const out = {};
+    for (const [k, v] of Object.entries(obj)) out[k] = stripImageRefs(v);
+    return out;
+  }
+  return obj;
+}
+
 // Configure Multer for in-memory file uploads
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -368,12 +382,11 @@ app.post("/api/ats-score", async (req, res) => {
       4. Provide 3-5 specific, bullet-point actionable suggestions to improve the resume match rate (e.g. rephrasing experience, including certifications, or adding specific skills).
 
       Resume JSON Data:
-      ${JSON.stringify(resumeData)}
+      ${JSON.stringify(stripImageRefs(resumeData))}
 
       Target Job Description:
       """
       ${cleanJD}
-      """
     `;
 
     const scoreData = await generateStructuredJSON(prompt, ATS_SCORE_SCHEMA, 0.5);
@@ -472,7 +485,7 @@ app.post("/api/tailor", async (req, res) => {
       ${JSON.stringify(exampleShape, null, 2)}
 
       Resume JSON:
-      ${JSON.stringify(resumeData)}
+      ${JSON.stringify(stripImageRefs(resumeData))}
 
       Target Job Description:
       """
