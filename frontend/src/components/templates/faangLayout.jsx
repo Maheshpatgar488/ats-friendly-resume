@@ -67,8 +67,9 @@ export const FaangLayout = ({ resumeData, customStyles }) => {
     entryMeta: "9.5pt"
   };
 
-  const secSpacing = "10px";
-  const entSpacing = "6px";
+  const secSpacing = customStyles.sectionSpacing || "10px";
+  const entSpacing = customStyles.entrySpacing || "6px";
+  const lineHeight = customStyles.lineHeight || "1.3";
 
   const SectionTitle = ({ title }) => (
     <div style={{ borderBottom: "1px solid #000", marginBottom: "6px", paddingBottom: "2px", marginTop: "10px" }}>
@@ -77,7 +78,7 @@ export const FaangLayout = ({ resumeData, customStyles }) => {
   );
 
   return (
-    <div style={{ width: "100%", color: "#000", background: "#fff", fontSize: fs.body, lineHeight: "1.3" }}>
+    <div style={{ width: "100%", color: "#000", background: "#fff", fontSize: fs.body, lineHeight: lineHeight }}>
       {/* Header */}
       <div style={{ textAlign: "center", marginBottom: "6px" }}>
         <h1 style={{ fontSize: fs.name, fontWeight: 700, margin: "0 0 4px 0", color: "#000" }}>{personalInfo.fullName || "Your Name"}</h1>
