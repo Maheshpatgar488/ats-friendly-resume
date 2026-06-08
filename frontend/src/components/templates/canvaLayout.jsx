@@ -40,10 +40,10 @@ export const CanvaLayout = ({ resumeData, customStyles }) => {
       <div style={{ display: "table-row" }}>
         
         {/* LEFT SIDEBAR (Dual Tone) */}
-        <div style={{ display: "table-cell", width: "34%", verticalAlign: "top", backgroundColor: primaryColor, padding: `${mTop} 16px ${mBottom} ${mLeft}`, color: "#fff" }}>
+        <div style={{ display: "table-cell", width: "31%", verticalAlign: "top", backgroundColor: primaryColor, padding: `${mTop} 20px ${mBottom} ${mLeft}`, color: "#fff" }}>
           
           {/* Header Info in Sidebar */}
-          <div style={{ textAlign: "center", marginBottom: "20px" }}>
+          <div style={{ textAlign: "left", marginBottom: "20px" }}>
             <h1 style={{ fontSize: "20pt", fontWeight: 800, lineHeight: "1.1", margin: "0 0 4px 0", letterSpacing: "-0.5px" }}>
               {personalInfo.fullName || "Your Name"}
             </h1>
@@ -128,7 +128,7 @@ export const CanvaLayout = ({ resumeData, customStyles }) => {
         </div>
 
         {/* RIGHT MAIN CONTENT (White Background) */}
-        <div style={{ display: "table-cell", width: "66%", verticalAlign: "top", backgroundColor: "#fff", padding: `${mTop} ${mRight} ${mBottom} 20px`, color: "#1e293b" }}>
+        <div style={{ display: "table-cell", width: "69%", verticalAlign: "top", backgroundColor: "#fff", padding: `${mTop} ${mRight} ${mBottom} 24px`, color: "#1e293b" }}>
           
           {/* Summary */}
           {summary && (
