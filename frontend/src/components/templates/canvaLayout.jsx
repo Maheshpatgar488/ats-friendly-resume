@@ -36,11 +36,11 @@ export const CanvaLayout = ({ resumeData, customStyles }) => {
   );
 
   return (
-    <div style={{ width: "100%", display: "table", tableLayout: "fixed", fontSize: bodyFs, lineHeight: lineHeight, background: "#fff", fontFamily: "'Outfit', sans-serif" }}>
+    <div style={{ width: "100%", display: "table", tableLayout: "fixed", fontSize: bodyFs, lineHeight: lineHeight, background: `linear-gradient(to right, ${primaryColor} 0%, ${primaryColor} 31%, #fff 31%, #fff 100%)`, fontFamily: "'Outfit', sans-serif" }}>
       <div style={{ display: "table-row" }}>
         
         {/* LEFT SIDEBAR (Dual Tone) */}
-        <div style={{ display: "table-cell", width: "31%", verticalAlign: "top", backgroundColor: primaryColor, padding: `${mTop} 24px ${mBottom} 24px`, color: "#fff" }}>
+        <div style={{ display: "table-cell", width: "31%", verticalAlign: "top", padding: `${mTop} 24px ${mBottom} 24px`, color: "#fff" }}>
           
           {/* Header Info in Sidebar */}
           <div style={{ textAlign: "left", marginBottom: "20px" }}>
@@ -55,7 +55,7 @@ export const CanvaLayout = ({ resumeData, customStyles }) => {
           </div>
 
           {/* Contact */}
-          <div style={{ marginBottom: secSpacing }}>
+          <div style={{ marginBottom: secSpacing, pageBreakInside: "avoid" }}>
             <SideTitle title="Contact" />
             <div style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "8.5pt", color: "rgba(255,255,255,0.8)" }}>
               {personalInfo.email && <div>{personalInfo.email}</div>}
@@ -76,7 +76,7 @@ export const CanvaLayout = ({ resumeData, customStyles }) => {
 
           {/* Skills */}
           {skills.length > 0 && (
-            <div style={{ marginBottom: secSpacing }}>
+            <div style={{ marginBottom: secSpacing, pageBreakInside: "avoid" }}>
               <SideTitle title="Expertise" />
               <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", marginTop: "4px" }}>
                 {skills.map((s, i) => (
@@ -93,7 +93,7 @@ export const CanvaLayout = ({ resumeData, customStyles }) => {
             <div style={{ marginBottom: secSpacing }}>
               <SideTitle title="Education" />
               {education.map((edu, idx) => (
-                <div key={idx} style={{ marginBottom: "8px", fontSize: "8.5pt" }}>
+                <div key={idx} style={{ marginBottom: "8px", fontSize: "8.5pt", pageBreakInside: "avoid" }}>
                   <div style={{ fontWeight: 700, color: "#fff", fontSize: "9pt" }}>{edu.degree}</div>
                   <div style={{ color: "rgba(255,255,255,0.8)", fontStyle: "italic" }}>{edu.institution}</div>
                   <div style={{ color: "rgba(255,255,255,0.6)" }}>{edu.startDate} - {edu.endDate}</div>
@@ -108,7 +108,7 @@ export const CanvaLayout = ({ resumeData, customStyles }) => {
             <div style={{ marginBottom: secSpacing }}>
               <SideTitle title="Certifications" />
               {certifications.map((cert, idx) => (
-                <div key={idx} style={{ marginBottom: "6px", fontSize: "8.5pt" }}>
+                <div key={idx} style={{ marginBottom: "6px", fontSize: "8.5pt", pageBreakInside: "avoid" }}>
                   <div style={{ fontWeight: 700, color: "#fff" }}>{cert.name}</div>
                   <div style={{ color: "rgba(255,255,255,0.7)" }}>{cert.issuer}</div>
                 </div>
@@ -118,7 +118,7 @@ export const CanvaLayout = ({ resumeData, customStyles }) => {
 
           {/* Languages */}
           {languages.length > 0 && (
-            <div style={{ marginBottom: secSpacing }}>
+            <div style={{ marginBottom: secSpacing, pageBreakInside: "avoid" }}>
               <SideTitle title="Languages" />
               <div style={{ display: "flex", flexDirection: "column", gap: "2px", fontSize: "8.5pt", color: "rgba(255,255,255,0.8)" }}>
                 {languages.map((lang, idx) => <span key={idx}>&bull; {lang}</span>)}
@@ -128,7 +128,7 @@ export const CanvaLayout = ({ resumeData, customStyles }) => {
         </div>
 
         {/* RIGHT MAIN CONTENT (White Background) */}
-        <div style={{ display: "table-cell", width: "69%", verticalAlign: "top", backgroundColor: "#fff", padding: `${mTop} 32px ${mBottom} 32px`, color: "#1e293b" }}>
+        <div style={{ display: "table-cell", width: "69%", verticalAlign: "top", padding: `${mTop} 32px ${mBottom} 32px`, color: "#1e293b" }}>
           
           {/* Summary */}
           {summary && (
